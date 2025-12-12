@@ -235,7 +235,7 @@ export const InstallationChecklist: React.FC<Props> = ({ onComplete }) => {
                         </div>
                         <ul className="text-sm text-gray-600 list-disc ml-5 space-y-1">
                             <li><strong>Etcd Sensitivity:</strong> SUSE Virtualization relies on etcd. Slow disks cause cluster instability.</li>
-                            <li><strong>Requirement:</strong> SSD/NVMe with > 5000 IOPS.</li>
+                            <li><strong>Requirement:</strong> SSD/NVMe with &gt; 5000 IOPS.</li>
                             <li><strong>Verification:</strong> Use <code className="bg-gray-100 px-1 rounded">fio</code> on a live CD to verify throughput if unsure.</li>
                         </ul>
                      </div>
