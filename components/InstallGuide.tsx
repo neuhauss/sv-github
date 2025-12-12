@@ -418,7 +418,7 @@ export const InstallGuide: React.FC = () => {
                 {
                     num: 1,
                     title: "Enable Virtualization Management",
-                    description: "In Rancher, navigate to Global Settings > Feature Flags. Locate 'harvester' and ensure it is set to 'Active'. This enables the Harvester node driver and dashboard integration.",
+                    description: "In Rancher, navigate to Global Settings &gt; Feature Flags. Locate 'harvester' and ensure it is set to 'Active'. This enables the Harvester node driver and dashboard integration.",
                     imgSrc: "https://placehold.co/800x400/2c3e50/ffffff?text=Rancher+Menu:+Enable+Harvester+Flag",
                     caption: "Figure: Enable Harvester Feature Flag"
                 },
@@ -439,7 +439,7 @@ export const InstallGuide: React.FC = () => {
                 {
                    num: 4,
                    title: "Create RKE2 Guest Cluster",
-                   description: "Once Active, go to Cluster Management > Create > RKE2/K3s > Harvester. Select the imported Harvester cluster as the Cloud Credential.",
+                   description: "Once Active, go to Cluster Management &gt; Create &gt; RKE2/K3s &gt; Harvester. Select the imported Harvester cluster as the Cloud Credential.",
                    imgSrc: "https://placehold.co/800x500/e2e8f0/475569?text=Rancher:+Create+RKE2+on+Harvester",
                    caption: "Figure: Provision RKE2 Cluster"
                 },
