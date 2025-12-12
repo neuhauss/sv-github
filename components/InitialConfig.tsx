@@ -267,7 +267,7 @@ const GOAL_DATA: Record<string, GoalConfig> = {
   "Multi-cluster management, multi-tenancy for VM management, multi-disk support": {
     goal: "Import Cluster into Rancher (PDF Page 51).",
     steps: [
-      { type: 'action', label: "1. Rancher UI", description: <span>Log into your <strong>Rancher Manager</strong>. Click the <strong>Hamburger Menu (☰)</strong> > <strong>Virtualization Management</strong>.</span> },
+      { type: 'action', label: "1. Rancher UI", description: <span>Log into your <strong>Rancher Manager</strong>. Click the <strong>Hamburger Menu (☰)</strong> &gt; <strong>Virtualization Management</strong>.</span> },
       { type: 'action', label: "2. Import", description: <span>Click <strong>Import Existing</strong>. Enter a Cluster Name. Click <strong>Create</strong>.</span> },
       { type: 'command', label: "3. Registration", description: "Copy the `kubectl` registration command shown. Log into the SUSE Virtualization node (SSH) and run it:", code: "kubectl apply -f https://rancher.../import.yaml" },
       { type: 'verify', label: "4. Active", description: <span>Wait for status to become <strong>Active</strong> in Rancher. You can now manage VMs from Rancher UI.</span> }
@@ -279,7 +279,7 @@ const GOAL_DATA: Record<string, GoalConfig> = {
   "Integration with Rancher. Provision a RKE2 Kubernetes cluster on top of a SUSE Virtualization cluster": {
     goal: "Deploy Guest Kubernetes Cluster (PDF Page 55).",
     steps: [
-      { type: 'action', label: "1. Create Cluster", description: <span>In Rancher, go to <strong>Cluster Management</strong> > <strong>Create</strong>.</span> },
+      { type: 'action', label: "1. Create Cluster", description: <span>In Rancher, go to <strong>Cluster Management</strong> &gt; <strong>Create</strong>.</span> },
       { type: 'action', label: "2. Select Driver", description: <span>Toggle the switch to <strong>RKE2/K3s</strong>. Click the <strong>Harvester</strong> tile (SUSE Virtualization).</span> },
       { type: 'action', label: "3. Cloud Creds", description: <span>Select the imported SUSE Virtualization cluster as your 'Cloud Credential'.</span> },
       { type: 'action', label: "4. Node Pools", description: <span>Configure Node Pools: Select <strong>Namespace</strong>, <strong>Image</strong>, and <strong>Network</strong> (use the VLAN network).</span> },
