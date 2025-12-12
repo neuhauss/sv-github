@@ -408,7 +408,7 @@ export const NetworkValidation: React.FC<Props> = ({ specs, updateSpecs, onValid
                                   <div className={`w-0.5 h-full transition-colors duration-300 ${hoveredElement === `node-${i}` ? 'bg-blue-400' : 'bg-gray-300'}`}></div>
                               </div>
                           ))}
-                          {specs.nodes.length > 4 && (
+                          {specs.nodes.length &gt; 4 && (
                                <div className="flex justify-center h-full pt-8">
                                   <div className="w-0.5 h-full bg-gray-300"></div>
                                </div>
@@ -442,7 +442,7 @@ export const NetworkValidation: React.FC<Props> = ({ specs, updateSpecs, onValid
                          ))}
                          
                          {/* Extra Nodes Indicator */}
-                         {specs.nodes.length > 4 && (
+                         {specs.nodes.length &gt; 4 && (
                              <div className="flex flex-col items-center justify-center relative">
                                  <div className="w-full h-full min-h-[80px] border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
                                     <span className="font-bold text-lg">+{specs.nodes.length - 4}</span>
