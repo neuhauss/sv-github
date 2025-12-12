@@ -292,7 +292,7 @@ Based on this configuration, please assist me with [INSERT YOUR QUESTION HERE].`
                       </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 bg-white">
-                      {netSpecs.nodes.length > 0 ? netSpecs.nodes.map((node, i) => (
+                      {netSpecs.nodes.length &gt; 0 ? netSpecs.nodes.map((node, i) => (
                           <tr key={i} className="hover:bg-gray-50">
                               <td className="px-4 py-3 font-medium text-gray-900">{renderValue(node.name)}</td>
                               <td className="px-4 py-3 font-mono text-blue-600">{node.ip || <span className="text-gray-400 italic">DHCP</span>}</td>
