@@ -4,6 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SUSE Virtualization POC Assistant</title>
+    <!-- Keeping Tailwind via CDN for simplicity, though a local install is recommended for production -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              suse: {
+                dark: '#0C322C',
+                base: '#30BA78',
+                light: '#9EE5B5',
+                accent: '#FE7C3F'
+              }
+            }
+          }
+        }
+      }
+    </script>
   <script type="importmap">
 {
   "imports": {
@@ -19,6 +37,6 @@
 </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>
