@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { POCStep, POCData, HardwareSpecs, NetworkSpecs, CloudInitConfig } from './types';
 import { PocDetailsForm } from './components/PocDetailsForm';
 import { HardwareValidation } from './components/HardwareValidation';
@@ -11,25 +12,23 @@ import { InstallGuide } from './components/InstallGuide';
 import { Summary } from './components/Summary';
 import { DashboardMenu } from './components/DashboardMenu';
 import { Button } from './components/ui/Button';
-import { LayoutTemplate, ArrowLeft, Home, Check } from 'lucide-react';
+import { LayoutTemplate, ArrowLeft, Home, Check, Upload } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<POCStep>(POCStep.DASHBOARD);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // State
   const initialPocData: POCData = {
     projectName: '',
-    // Partner
     leadEngineer: '',
     leadEmail: '',
     organization: '',
-    // Client
     clientOrganization: '',
     clientContactName: '',
     clientContactRole: '',
     clientContactEmail: '',
     clientContactPhone: '',
-    // Dates
     startDate: new Date().toISOString().split('T')[0],
     targetDate: '',
     goals: []
@@ -95,28 +94,19 @@ const App: React.FC = () => {
   // Handlers
   const handlePocUpdate = (data: Partial<POCData>) => setPocData({ ...pocData, ...data });
   
-  // Update HW specs and sync Network nodes if count changes
   const handleHwUpdate = (data: Partial<HardwareSpecs>) => {
-    // If nodeCount is changing, we need to sync the network specs nodes list
     if (data.nodeCount !== undefined && data.nodeCount !== hwSpecs.nodeCount) {
        const targetCount = data.nodeCount;
        setNetSpecs(prev => {
           const currentCount = prev.nodes.length;
           if (currentCount === targetCount) return prev;
-
           let newNodes = [...prev.nodes];
           if (targetCount > currentCount) {
-            // Add missing nodes
             const nodesToAdd = targetCount - currentCount;
             for (let i = 0; i < nodesToAdd; i++) {
-              newNodes.push({
-                name: `node-${currentCount + i + 1}`,
-                ip: '',
-                role: 'Hybrid'
-              });
+              newNodes.push({ name: `node-${currentCount + i + 1}`, ip: '', role: 'Hybrid' });
             }
           } else {
-             // Remove extra nodes
              newNodes = newNodes.slice(0, targetCount);
           }
           return { ...prev, nodes: newNodes };
@@ -125,7 +115,6 @@ const App: React.FC = () => {
     setHwSpecs({ ...hwSpecs, ...data });
   };
 
-  // Update Network specs and sync HW node count if nodes list changes
   const handleNetUpdate = (data: Partial<NetworkSpecs>) => {
      if (data.nodes && data.nodes.length !== hwSpecs.nodeCount) {
          setHwSpecs(prev => ({ ...prev, nodeCount: data.nodes!.length }));
@@ -146,6 +135,39 @@ const App: React.FC = () => {
     }
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const json = JSON.parse(e.target?.result as string);
+        
+        // Basic Validation
+        if (!json.pocData || !json.hardwareSpecs || !json.networkSpecs) {
+          throw new Error("Invalid file format. Missing core POC data components.");
+        }
+
+        setPocData(json.pocData);
+        setHwSpecs(json.hardwareSpecs);
+        setNetSpecs(json.networkSpecs);
+        if (json.cloudInitConfig) setCloudInitConfig(json.cloudInitConfig);
+        
+        alert("POC data imported successfully!");
+        setCurrentStep(POCStep.DASHBOARD);
+      } catch (err) {
+        alert("Error importing file: " + (err as Error).message);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // Reset input
+  };
+
   const goHome = () => {
       setCurrentStep(POCStep.DASHBOARD);
       window.scrollTo(0, 0);
@@ -156,6 +178,7 @@ const App: React.FC = () => {
         case POCStep.DASHBOARD:
             return <DashboardMenu 
                 onSelectStep={setCurrentStep} 
+                onImport={handleImportClick}
                 status={{
                     details: detailsValid,
                     hardware: hwValid,
@@ -210,7 +233,6 @@ const App: React.FC = () => {
       }
   };
 
-  // Simplified steps for the progress bar
   const PROGRESS_STEPS = [
     { id: POCStep.POC_DETAILS, label: 'Plan' },
     { id: POCStep.HARDWARE_VALIDATION, label: 'Hardware' },
@@ -222,7 +244,13 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900 pb-20 print:pb-0">
-      {/* Header */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileImport} 
+        accept=".json" 
+        className="hidden" 
+      />
       <header className="bg-suse-dark text-white shadow-lg print:hidden sticky top-0 z-50 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer group" onClick={goHome}>
@@ -235,17 +263,14 @@ const App: React.FC = () => {
             </div>
           </div>
           
-          {/* Visual Progress Stepper (Visible on large screens when not on Dashboard) */}
           {currentStep !== POCStep.DASHBOARD && (
             <div className="hidden lg:flex items-center">
                 {PROGRESS_STEPS.map((step, idx) => {
                     const isActive = currentStep === step.id;
                     const isCompleted = currentStep > step.id || (step.id === POCStep.COMPLETED && currentStep === POCStep.COMPLETED);
                     const isLast = idx === PROGRESS_STEPS.length - 1;
-                    
                     return (
                         <div key={step.id} className="flex items-center">
-                            {/* Step Circle & Label */}
                             <div 
                                 onClick={() => setCurrentStep(step.id)}
                                 className={`flex flex-col items-center gap-1 cursor-pointer group relative z-10 px-2`}
@@ -261,8 +286,6 @@ const App: React.FC = () => {
                                     {step.label}
                                 </span>
                             </div>
-
-                            {/* Connecting Line */}
                             {!isLast && (
                                 <div className={`w-12 h-0.5 -mt-4 transition-colors duration-500 ${isCompleted ? 'bg-suse-base' : 'bg-gray-700'}`}></div>
                             )}
@@ -272,15 +295,21 @@ const App: React.FC = () => {
             </div>
           )}
           
-          {currentStep !== POCStep.DASHBOARD && (
-             <Button variant="secondary" onClick={goHome} className="text-xs px-4 py-2 flex items-center gap-2 bg-white/10 hover:bg-white/20 border-none rounded-full shadow-inner">
-                 <Home className="w-3.5 h-3.5" /> <span className="hidden xl:inline">Dashboard</span>
-             </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {currentStep === POCStep.DASHBOARD && (
+              <Button variant="outline" onClick={handleImportClick} className="text-xs px-4 py-2 flex items-center gap-2 border-white/30 text-white hover:bg-white/10 hover:border-white rounded-full">
+                <Upload className="w-3.5 h-3.5" /> <span>Import JSON</span>
+              </Button>
+            )}
+            {currentStep !== POCStep.DASHBOARD && (
+              <Button variant="secondary" onClick={goHome} className="text-xs px-4 py-2 flex items-center gap-2 bg-white/10 hover:bg-white/20 border-none rounded-full shadow-inner">
+                  <Home className="w-3.5 h-3.5" /> <span className="hidden xl:inline">Dashboard</span>
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Sub Header for Breadcrumbs / Back button */}
       {currentStep !== POCStep.DASHBOARD && (
           <div className="bg-white border-b border-gray-200 py-4 px-6 shadow-sm print:hidden">
               <div className="max-w-6xl mx-auto flex items-center gap-4">
@@ -296,14 +325,12 @@ const App: React.FC = () => {
           </div>
       )}
 
-      {/* Main Content */}
       <main className="max-w-6xl mx-auto px-6 py-8 print:max-w-full print:px-8">
         <div className="min-h-[400px]">
           {renderContent()}
         </div>
       </main>
 
-      {/* Module Footer (Only when inside a step) */}
       {currentStep !== POCStep.DASHBOARD && currentStep !== POCStep.COMPLETED && (
         <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] print:hidden z-40">
           <div className="max-w-6xl mx-auto flex justify-between items-center">

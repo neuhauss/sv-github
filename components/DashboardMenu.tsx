@@ -1,9 +1,12 @@
+
 import React from 'react';
 import { POCStep } from '../types';
-import { ClipboardList, Server, Network, LayoutTemplate, PlayCircle, FileText, CheckCircle2, Circle, ArrowRight, FileCode, Target, BookOpen, Clock } from 'lucide-react';
+import { ClipboardList, Server, Network, LayoutTemplate, PlayCircle, FileText, CheckCircle2, Circle, ArrowRight, FileCode, Target, BookOpen, Clock, Upload } from 'lucide-react';
+import { Button } from './ui/Button';
 
 interface Props {
   onSelectStep: (step: POCStep) => void;
+  onImport: () => void;
   status: {
     details: boolean;
     hardware: boolean;
@@ -13,7 +16,7 @@ interface Props {
   };
 }
 
-export const DashboardMenu: React.FC<Props> = ({ onSelectStep, status }) => {
+export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status }) => {
   
   const menuItems = [
     {
@@ -48,7 +51,7 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, status }) => {
       title: "Full Installation Guide",
       desc: "Comprehensive documentation and step-by-step manual.",
       icon: <BookOpen className="w-6 h-6 text-emerald-600" />,
-      isValid: true, // Reference always available
+      isValid: true, 
       colorClass: "hover:border-emerald-400 hover:shadow-emerald-100",
       iconBg: "bg-emerald-50"
     },
@@ -111,8 +114,13 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, status }) => {
         <h2 className="text-3xl font-bold text-suse-dark">Welcome to SUSE Virtualization</h2>
         <p className="text-gray-600 mt-3 text-lg">
             This assistant guides you through the planning, installation, and validation of your Proof of Concept. 
-            Start by defining your client details and hardware specifications.
         </p>
+        
+        <div className="mt-6 flex justify-center gap-3">
+            <Button variant="outline" onClick={onImport} className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50">
+                <Upload className="w-4 h-4" /> Import Existing Project (JSON)
+            </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -138,7 +146,6 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, status }) => {
           </button>
         ))}
 
-        {/* Report Card - Distinct Visuals */}
         <button
             onClick={() => onSelectStep(POCStep.COMPLETED)}
             className="group relative p-6 rounded-2xl border border-slate-700 bg-suse-dark text-left transition-all duration-300 shadow-lg hover:shadow-2xl hover:bg-[#0f3d36] hover:-translate-y-1 md:col-span-2 lg:col-span-1"
