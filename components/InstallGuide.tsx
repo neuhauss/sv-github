@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Server, Settings, Network, HardDrive, Disc, LayoutTemplate, Play, Database, Cloud, ArrowRight, ShieldCheck, Cpu, Shuffle, Lock, Globe, Clock, CheckCircle, Sliders, Laptop, ExternalLink } from 'lucide-react';
 import { UISnapshot } from './ui/UISnapshot';
@@ -418,7 +419,7 @@ export const InstallGuide: React.FC = () => {
                 {
                     num: 1,
                     title: "Enable Virtualization Management",
-                    description: "In Rancher, navigate to Global Settings > Feature Flags. Locate 'harvester' and ensure it is set to 'Active'. This enables the Harvester node driver and dashboard integration.",
+                    description: "In Rancher, navigate to Global Settings &gt; Feature Flags. Locate 'harvester' and ensure it is set to 'Active'. This enables the Harvester node driver and dashboard integration.",
                     imgSrc: "https://placehold.co/800x400/2c3e50/ffffff?text=Rancher+Menu:+Enable+Harvester+Flag",
                     caption: "Figure: Enable Harvester Feature Flag"
                 },
@@ -439,7 +440,7 @@ export const InstallGuide: React.FC = () => {
                 {
                    num: 4,
                    title: "Create RKE2 Guest Cluster",
-                   description: "Once Active, go to Cluster Management > Create > RKE2/K3s > Harvester. Select the imported Harvester cluster as the Cloud Credential.",
+                   description: "Once Active, go to Cluster Management &gt; Create &gt; RKE2/K3s &gt; Harvester. Select the imported Harvester cluster as the Cloud Credential.",
                    imgSrc: "https://placehold.co/800x500/e2e8f0/475569?text=Rancher:+Create+RKE2+on+Harvester",
                    caption: "Figure: Provision RKE2 Cluster"
                 },
@@ -459,7 +460,7 @@ export const InstallGuide: React.FC = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                        <h4 className="font-bold text-red-600 mb-2">Cluster Stuck in "Pending"</h4>
+                        <h4 className="font-bold text-red-600 mb-2">Cluster Stuck in \"Pending\"</h4>
                         <ul className="list-disc ml-5 text-sm text-gray-500 space-y-1">
                             <li><strong>Connectivity:</strong> Can the Harvester nodes reach the Rancher URL? Check DNS and Firewalls.</li>
                             <li><strong>Certificates:</strong> If using self-signed certs on Rancher, ensure the `CATTLE_CA_CHECKSUM` is correct in the import YAML.</li>

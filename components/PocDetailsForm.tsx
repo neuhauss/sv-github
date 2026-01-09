@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { POCData } from '../types';
-import { ClipboardList, Target, User, Building, CheckSquare, Square, Flag, Calendar, Phone, Mail, Briefcase } from 'lucide-react';
+import { ClipboardList, Target, User, Building, CheckSquare, Square, Flag, Calendar, Phone, Mail, AlertCircle } from 'lucide-react';
 
 interface Props {
   data: POCData;
@@ -25,6 +26,8 @@ const POC_GOALS_OPTIONS = [
   "Integration with Rancher. Provision a RKE2 Kubernetes cluster on top of a SUSE Virtualization cluster"
 ];
 
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
 export const PocDetailsForm: React.FC<Props> = ({ data, updateData }) => {
   
   const toggleGoal = (goal: string) => {
@@ -36,7 +39,14 @@ export const PocDetailsForm: React.FC<Props> = ({ data, updateData }) => {
     }
   };
 
-  const inputClasses = "w-full pl-3 pr-3 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-suse-base focus:border-suse-base placeholder-gray-400 shadow-sm transition-all";
+  const getBorderClass = (val: string, type: 'text' | 'email' | 'required' = 'text') => {
+    if (!val) return "border-gray-300 focus:ring-suse-base";
+    if (type === 'email' && !isValidEmail(val)) return "border-red-500 ring-1 ring-red-100 focus:ring-red-500";
+    if (type === 'required' && val.length < 2) return "border-red-500 ring-1 ring-red-100 focus:ring-red-500";
+    return "border-green-400 focus:ring-suse-base";
+  };
+
+  const inputClasses = "w-full pl-3 pr-3 py-2.5 bg-white border rounded-lg focus:ring-2 placeholder-gray-400 shadow-sm transition-all outline-none";
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -46,22 +56,25 @@ export const PocDetailsForm: React.FC<Props> = ({ data, updateData }) => {
           Client & Project Information
         </h2>
         <p className="text-gray-600 mb-8">
-          Define the administrative details, including the Partner responsible for the installation and the Client contact who will validate the environment.
+          Define project details. Fields with <span className="text-red-500 font-bold">*</span> are required for a valid report.
         </p>
 
         {/* Global Project Name */}
         <div className="mb-8">
-            <label className="block text-sm font-bold text-gray-700 mb-1">POC / Project Name</label>
+            <label className="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-1">
+              POC / Project Name <span className="text-red-500">*</span>
+            </label>
             <div className="relative">
               <span className="absolute left-3 top-3 text-gray-400"><Target className="w-5 h-5"/></span>
               <input 
                 type="text" 
                 value={data.projectName}
                 onChange={(e) => updateData({ projectName: e.target.value })}
-                className={`${inputClasses} pl-10 text-lg`}
-                placeholder="e.g. Retail Edge Migration - Phase 1"
+                className={`${inputClasses} pl-10 text-lg ${getBorderClass(data.projectName, 'required')}`}
+                placeholder="e.g. Retail Edge Migration"
               />
             </div>
+            {!data.projectName && <p className="text-[10px] text-red-500 mt-1 font-bold flex items-center gap-1"><AlertCircle className="w-3 h-3"/> Project name is required</p>}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -76,24 +89,25 @@ export const PocDetailsForm: React.FC<Props> = ({ data, updateData }) => {
                 </h3>
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Responsible Engineer</label>
+                        <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Responsible Engineer <span className="text-red-500">*</span></label>
                         <input 
                             type="text" 
                             value={data.leadEngineer}
                             onChange={(e) => updateData({ leadEngineer: e.target.value })}
-                            className={inputClasses}
+                            className={`${inputClasses} ${getBorderClass(data.leadEngineer, 'required')}`}
                             placeholder="e.g. John Smith"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Engineer Email</label>
+                        <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Engineer Email <span className="text-red-500">*</span></label>
                         <input 
                             type="email" 
                             value={data.leadEmail}
                             onChange={(e) => updateData({ leadEmail: e.target.value })}
-                            className={inputClasses}
+                            className={`${inputClasses} ${getBorderClass(data.leadEmail, 'email')}`}
                             placeholder="john.smith@partner.com"
                         />
+                        {data.leadEmail && !isValidEmail(data.leadEmail) && <p className="text-[10px] text-red-500 mt-1">Please enter a valid email address</p>}
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Partner Organization</label>
@@ -101,7 +115,7 @@ export const PocDetailsForm: React.FC<Props> = ({ data, updateData }) => {
                             type="text" 
                             value={data.organization}
                             onChange={(e) => updateData({ organization: e.target.value })}
-                            className={inputClasses}
+                            className={`${inputClasses} ${getBorderClass(data.organization)}`}
                             placeholder="e.g. Tech Solutions Inc."
                         />
                     </div>
@@ -118,12 +132,12 @@ export const PocDetailsForm: React.FC<Props> = ({ data, updateData }) => {
                 </h3>
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Client Organization</label>
+                        <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Client Organization <span className="text-red-500">*</span></label>
                         <input 
                             type="text" 
                             value={data.clientOrganization}
                             onChange={(e) => updateData({ clientOrganization: e.target.value })}
-                            className={inputClasses}
+                            className={`${inputClasses} ${getBorderClass(data.clientOrganization, 'required')}`}
                             placeholder="e.g. Acme Corp"
                         />
                     </div>
@@ -134,18 +148,18 @@ export const PocDetailsForm: React.FC<Props> = ({ data, updateData }) => {
                                 type="text" 
                                 value={data.clientContactName}
                                 onChange={(e) => updateData({ clientContactName: e.target.value })}
-                                className={inputClasses}
-                                placeholder="e.g. Jane Doe"
+                                className={`${inputClasses} ${getBorderClass(data.clientContactName)}`}
+                                placeholder="Jane Doe"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Role / Job Title</label>
+                            <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Role / Title</label>
                             <input 
                                 type="text" 
                                 value={data.clientContactRole}
                                 onChange={(e) => updateData({ clientContactRole: e.target.value })}
-                                className={inputClasses}
-                                placeholder="e.g. CTO / SysAdmin"
+                                className={`${inputClasses} ${getBorderClass(data.clientContactRole)}`}
+                                placeholder="IT Manager"
                             />
                         </div>
                     </div>
@@ -156,7 +170,7 @@ export const PocDetailsForm: React.FC<Props> = ({ data, updateData }) => {
                                 type="email"
                                 value={data.clientContactEmail}
                                 onChange={(e) => updateData({ clientContactEmail: e.target.value })}
-                                className={inputClasses}
+                                className={`${inputClasses} ${getBorderClass(data.clientContactEmail, 'email')}`}
                                 placeholder="jane@acme.com"
                              />
                         </div>
@@ -184,20 +198,23 @@ export const PocDetailsForm: React.FC<Props> = ({ data, updateData }) => {
                 <div>
                     <label className="block text-sm font-bold text-orange-900 mb-1">Start Date</label>
                     <input 
-                    type="date" 
-                    value={data.startDate}
-                    onChange={(e) => updateData({ startDate: e.target.value })}
-                    className={inputClasses}
+                      type="date" 
+                      value={data.startDate}
+                      onChange={(e) => updateData({ startDate: e.target.value })}
+                      className={`${inputClasses} border-orange-200 focus:ring-orange-500`}
                     />
                 </div>
                 <div>
-                    <label className="block text-sm font-bold text-orange-900 mb-1">Expected Completion Date</label>
+                    <label className="block text-sm font-bold text-orange-900 mb-1">Target Completion Date</label>
                     <input 
-                    type="date" 
-                    value={data.targetDate}
-                    onChange={(e) => updateData({ targetDate: e.target.value })}
-                    className={inputClasses}
+                      type="date" 
+                      value={data.targetDate}
+                      onChange={(e) => updateData({ targetDate: e.target.value })}
+                      className={`${inputClasses} border-orange-200 focus:ring-orange-500 ${data.targetDate && data.startDate && data.targetDate < data.startDate ? 'border-red-500' : ''}`}
                     />
+                    {data.targetDate && data.startDate && data.targetDate < data.startDate && (
+                      <p className="text-[10px] text-red-600 mt-1 font-bold italic">Warning: Target date is before start date</p>
+                    )}
                 </div>
             </div>
         </div>
@@ -210,7 +227,7 @@ export const PocDetailsForm: React.FC<Props> = ({ data, updateData }) => {
              </div>
              <div>
                 <h3 className="text-xl font-bold text-gray-800">POC Goals</h3>
-                <p className="text-sm text-gray-500">Select the specific validation scenarios for this proof of concept.</p>
+                <p className="text-sm text-gray-500">Select at least one goal to track progress.</p>
              </div>
           </div>
           
@@ -234,9 +251,7 @@ export const PocDetailsForm: React.FC<Props> = ({ data, updateData }) => {
                 );
               })}
             </div>
-            <div className="mt-4 text-right text-xs text-gray-500 font-medium">
-               {data.goals.length} goals selected
-            </div>
+            {data.goals.length === 0 && <p className="text-xs text-orange-600 font-bold mt-4 animate-pulse">Please select at least one goal for the validation report.</p>}
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ChecklistItem } from '../types';
 import { Database, MousePointer, Terminal, CheckCircle, ChevronDown, ChevronUp, CheckSquare, Square, Flag, ExternalLink, HelpCircle, ArrowRight, Play, Settings, Monitor, Image as ImageIcon } from 'lucide-react';
@@ -127,7 +128,7 @@ const GOAL_DATA: Record<string, GoalConfig> = {
       { 
         type: 'action', 
         label: "1. Create Storage Class", 
-        description: <span>Go to <strong>Advanced</strong> > <strong>Storage Classes</strong>. Click <strong>Create</strong>.<br/>Name: <code>fast-replica-3</code>.<br/>Replicas: <code>3</code>.<br/>Click <strong>Create</strong>.</span> 
+        description: <span>Go to <strong>Advanced</strong> &gt; <strong>Storage Classes</strong>. Click <strong>Create</strong>.<br/>Name: <code>fast-replica-3</code>.<br/>Replicas: <code>3</code>.<br/>Click <strong>Create</strong>.</span> 
       },
       { 
         type: 'action', 
@@ -150,7 +151,7 @@ const GOAL_DATA: Record<string, GoalConfig> = {
   "Create a VLAN network in SUSE Virtualization": {
     goal: "Enable L2 Traffic Isolation (PDF Page 34).",
     steps: [
-      { type: 'action', label: "1. Navigate", description: <span>Go to <strong>Networks</strong> > <strong>VM Networks</strong> (NOT Cluster Networks). Click <strong>Create</strong>.</span> },
+      { type: 'action', label: "1. Navigate", description: <span>Go to <strong>Networks</strong> &gt; <strong>VM Networks</strong> (NOT Cluster Networks). Click <strong>Create</strong>.</span> },
       { type: 'action', label: "2. Basic Config", description: <span><strong>Name:</strong> <code>vlan-100</code>.<br/><strong>Type:</strong> Select <code>L2VlanNetwork</code>.<br/><strong>VLAN ID:</strong> Enter <code>100</code>.<br/><strong>Cluster Network:</strong> Select <code>mgmt</code>.</span> },
       { type: 'action', label: "3. Route Config", description: <span>Click the <strong>Route</strong> tab.<br/>Select <strong>Auto (DHCP)</strong> if you have an external DHCP server on VLAN 100, or Manual to specify CIDR/Gateway.</span> },
       { type: 'verify', label: "4. Physical Switch", description: <span>Ensure the physical switch ports connected to the nodes are configured as <strong>Trunk</strong> ports to allow VLAN tags. Click <strong>Create</strong>.</span> }
@@ -162,7 +163,7 @@ const GOAL_DATA: Record<string, GoalConfig> = {
   "Create a VM": {
     goal: "Launch a Virtual Machine instance (PDF Page 41).",
     steps: [
-      { type: 'action', label: "1. Wizard", description: <span>Go to <strong>Virtual Machines</strong> > <strong>Create</strong>.</span> },
+      { type: 'action', label: "1. Wizard", description: <span>Go to <strong>Virtual Machines</strong> &gt; <strong>Create</strong>.</span> },
       { 
         type: 'action', 
         label: "2. Basics Tab", 
@@ -180,8 +181,8 @@ const GOAL_DATA: Record<string, GoalConfig> = {
   "Configure a backup target": {
     goal: "Setup external storage for backups (PDF Page 44).",
     steps: [
-      { type: 'action', label: "1. Settings", description: <span>Go to <strong>Advanced</strong> > <strong>Settings</strong>. Find <code>backup-target</code> in the list.</span> },
-      { type: 'action', label: "2. Edit", description: <span>Click the <strong>⋮ (3 dots)</strong> on the right > <strong>Edit Setting</strong>.</span> },
+      { type: 'action', label: "1. Settings", description: <span>Go to <strong>Advanced</strong> &gt; <strong>Settings</strong>. Find <code>backup-target</code> in the list.</span> },
+      { type: 'action', label: "2. Edit", description: <span>Click the <strong>⋮ (3 dots)</strong> on the right &gt; <strong>Edit Setting</strong>.</span> },
       { 
         type: 'action', 
         label: "3. Configure S3/NFS", 
@@ -210,9 +211,9 @@ const GOAL_DATA: Record<string, GoalConfig> = {
     goal: "Take a snapshot to the backup target (PDF Page 45).",
     steps: [
       { type: 'action', label: "1. Select VM", description: <span>Go to <strong>Virtual Machines</strong>. Find your running VM.</span> },
-      { type: 'action', label: "2. Initiate Backup", description: <span>Click the <strong>⋮ (3 dots)</strong> > <strong>Take Backup</strong>.</span> },
+      { type: 'action', label: "2. Initiate Backup", description: <span>Click the <strong>⋮ (3 dots)</strong> &gt; <strong>Take Backup</strong>.</span> },
       { type: 'action', label: "3. Confirm", description: <span>Enter a name (e.g. <code>backup-v1</code>) and click <strong>Create</strong>.</span> },
-      { type: 'verify', label: "4. Verify", description: <span>Go to <strong>Backup & Snapshot</strong> > <strong>VM Backups</strong>. Wait until <strong>ReadyToUse</strong> column shows <strong>Yes</strong>.</span> }
+      { type: 'verify', label: "4. Verify", description: <span>Go to <strong>Backup & Snapshot</strong> &gt; <strong>VM Backups</strong>. Wait until <strong>ReadyToUse</strong> column shows <strong>Yes</strong>.</span> }
     ],
     docs: [
       { title: "Create Backup (PDF pg 45)", url: "#" }
@@ -221,8 +222,8 @@ const GOAL_DATA: Record<string, GoalConfig> = {
   "Restore a VM from a backup": {
     goal: "Restore a VM from external storage (PDF Page 46).",
     steps: [
-      { type: 'action', label: "1. Navigate", description: <span>Go to <strong>Backup & Snapshot</strong> > <strong>VM Backups</strong>.</span> },
-      { type: 'action', label: "2. Restore Action", description: <span>Find the backup created previously. Click <strong>⋮</strong> > <strong>Restore Virtual Machine</strong>.</span> },
+      { type: 'action', label: "1. Navigate", description: <span>Go to <strong>Backup & Snapshot</strong> &gt; <strong>VM Backups</strong>.</span> },
+      { type: 'action', label: "2. Restore Action", description: <span>Find the backup created previously. Click <strong>⋮</strong> &gt; <strong>Restore Virtual Machine</strong>.</span> },
       { type: 'action', label: "3. Strategy", description: <span>Select <strong>New VM</strong> (creates a clone) or <strong>Existing VM</strong> (overwrites). Enter a new name if cloning.</span> },
       { type: 'verify', label: "4. Check", description: <span>Click <strong>Create</strong>. Go to <strong>Virtual Machines</strong> and wait for the new VM to start Running.</span> }
     ],
@@ -234,8 +235,8 @@ const GOAL_DATA: Record<string, GoalConfig> = {
     goal: "Move VM to another node with zero downtime (PDF Page 48).",
     steps: [
       { type: 'verify', label: "Prerequisites", description: <span>Ensure you have at least <strong>2 active nodes</strong>. VM must NOT use Bridge Network or CD-ROM.</span> },
-      { type: 'action', label: "1. Migrate", description: <span>Go to <strong>Virtual Machines</strong>. Click <strong>⋮</strong> on a running VM > <strong>Migrate</strong>.</span> },
-      { type: 'action', label: "2. Target", description: <span>Select a specific target node from the dropdown or check "Automatically select". Click <strong>Apply</strong>.</span> },
+      { type: 'action', label: "1. Migrate", description: <span>Go to <strong>Virtual Machines</strong>. Click <strong>⋮</strong> on a running VM &gt; <strong>Migrate</strong>.</span> },
+      { type: 'action', label: "2. Target", description: <span>Select a specific target node from the dropdown or check \"Automatically select\". Click <strong>Apply</strong>.</span> },
       { type: 'verify', label: "3. Status", description: <span>Status will change to <strong>Migrating</strong>, then back to <strong>Running</strong>. The 'Node' column should update.</span> }
     ],
     docs: [
@@ -247,7 +248,7 @@ const GOAL_DATA: Record<string, GoalConfig> = {
     steps: [
       { type: 'action', label: "1. Open Console", description: <span>Go to <strong>Virtual Machines</strong>. Click the <strong>Console</strong> button on the VM card.</span> },
       { type: 'action', label: "2. VNC", description: <span>This opens the graphical interface (like a plugged-in monitor). Good for Windows or Linux GUI.</span> },
-      { type: 'action', label: "3. Serial Console", description: <span>Click the dropdown arrow next to Console > <strong>Serial Console</strong>. This is faster for text-only Linux servers (requires <code>console=ttyS0</code> in kernel).</span> }
+      { type: 'action', label: "3. Serial Console", description: <span>Click the dropdown arrow next to Console &gt; <strong>Serial Console</strong>. This is faster for text-only Linux servers (requires <code>console=ttyS0</code> in kernel).</span> }
     ],
     docs: [
       { title: "Access Console (PDF pg 18)", url: "#" }
@@ -256,7 +257,7 @@ const GOAL_DATA: Record<string, GoalConfig> = {
   "Import the SSH key and access a VM using the key (Linux only)": {
     goal: "Key-based authentication setup (PDF Page 42).",
     steps: [
-      { type: 'action', label: "1. Add Key", description: <span>Go to <strong>Advanced</strong> > <strong>SSH Keys</strong> > <strong>Create</strong>. Paste your public key (starts with <code>ssh-rsa...</code>). Name it <code>my-laptop</code>.</span> },
+      { type: 'action', label: "1. Add Key", description: <span>Go to <strong>Advanced</strong> &gt; <strong>SSH Keys</strong> &gt; <strong>Create</strong>. Paste your public key (starts with <code>ssh-rsa...</code>). Name it <code>my-laptop</code>.</span> },
       { type: 'action', label: "2. Assign to VM", description: <span>During VM Creation (Basics Tab), find the <strong>SSH Key</strong> dropdown and select <code>my-laptop</code>.</span> },
       { type: 'verify', label: "3. Login", description: <span>Once VM is running, open your terminal: <code>ssh user@vm-ip</code>. You should login without password.</span> }
     ],
@@ -267,7 +268,7 @@ const GOAL_DATA: Record<string, GoalConfig> = {
   "Multi-cluster management, multi-tenancy for VM management, multi-disk support": {
     goal: "Import Cluster into Rancher (PDF Page 51).",
     steps: [
-      { type: 'action', label: "1. Rancher UI", description: <span>Log into your <strong>Rancher Manager</strong>. Click the <strong>Hamburger Menu (☰)</strong> > <strong>Virtualization Management</strong>.</span> },
+      { type: 'action', label: "1. Rancher UI", description: <span>Log into your <strong>Rancher Manager</strong>. Click the <strong>Hamburger Menu (☰)</strong> &gt; <strong>Virtualization Management</strong>.</span> },
       { type: 'action', label: "2. Import", description: <span>Click <strong>Import Existing</strong>. Enter a Cluster Name. Click <strong>Create</strong>.</span> },
       { type: 'command', label: "3. Registration", description: "Copy the `kubectl` registration command shown. Log into the SUSE Virtualization node (SSH) and run it:", code: "kubectl apply -f https://rancher.../import.yaml" },
       { type: 'verify', label: "4. Active", description: <span>Wait for status to become <strong>Active</strong> in Rancher. You can now manage VMs from Rancher UI.</span> }
@@ -279,7 +280,7 @@ const GOAL_DATA: Record<string, GoalConfig> = {
   "Integration with Rancher. Provision a RKE2 Kubernetes cluster on top of a SUSE Virtualization cluster": {
     goal: "Deploy Guest Kubernetes Cluster (PDF Page 55).",
     steps: [
-      { type: 'action', label: "1. Create Cluster", description: <span>In Rancher, go to <strong>Cluster Management</strong> > <strong>Create</strong>.</span> },
+      { type: 'action', label: "1. Create Cluster", description: <span>In Rancher, go to <strong>Cluster Management</strong> &gt; <strong>Create</strong>.</span> },
       { type: 'action', label: "2. Select Driver", description: <span>Toggle the switch to <strong>RKE2/K3s</strong>. Click the <strong>Harvester</strong> tile (SUSE Virtualization).</span> },
       { type: 'action', label: "3. Cloud Creds", description: <span>Select the imported SUSE Virtualization cluster as your 'Cloud Credential'.</span> },
       { type: 'action', label: "4. Node Pools", description: <span>Configure Node Pools: Select <strong>Namespace</strong>, <strong>Image</strong>, and <strong>Network</strong> (use the VLAN network).</span> },

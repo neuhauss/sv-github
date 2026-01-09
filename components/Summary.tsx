@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { POCData, HardwareSpecs, NetworkSpecs, CloudInitConfig } from '../types';
 import { CheckCircle, Download, RotateCcw, Server, Activity, Network, HardDrive, Cpu, FileCode, FileJson, Calendar, User, Building, Mail, Phone, MessageSquare, Copy, X } from 'lucide-react';
