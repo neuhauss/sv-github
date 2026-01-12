@@ -4,12 +4,6 @@ import { ChecklistItem, NetworkSpecs } from '../types';
 // Added Target to imports
 import { Database, MousePointer, Terminal, CheckCircle, ChevronDown, ChevronUp, CheckSquare, Square, Flag, ExternalLink, HelpCircle, ArrowRight, Play, Settings, Monitor, Image as ImageIcon, Search, Target } from 'lucide-react';
 
-interface Props {
-  onComplete: (isComplete: boolean) => void;
-  goals?: string[];
-  netSpecs?: NetworkSpecs;
-}
-
 interface StepDetail {
   type: 'action' | 'command' | 'verify';
   label: string;
@@ -26,6 +20,13 @@ interface GoalConfig {
   goal: string;
   steps: (net?: NetworkSpecs) => StepDetail[];
   docs: DocLink[];
+}
+
+// Added missing Props interface definition
+interface Props {
+  onComplete: (isComplete: boolean) => void;
+  goals: string[];
+  netSpecs: NetworkSpecs;
 }
 
 const GOAL_DATA: Record<string, GoalConfig> = {

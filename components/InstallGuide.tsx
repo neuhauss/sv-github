@@ -55,7 +55,7 @@ const GOAL_PROCEDURES: Record<string, GoalProcedure> = {
   "Create a Storage Class and Volume": {
     icon: Database,
     steps: [
-      "Vá em 'Storage' > 'StorageClasses' e clique em 'Create'.",
+      "Vá em 'Storage' &gt; 'StorageClasses' e clique em 'Create'.",
       "Defina o número de réplicas. O padrão é 3 para HA total em 3 nós.",
       "Em 'Volumes', crie um novo volume manual ou deixe o wizard da VM criar automaticamente.",
       "Verifique no dashboard do Longhorn se o volume está 'Healthy' e replicado corretamente."
@@ -70,7 +70,7 @@ const GOAL_PROCEDURES: Record<string, GoalProcedure> = {
   "Create a VLAN network in SUSE Virtualization": {
     icon: Layers,
     steps: [
-      "Navegue até 'Networks' > 'VM Networks'.",
+      "Navegue até 'Networks' &gt; 'VM Networks'.",
       "Crie uma nova 'L2VlanNetwork'.",
       "Insira o VLAN ID (deve coincidir com a configuração Trunk da Switch Física).",
       "Anexe esta rede a uma VM e teste o tráfego externo."
@@ -85,11 +85,11 @@ const GOAL_PROCEDURES: Record<string, GoalProcedure> = {
   "Create a VM": {
     icon: Laptop,
     steps: [
-      "Menu 'Virtual Machines' > 'Create'.",
+      "Menu 'Virtual Machines' &gt; 'Create'.",
       "Selecione 'Basics': CPU, RAM e Imagem.",
       "Em 'Networks', escolha a rede criada (Management ou VLAN).",
       "Em 'Cloud Config', cole o script YAML para definir senha e SSH.",
-      "Inicie a VM e acesse via 'Console' > 'Open in VNC'."
+      "Inicie a VM e acesse via 'Console' &gt; 'Open in VNC'."
     ],
     dependencies: ["Pelo menos uma imagem registrada", "Recursos de CPU/RAM disponíveis no cluster"],
     docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/",
@@ -98,7 +98,7 @@ const GOAL_PROCEDURES: Record<string, GoalProcedure> = {
   "Configure a backup target": {
     icon: RefreshCw,
     steps: [
-      "Settings > 'backup-target'.",
+      "Settings &gt; 'backup-target'.",
       "Para NFS: Use o formato 'nfs://1.2.3.4:/path/to/share'.",
       "Para S3: Insira Access Key, Secret Key, Bucket e Endpoint.",
       "Clique em 'Save' e verifique se o status é 'Ready'."
@@ -126,7 +126,7 @@ const GOAL_PROCEDURES: Record<string, GoalProcedure> = {
     icon: Cloud,
     steps: [
       "No Rancher v2.8+, vá em 'Virtualization Management' e importe o Harvester.",
-      "Em 'Cluster Management' > 'Create' > 'Harvester'.",
+      "Em 'Cluster Management' &gt; 'Create' &gt; 'Harvester'.",
       "Defina o pool de máquinas (VMs worker) e a versão do RKE2.",
       "Aguarde o Rancher criar as VMs no Harvester e provisionar o K8s automaticamente."
     ],
@@ -381,7 +381,7 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                    </div>
                    <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl space-y-2">
                       <h4 className="text-xs font-bold text-blue-800">Backup Target (Crucial)</h4>
-                      <p className="text-[10px] text-blue-700 leading-relaxed">Vá em <strong>Settings > backup-target</strong>. Configure um servidor NFS ou S3. Sem isso, você não pode realizar snapshots externos ou recuperação de desastres.</p>
+                      <p className="text-[10px] text-blue-700 leading-relaxed">Vá em <strong>Settings &gt; backup-target</strong>. Configure um servidor NFS ou S3. Sem isso, você não pode realizar snapshots externos ou recuperação de desastres.</p>
                    </div>
                 </div>
 
@@ -391,7 +391,7 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                       <ul className="space-y-4">
                          <li className="space-y-1">
                             <div className="text-xs font-bold uppercase tracking-widest text-slate-500">VLAN Networks</div>
-                            <p className="text-[10px] text-slate-300">Navegue até <strong>Networks > VM Networks</strong> para criar redes L2 isoladas.</p>
+                            <p className="text-[10px] text-slate-300">Navegue até <strong>Networks &gt; VM Networks</strong> para criar redes L2 isoladas.</p>
                          </li>
                          <li className="space-y-1">
                             <div className="text-xs font-bold uppercase tracking-widest text-slate-500">IP Pools (v1.7)</div>
@@ -403,7 +403,7 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                       <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0" />
                       <div>
                          <h4 className="text-xs font-bold text-amber-800">Dica: Repositórios</h4>
-                         <p className="text-[10px] text-amber-700 mt-1 leading-relaxed">Se o cluster estiver atrás de um proxy, configure-o em <strong>Settings > http-proxy</strong> para que o download de imagens Cloud funcione corretamente.</p>
+                         <p className="text-[10px] text-amber-700 mt-1 leading-relaxed">Se o cluster estiver atrás de um proxy, configure-o em <strong>Settings &gt; http-proxy</strong> para que o download de imagens Cloud funcione corretamente.</p>
                       </div>
                    </div>
                 </div>
@@ -617,7 +617,7 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                          {[
                             { 
                               title: "Habilitar Virtualização (Feature Flag)", 
-                              desc: "No Rancher Manager, navegue até 'Global Settings' > 'Feature Flags'. Localize a flag 'harvester' (ou 'virtualization') e mude o status para 'Enabled'. Isso ativará o menu de Virtualização no menu lateral principal.",
+                              desc: "No Rancher Manager, navegue até 'Global Settings' &gt; 'Feature Flags'. Localize a flag 'harvester' (ou 'virtualization') e mude o status para 'Enabled'. Isso ativará o menu de Virtualização no menu lateral principal.",
                               doc: "https://ranchermanager.docs.rancher.com/v2.8/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/virtualization-management"
                             },
                             { 
@@ -627,12 +627,12 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                             },
                             { 
                               title: "Configurar Cloud Credentials", 
-                              desc: "Vá em 'Cluster Management' > 'Cloud Credentials'. Crie uma nova credencial do tipo 'Harvester'. Isso permite que o Rancher autentique chamadas de API para criar e destruir VMs automaticamente.",
+                              desc: "Vá em 'Cluster Management' &gt; 'Cloud Credentials'. Crie uma nova credencial do tipo 'Harvester'. Isso permite que o Rancher autentique chamadas de API para criar e destruir VMs automaticamente.",
                               doc: "https://ranchermanager.docs.rancher.com/v2.8/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/set-up-cloud-providers/harvester"
                             },
                             { 
                               title: "Provisionar Cluster RKE2", 
-                              desc: "Em 'Cluster Management' > 'Create', selecione 'Harvester' como provedor. Defina os pools de máquinas (ex: 3 masters, 3 workers) e selecione a versão do RKE2. O Rancher cuidará do provisionamento das VMs e do K8s.",
+                              desc: "Em 'Cluster Management' &gt; 'Create', selecione 'Harvester' como provedor. Defina os pools de máquinas (ex: 3 masters, 3 workers) e selecione a versão do RKE2. O Rancher cuidará do provisionamento das VMs e do K8s.",
                               doc: "https://docs.harvesterhci.io/v1.7/rancher/node-driver/"
                             }
                          ].map((s, i) => (
