@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChecklistItem, NetworkSpecs } from '../types';
-// Added Target to imports
 import { Database, MousePointer, Terminal, CheckCircle, ChevronDown, ChevronUp, CheckSquare, Square, Flag, ExternalLink, HelpCircle, ArrowRight, Play, Settings, Monitor, Image as ImageIcon, Search, Target } from 'lucide-react';
 
 interface StepDetail {
@@ -22,7 +21,6 @@ interface GoalConfig {
   docs: DocLink[];
 }
 
-// Added missing Props interface definition
 interface Props {
   onComplete: (isComplete: boolean) => void;
   goals: string[];
@@ -54,7 +52,7 @@ const GOAL_DATA: Record<string, GoalConfig> = {
   "Create a VM": {
     goal: "Deploy and run a Virtual Machine instance.",
     steps: (net) => [
-      { type: 'action', label: "1. Wizard de Criação", description: "Vá em 'Virtual Machines' > 'Create'. Selecione a imagem e recursos desejados." },
+      { type: 'action', label: "1. Wizard de Criação", description: "Vá em 'Virtual Machines' &gt; 'Create'. Selecione a imagem e recursos desejados." },
       { type: 'action', label: "2. Atribuição de Rede", description: <span>Associe a interface de rede à rede <strong>{net?.vlanId ? `VLAN ${net.vlanId}` : 'Management Default'}</strong>.</span> },
       { type: 'verify', label: "3. Verificação Funcional", description: "Abra o VNC Console e confirme que o sistema operacional da VM iniciou corretamente." }
     ],
@@ -63,7 +61,7 @@ const GOAL_DATA: Record<string, GoalConfig> = {
   "Create a VLAN network in SUSE Virtualization": {
     goal: "Configure Layer 2 isolated networks for VMs.",
     steps: (net) => [
-      { type: 'action', label: "1. Criação do Recurso", description: <span>Vá em 'Networks' > 'VM Networks'. Crie uma 'L2VlanNetwork' com o ID <strong>{net?.vlanId || 'configurado'}</strong>.</span> },
+      { type: 'action', label: "1. Criação do Recurso", description: <span>Vá em 'Networks' &gt; 'VM Networks'. Crie uma 'L2VlanNetwork' com o ID <strong>{net?.vlanId || 'configurado'}</strong>.</span> },
       { type: 'verify', label: "2. Validação Multus", description: "Verifique se o status da rede está 'Active' e se os pods do 'network-controller' estão rodando sem erros." }
     ],
     docs: [{ title: "Networking Guide", url: "https://docs.harvesterhci.io/v1.4/networking/harvester-network/" }]
