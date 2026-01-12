@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { POCStep } from '../types';
-import { ClipboardList, Server, Network, LayoutTemplate, PlayCircle, FileText, CheckCircle2, Circle, ArrowRight, FileCode, Target, BookOpen, Clock, Upload, Terminal, CheckSquare } from 'lucide-react';
+import { ClipboardList, Server, Network, LayoutTemplate, PlayCircle, FileText, CheckCircle2, Circle, ArrowRight, FileCode, Target, BookOpen, Clock, Upload, Terminal, CheckSquare, Layers } from 'lucide-react';
 import { Button } from './ui/Button';
 
 interface Props {
@@ -65,10 +65,10 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
       iconBg: "bg-emerald-50"
     },
     {
-      step: POCStep.CLOUD_INIT,
-      title: "Cloud-Init Generator",
-      desc: "Create YAML for VM/Node configuration.",
-      icon: <FileCode className="w-6 h-6 text-teal-600" />,
+      step: POCStep.CLOUD_INIT_CRD,
+      title: "Cloud Init & CRD",
+      desc: "Generate Cloud-Init YAML and Harvester K8s Manifests (CRDs).",
+      icon: <div className="relative"><FileCode className="w-6 h-6 text-teal-600" /><Layers className="w-3 h-3 text-teal-400 absolute -bottom-1 -right-1" /></div>,
       isValid: true,
       colorClass: "hover:border-teal-400 hover:shadow-teal-100",
       iconBg: "bg-teal-50"

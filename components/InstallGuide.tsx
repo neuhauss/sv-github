@@ -600,7 +600,7 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                 </div>
                 <div>
                    <h1 className="text-3xl font-bold text-suse-dark">Integração Rancher Manager v2.8+</h1>
-                   <p className="text-sm text-gray-500 leading-relaxed">O Rancher é a plataforma central de gerenciamento multicluster que unifica o ciclo de vida de VMs (Harvester) e Containers (K8s).</p>
+                   <p className="text-sm text-gray-500 leading-relaxed">O Rancher Manager fornece uma interface única para gerenciar clusters Harvester e clusters Kubernetes RKE2/K3s executados sobre o Harvester.</p>
                 </div>
              </div>
 
@@ -610,30 +610,35 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-8">
                       <h3 className="text-lg font-bold text-gray-800 flex items-center gap-3">
                          <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Play className="w-5 h-5" /></div> 
-                         Passos para Habilitação
+                         Workflow de Implementação Detalhado
                       </h3>
                       
                       <div className="space-y-8 relative before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-0.5 before:bg-blue-50">
                          {[
                             { 
-                              title: "Habilitar Virtualização (Feature Flag)", 
-                              desc: "No Rancher Manager, navegue até 'Global Settings' &gt; 'Feature Flags'. Localize a flag 'harvester' (ou 'virtualization') e mude o status para 'Enabled'. Isso ativará o menu de Virtualização no menu lateral principal.",
+                              title: "Habilitação da Feature de Virtualização", 
+                              desc: "No Rancher Manager, navegue até 'Global Settings' &gt; 'Feature Flags'. Localize a flag 'harvester' (ou 'virtualization' em versões mais recentes). Certifique-se que o status é 'Enabled'. Isso habilita o painel de Virtualização no menu lateral esquerdo do Rancher.",
                               doc: "https://ranchermanager.docs.rancher.com/v2.8/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/virtualization-management"
                             },
                             { 
-                              title: "Importar Cluster Harvester", 
-                              desc: "No menu 'Virtualization Management', clique em 'Import Cluster'. Insira o nome do cluster e o Kubeconfig do Harvester (baixado no Harvester Dashboard). O Rancher instalará o agente do Harvester no cluster alvo.",
+                              title: "Importação do Cluster Harvester", 
+                              desc: "No menu lateral 'Virtualization Management', clique em 'Import Cluster'. Insira um nome identificável para o cluster Harvester. Você precisará do arquivo Kubeconfig do seu cluster Harvester (disponível no canto inferior esquerdo do Harvester Dashboard). O Rancher implantará agentes especializados (harvester-cloud-provider) no cluster.",
                               doc: "https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/#importing-harvester-cluster"
                             },
                             { 
-                              title: "Configurar Cloud Credentials", 
-                              desc: "Vá em 'Cluster Management' &gt; 'Cloud Credentials'. Crie uma nova credencial do tipo 'Harvester'. Isso permite que o Rancher autentique chamadas de API para criar e destruir VMs automaticamente.",
+                              title: "Criação de Cloud Credentials", 
+                              desc: "Para que o Rancher gerencie máquinas no Harvester, você deve criar credenciais. Vá em 'Cluster Management' &gt; 'Cloud Credentials' &gt; 'Create'. Selecione 'Harvester'. O Rancher usará essas credenciais para interagir com a API do Harvester via seu Virtual IP (VIP).",
                               doc: "https://ranchermanager.docs.rancher.com/v2.8/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/set-up-cloud-providers/harvester"
                             },
                             { 
-                              title: "Provisionar Cluster RKE2", 
-                              desc: "Em 'Cluster Management' &gt; 'Create', selecione 'Harvester' como provedor. Defina os pools de máquinas (ex: 3 masters, 3 workers) e selecione a versão do RKE2. O Rancher cuidará do provisionamento das VMs e do K8s.",
+                              title: "Provisionamento de Cluster RKE2", 
+                              desc: "Agora, em 'Cluster Management' &gt; 'Create', escolha 'Harvester' como o Cloud Provider. Configure o 'Machine Pool' definindo CPU, Memória e a Imagem de SO (ex: SLES 15 ou openSUSE). O Rancher criará automaticamente as VMs no Harvester e as configurará como nós do seu novo cluster K8s.",
                               doc: "https://docs.harvesterhci.io/v1.7/rancher/node-driver/"
+                            },
+                            {
+                              title: "Habilitação do Harvester Cloud Provider",
+                              desc: "Durante a criação do cluster no Rancher, na aba 'Cloud Provider', certifique-se de selecionar 'Harvester'. Isso integra o cluster convidado com o Load Balancer e o Storage (Longhorn) do Harvester de forma nativa.",
+                              doc: "https://docs.harvesterhci.io/v1.7/rancher/cloud-provider/"
                             }
                          ].map((s, i) => (
                             <div key={i} className="flex gap-6 relative z-10 group">
@@ -673,14 +678,14 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                 <div className="lg:col-span-5 space-y-6">
                    <div className="bg-slate-900 text-white p-8 rounded-3xl space-y-6 shadow-xl">
                       <h3 className="font-bold text-suse-base flex items-center gap-3 text-lg">
-                         <ShieldCheck className="w-6 h-6" /> Pré-requisitos Críticos
+                         <ShieldCheck className="w-6 h-6" /> Pré-requisitos de Arquitetura
                       </h3>
                       <ul className="space-y-4">
                          {[
-                            { l: "Versão do Rancher", d: "Mínimo v2.8.0 para suporte pleno ao Harvester v1.7." },
-                            { l: "Conectividade VIP", d: "O Rancher deve alcançar o VIP do Harvester na porta 443 via HTTPS." },
-                            { l: "Porta 6443/8443", d: "Acesso à API do Kubernetes do Harvester e Webhook controller." },
-                            { l: "DNS FQDN", d: "Rancher e Harvester devem ter registros DNS válidos; IPs brutos não são recomendados." }
+                            { l: "Versão do Rancher", d: "Rancher v2.8.0+ é necessário para integração total com Harvester v1.7.0+." },
+                            { l: "Acesso à API (VIP)", d: "O Rancher Manager deve conseguir acessar o Cluster VIP do Harvester na porta 443 sem interrupções." },
+                            { l: "Porta 8443 (Webhook)", d: "Crucial para a comunicação de admissão de recursos entre Rancher e Harvester." },
+                            { l: "Certificados Confiáveis", d: "Se usar certificados auto-assinados no Harvester, você deve importar a CA no Rancher ou habilitar 'Allow Insecure' nas credenciais." }
                          ].map((req, i) => (
                             <li key={i} className="flex items-start gap-4 p-4 bg-white/5 rounded-2xl border border-white/10">
                                <div className="w-2 h-2 rounded-full bg-suse-base mt-1.5 shrink-0"></div>
@@ -701,25 +706,34 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                          <div className="bg-white p-4 rounded-2xl border border-red-100 shadow-sm">
                             <div className="flex items-center gap-2 mb-2">
                                <AlertCircle className="w-4 h-4 text-red-600" />
-                               <h4 className="text-xs font-bold text-red-900">Webhook Timeout / Connection Refused</h4>
+                               <h4 className="text-xs font-bold text-red-900">Erro x509: Unknown Authority</h4>
                             </div>
-                            <p className="text-[10px] text-red-700 leading-relaxed">Isso ocorre quando o Rancher tenta validar as Cloud Credentials mas não consegue alcançar o cluster Harvester. Verifique se existe um firewall interceptando a porta <strong>8443</strong> ou se o <code>harvester-network-controller</code> está saudável.</p>
+                            <p className="text-[10px] text-red-700 leading-relaxed">Causa: O Rancher não confia no certificado do Harvester. Solução: Em 'Cloud Credentials', adicione a CA do Harvester no campo 'Certificate Authority' ou marque 'Ignore Certificate Errors'.</p>
                          </div>
                          <div className="bg-white p-4 rounded-2xl border border-red-100 shadow-sm">
                             <div className="flex items-center gap-2 mb-2">
                                <Lock className="w-4 h-4 text-red-600" />
-                               <h4 className="text-xs font-bold text-red-900">x509: Certificate Signed by Unknown Authority</h4>
+                               <h4 className="text-xs font-bold text-red-900">Stuck in 'Provisioning'</h4>
                             </div>
-                            <p className="text-[10px] text-red-700 leading-relaxed">Comum em certificados Self-Signed. Você deve copiar a <strong>CA pública</strong> do Harvester e adicioná-la ao diretório <code>/etc/pki/trust/anchors/</code> do servidor Rancher ou usar a opção de 'Trusted CA' na Cloud Credential.</p>
+                            <p className="text-[10px] text-red-700 leading-relaxed">Causa: A VM no Harvester não consegue baixar pacotes do Rancher ou via Internet. Solução: Verifique as configurações de rede da VM e certifique-se que o VIP do Rancher é acessível a partir da VLAN da VM.</p>
                          </div>
                          <div className="bg-white p-4 rounded-2xl border border-red-100 shadow-sm">
                             <div className="flex items-center gap-2 mb-2">
-                               <Activity className="w-4 h-4 text-red-600" />
-                               <h4 className="text-xs font-bold text-red-900">VM stuck in 'Waiting for machine agent'</h4>
+                               <Layers className="w-4 h-4 text-red-600" />
+                               <h4 className="text-xs font-bold text-red-900">Cloud Provider não inicia</h4>
                             </div>
-                            <p className="text-[10px] text-red-700 leading-relaxed">A VM iniciou mas não consegue baixar os binários do RKE2/K3s do Rancher. Verifique se a VM tem acesso à internet ou se o Rancher está acessível via rede de VLAN.</p>
+                            <p className="text-[10px] text-red-700 leading-relaxed">Causa: Falha na comunicação entre o cluster convidado e a API do Harvester. Solução: Verifique se os nós worker têm rota para o VIP do Harvester e se as portas 6443/443 estão abertas.</p>
                          </div>
                       </div>
+                   </div>
+
+                   <div className="p-6 bg-blue-50 border border-blue-200 rounded-3xl">
+                      <h4 className="text-xs font-bold text-blue-800 flex items-center gap-2 mb-3">
+                        <Info className="w-4 h-4" /> Dica de Topologia
+                      </h4>
+                      <p className="text-[10px] text-blue-700 leading-relaxed">
+                        Para melhor performance em produção, recomenda-se que o Rancher Manager seja executado fora do próprio cluster Harvester que ele gerencia, evitando loops de dependência em caso de falha total do hardware.
+                      </p>
                    </div>
                 </div>
              </div>

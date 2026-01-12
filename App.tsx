@@ -13,7 +13,6 @@ import { ShellToolbox } from './components/ShellToolbox';
 import { TestPlan } from './components/TestPlan';
 import { Summary } from './components/Summary';
 import { DashboardMenu } from './components/DashboardMenu';
-import { GeminiAssistant } from './components/GeminiAssistant';
 import { Button } from './components/ui/Button';
 import { LayoutTemplate, ArrowLeft, Home, Check, Upload, Sparkles } from 'lucide-react';
 
@@ -100,8 +99,8 @@ const App: React.FC = () => {
             return <TestPlan goals={pocData.goals} />;
         case POCStep.INITIAL_CONFIG:
             return <InitialConfig onComplete={(s) => setStatus({...status, config: s})} goals={pocData.goals} netSpecs={netSpecs} />;
-        case POCStep.CLOUD_INIT:
-            return <CloudInitGenerator config={cloudInitConfig} updateConfig={setCloudInitConfig} onComplete={goHome} />;
+        case POCStep.CLOUD_INIT_CRD:
+            return <CloudInitGenerator config={cloudInitConfig} updateConfig={setCloudInitConfig} onComplete={goHome} hwSpecs={hwSpecs} netSpecs={netSpecs} />;
         case POCStep.COMPLETED:
             return <Summary pocData={pocData} specs={hwSpecs} netSpecs={netSpecs} cloudInitConfig={cloudInitConfig} onReset={goHome} />;
         default:
@@ -111,7 +110,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900 pb-20">
-      <GeminiAssistant />
       <header className="bg-suse-dark text-white shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={goHome}>
