@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { POCStep } from '../types';
-import { ClipboardList, Server, Network, LayoutTemplate, PlayCircle, FileText, CheckCircle2, Circle, ArrowRight, FileCode, Target, BookOpen, Clock, Upload } from 'lucide-react';
+import { ClipboardList, Server, Network, LayoutTemplate, PlayCircle, FileText, CheckCircle2, Circle, ArrowRight, FileCode, Target, BookOpen, Clock, Upload, Terminal, CheckSquare } from 'lucide-react';
 import { Button } from './ui/Button';
 
 interface Props {
@@ -47,6 +47,15 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
       iconBg: "bg-orange-50"
     },
     {
+      step: POCStep.SHELL_TOOLBOX,
+      title: "Shell Toolbox",
+      desc: "One-liner commands for hardware benchmarks & etcd checks.",
+      icon: <Terminal className="w-6 h-6 text-slate-600" />,
+      isValid: true,
+      colorClass: "hover:border-slate-400 hover:shadow-slate-100",
+      iconBg: "bg-slate-50"
+    },
+    {
       step: POCStep.INSTALL_GUIDE,
       title: "Full Installation Guide",
       desc: "Comprehensive documentation and step-by-step manual.",
@@ -54,15 +63,6 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
       isValid: true, 
       colorClass: "hover:border-emerald-400 hover:shadow-emerald-100",
       iconBg: "bg-emerald-50"
-    },
-    {
-      step: POCStep.ARCHITECTURE_PREVIEW,
-      title: "Architecture Plan",
-      desc: "View the generated infrastructure topology map.",
-      icon: <LayoutTemplate className="w-6 h-6 text-indigo-600" />,
-      isValid: true, 
-      colorClass: "hover:border-indigo-400 hover:shadow-indigo-100",
-      iconBg: "bg-indigo-50"
     },
     {
       step: POCStep.CLOUD_INIT,
@@ -74,17 +74,17 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
       iconBg: "bg-teal-50"
     },
     {
-      step: POCStep.INSTALLATION_PROCESS,
-      title: "Installation Checklist",
-      desc: "Interactive checklist for tracking deployment progress.",
-      icon: <PlayCircle className="w-6 h-6 text-rose-600" />,
-      isValid: status.install,
-      colorClass: "hover:border-rose-400 hover:shadow-rose-100",
-      iconBg: "bg-rose-50"
+      step: POCStep.TEST_PLAN,
+      title: "Test & Sign-off Plan",
+      desc: "Detailed test cases for your specific POC goals.",
+      icon: <CheckSquare className="w-6 h-6 text-amber-600" />,
+      isValid: true,
+      colorClass: "hover:border-amber-400 hover:shadow-amber-100",
+      iconBg: "bg-amber-50"
     },
     {
       step: POCStep.INITIAL_CONFIG,
-      title: "POC Goals & Validation",
+      title: "POC Goals Validation",
       desc: "Step-by-step guides for specific POC success criteria.",
       icon: <Target className="w-6 h-6 text-cyan-600" />,
       isValid: status.config,
@@ -123,7 +123,7 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {menuItems.map((item) => (
           <button
             key={item.step}
@@ -137,31 +137,31 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
               <StatusBadge valid={item.isValid} />
             </div>
             
-            <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-black">{item.title}</h3>
-            <p className="text-sm text-gray-500 mb-6 leading-relaxed min-h-[40px]">{item.desc}</p>
+            <h3 className="text-base font-bold text-gray-800 mb-2 group-hover:text-black">{item.title}</h3>
+            <p className="text-[11px] text-gray-500 mb-6 leading-relaxed min-h-[40px]">{item.desc}</p>
             
-            <div className="flex items-center text-sm font-bold text-gray-400 group-hover:text-suse-base transition-colors">
-              Open Module <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+            <div className="flex items-center text-[10px] font-bold text-gray-400 group-hover:text-suse-base transition-colors uppercase tracking-widest">
+              Open <ArrowRight className="w-3 h-3 ml-2 transition-transform group-hover:translate-x-1" />
             </div>
           </button>
         ))}
 
         <button
             onClick={() => onSelectStep(POCStep.COMPLETED)}
-            className="group relative p-6 rounded-2xl border border-slate-700 bg-suse-dark text-left transition-all duration-300 shadow-lg hover:shadow-2xl hover:bg-[#0f3d36] hover:-translate-y-1 md:col-span-2 lg:col-span-1"
+            className="group relative p-6 rounded-2xl border border-slate-700 bg-suse-dark text-left transition-all duration-300 shadow-lg hover:shadow-2xl hover:bg-[#0f3d36] hover:-translate-y-1 md:col-span-2 lg:col-span-2"
           >
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm border border-white/10">
                 <FileText className="w-6 h-6 text-white" />
               </div>
-              <span className="text-[10px] font-bold text-white/80 bg-white/10 px-2 py-0.5 rounded-full border border-white/20">Final Output</span>
+              <span className="text-[10px] font-bold text-white/80 bg-white/10 px-2 py-0.5 rounded-full border border-white/20">Executive Summary</span>
             </div>
             
-            <h3 className="text-lg font-bold text-white mb-2">Generate Final Report</h3>
-            <p className="text-sm text-gray-300 mb-6 leading-relaxed">View the executive summary, export configuration JSON, and print the PDF validation report.</p>
+            <h3 className="text-xl font-bold text-white mb-2">Generate Final POC Report</h3>
+            <p className="text-sm text-gray-300 mb-6 leading-relaxed">Combine configuration, validation results, and sign-off sheets into a professional PDF for stakeholders.</p>
             
             <div className="flex items-center text-sm font-bold text-white/70 group-hover:text-white transition-colors">
-              View Summary <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+              View & Print Report <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
             </div>
         </button>
       </div>

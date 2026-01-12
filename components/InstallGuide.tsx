@@ -1,80 +1,155 @@
 
-import React, { useState } from 'react';
-import { Server, Settings, Network, HardDrive, Disc, LayoutTemplate, Play, Database, Cloud, ArrowRight, ShieldCheck, Cpu, Shuffle, Lock, Globe, Clock, CheckCircle, Sliders, Laptop, ExternalLink } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Server, Settings, Network, HardDrive, Disc, LayoutTemplate, Play, Database, Cloud, ArrowRight, ShieldCheck, Cpu, Shuffle, Lock, Globe, Clock, CheckCircle, Sliders, Laptop, ExternalLink, Info, Calculator, Zap, Monitor, Search, Terminal, Copy, Check, Key, Layers, RefreshCw, Target, FileCheck, Eye, Link as LinkIcon, Download, AlertCircle, ShieldAlert, Wifi, Activity, BookOpen, FileText, AlertTriangle } from 'lucide-react';
 import { UISnapshot } from './ui/UISnapshot';
+import { NetworkSpecs } from '../types';
 
-interface Step {
-  num: number;
-  title: string;
-  description: string;
-  imgSrc: string;
-  caption: string;
+interface GoalProcedure {
+  steps: string[];
+  tip: string;
+  icon: any;
+  dependencies: string[];
+  docsUrl: string;
+  resourceLinks?: { label: string; url: string }[];
 }
 
-const StepGuide: React.FC<{ steps: Step[] }> = ({ steps }) => {
-  return (
-    <div className="space-y-12">
-      {steps.map((step, idx) => (
-        <div key={idx} className="relative pl-8 border-l-2 border-gray-200 pb-8 last:pb-0 last:border-0">
-          <div className="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-suse-base text-white font-bold flex items-center justify-center shadow-sm">
-            {step.num}
-          </div>
-          <h4 className="text-xl font-bold text-gray-800 mb-2">{step.title}</h4>
-          <p className="text-gray-600 mb-4">{step.description}</p>
-          <UISnapshot 
-            type={step.title.includes('Install') || step.title.includes('Boot') ? 'console' : 'dashboard'}
-            imageSrc={step.imgSrc}
-            title={step.caption}
-          />
-        </div>
-      ))}
-    </div>
-  );
+interface Props {
+  netSpecs?: NetworkSpecs;
+  goals?: string[];
+}
+
+const GOAL_PROCEDURES: Record<string, GoalProcedure> = {
+  "Provision hosts through the ISO installer": {
+    icon: Disc,
+    steps: [
+      "Prepare um pendrive bootável com a ISO do Harvester v1.7.",
+      "No primeiro nó, escolha 'Create a new Harvester cluster'.",
+      "Configure o VIP do cluster, IP estático do nó e Gateway conforme o planejamento.",
+      "Para os nós 2 e 3, escolha 'Join an existing cluster' e insira o VIP e o Cluster Token gerado pelo primeiro nó.",
+      "Aguarde o reboot e a tela final com a URL de acesso ao Dashboard."
+    ],
+    dependencies: ["Hardware compatível (BIOS com VT-x/AMD-V habilitado)", "Pendrive de no mínimo 8GB", "Acesso físico ou via IPMI/iDRAC"],
+    docsUrl: "https://docs.harvesterhci.io/v1.7/install/iso-install/",
+    resourceLinks: [
+      { label: "Download Harvester ISO v1.7", url: "https://harvesterhci.io/releases" },
+      { label: "Guia de Preparação de Hardware", url: "https://docs.harvesterhci.io/v1.7/install/requirements/" }
+    ],
+    tip: "Se usar IPMI, certifique-se que o Virtual Media não tenha latência alta, pois isso pode corromper a instalação."
+  },
+  "Register an image to use for VMs": {
+    icon: Target,
+    steps: [
+      "Acesse 'Images' no menu lateral e clique em 'Create'.",
+      "Utilize a opção 'Download from URL' para performance ou 'Upload' para arquivos locais.",
+      "Insira o nome (ex: openSUSE-Leap-15.5) e a URL da imagem Cloud.",
+      "Aguarde o status mudar de 'Downloading' para 'Active'."
+    ],
+    dependencies: ["Conectividade externa do cluster para download de imagens", "Imagem no formato .qcow2, .raw ou .img"],
+    docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#images",
+    resourceLinks: [
+      { label: "openSUSE Leap 15.5 Cloud Images", url: "https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.5/images/" },
+      { label: "SLES 15 SP5 Cloud Images (Trial)", url: "https://www.suse.com/download/sles/" }
+    ],
+    tip: "Imagens Cloud (.qcow2) são preferíveis pois permitem o uso de Cloud-Init para injetar chaves SSH automaticamente."
+  },
+  "Create a Storage Class and Volume": {
+    icon: Database,
+    steps: [
+      "Vá em 'Storage' > 'StorageClasses' e clique em 'Create'.",
+      "Defina o número de réplicas. O padrão é 3 para HA total em 3 nós.",
+      "Em 'Volumes', crie um novo volume manual ou deixe o wizard da VM criar automaticamente.",
+      "Verifique no dashboard do Longhorn se o volume está 'Healthy' e replicado corretamente."
+    ],
+    dependencies: ["Nós com discos SSD/NVMe de performance similar", "Cluster em estado estável"],
+    docsUrl: "https://docs.harvesterhci.io/v1.7/storage/storage-class/",
+    resourceLinks: [
+      { label: "Longhorn Architecture", url: "https://longhorn.io/docs/1.7.0/concepts/architecture/" }
+    ],
+    tip: "Evite misturar tipos de discos (ex: misturar SSD com HDD) na mesma Storage Class para não criar gargalos."
+  },
+  "Create a VLAN network in SUSE Virtualization": {
+    icon: Layers,
+    steps: [
+      "Navegue até 'Networks' > 'VM Networks'.",
+      "Crie uma nova 'L2VlanNetwork'.",
+      "Insira o VLAN ID (deve coincidir com a configuração Trunk da Switch Física).",
+      "Anexe esta rede a uma VM e teste o tráfego externo."
+    ],
+    dependencies: ["Switch física configurada como Trunk (802.1Q)", "VLAN ID liberado nas portas dos nós"],
+    docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/",
+    resourceLinks: [
+      { label: "Configurando Redes VLAN", url: "https://docs.harvesterhci.io/v1.7/networking/vm-network/" }
+    ],
+    tip: "Se a VM não pegar IP, verifique se existe um servidor DHCP ativo na VLAN específica ou configure IP estático na VM."
+  },
+  "Create a VM": {
+    icon: Laptop,
+    steps: [
+      "Menu 'Virtual Machines' > 'Create'.",
+      "Selecione 'Basics': CPU, RAM e Imagem.",
+      "Em 'Networks', escolha a rede criada (Management ou VLAN).",
+      "Em 'Cloud Config', cole o script YAML para definir senha e SSH.",
+      "Inicie a VM e acesse via 'Console' > 'Open in VNC'."
+    ],
+    dependencies: ["Pelo menos uma imagem registrada", "Recursos de CPU/RAM disponíveis no cluster"],
+    docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/",
+    tip: "Use o recurso de 'Hot Plug' no v1.7 para adicionar discos ou memória sem precisar reiniciar a VM."
+  },
+  "Configure a backup target": {
+    icon: RefreshCw,
+    steps: [
+      "Settings > 'backup-target'.",
+      "Para NFS: Use o formato 'nfs://1.2.3.4:/path/to/share'.",
+      "Para S3: Insira Access Key, Secret Key, Bucket e Endpoint.",
+      "Clique em 'Save' e verifique se o status é 'Ready'."
+    ],
+    dependencies: ["Servidor NFS externo ou Bucket S3/RadosGW disponível"],
+    docsUrl: "https://docs.harvesterhci.io/v1.7/advanced/backup-restore/",
+    resourceLinks: [
+      { label: "Configurando S3 MinIO para Backup", url: "https://min.io/docs/minio/linux/index.html" }
+    ],
+    tip: "O backup target é essencial para mover VMs entre clusters ou recuperar de falha total do hardware."
+  },
+  "Perform a live migration of a VM (requires multi-host)": {
+    icon: Shuffle,
+    steps: [
+      "Certifique-se de que a VM está rodando em um nó específico.",
+      "Clique em '...' na VM e selecione 'Migrate'.",
+      "Escolha o nó de destino e confirme.",
+      "Observe o status 'Migrating' e valide que a VM não parou de responder (ping constante)."
+    ],
+    dependencies: ["Mínimo de 2 nós ativos", "Storage replicado (Longhorn)", "Rede estável entre os nós"],
+    docsUrl: "https://docs.harvesterhci.io/v1.7/vm/live-migration/",
+    tip: "Se a migração falhar, verifique se a VM possui dispositivos locais (como CD-ROM de ISO local) que impedem a movimentação."
+  },
+  "Integration with Rancher. Provision a RKE2 Kubernetes cluster on top of a SUSE Virtualization cluster": {
+    icon: Cloud,
+    steps: [
+      "No Rancher v2.8+, vá em 'Virtualization Management' e importe o Harvester.",
+      "Em 'Cluster Management' > 'Create' > 'Harvester'.",
+      "Defina o pool de máquinas (VMs worker) e a versão do RKE2.",
+      "Aguarde o Rancher criar as VMs no Harvester e provisionar o K8s automaticamente."
+    ],
+    dependencies: ["Rancher Manager v2.8.0 ou superior", "Connectivity entre Rancher e VIP do Harvester"],
+    docsUrl: "https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/",
+    resourceLinks: [
+      { label: "Instalação do Rancher Manager", url: "https://rancher.com/docs/rancher/v2.8/en/installation/" }
+    ],
+    tip: "O uso de Cloud Credentials no Rancher é o que permite a automação total do ciclo de vida das VMs de nó."
+  }
 };
 
-const PortTable: React.FC<{ ports: { port: string, proto: string, desc: string }[] }> = ({ ports }) => (
-  <div className="overflow-hidden border border-gray-200 rounded-lg shadow-sm mb-6">
-    <table className="min-w-full text-sm">
-      <thead className="bg-gray-50 text-gray-700">
-        <tr>
-          <th className="px-4 py-2 text-left">Port</th>
-          <th className="px-4 py-2 text-left">Protocol</th>
-          <th className="px-4 py-2 text-left">Description</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-gray-100">
-        {ports.map((p, i) => (
-          <tr key={i} className="hover:bg-gray-50">
-            <td className="px-4 py-2 font-mono font-bold text-blue-600">{p.port}</td>
-            <td className="px-4 py-2 text-gray-600">{p.proto}</td>
-            <td className="px-4 py-2 text-gray-800">{p.desc}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
-
-const CodeBlock: React.FC<{ code: string }> = ({ code }) => (
-  <div className="bg-gray-900 text-gray-100 rounded-lg p-4 font-mono text-sm overflow-x-auto border-l-4 border-suse-base mb-6">
-    <pre>{code}</pre>
-  </div>
-);
-
-export const InstallGuide: React.FC = () => {
+export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
   const [activeSection, setActiveSection] = useState('overview');
 
   const sections = [
-    { id: 'overview', icon: <LayoutTemplate className="w-4 h-4" />, label: 'Home / Overview' },
-    { id: 'planning', icon: <Cpu className="w-4 h-4" />, label: 'Planning' },
-    { id: 'install', icon: <Play className="w-4 h-4" />, label: 'Installation (ISO)' },
-    { id: 'config', icon: <Settings className="w-4 h-4" />, label: 'Initial Config' },
-    { id: 'network', icon: <Network className="w-4 h-4" />, label: 'Networking' },
-    { id: 'storage', icon: <HardDrive className="w-4 h-4" />, label: 'Storage' },
-    { id: 'vm-images', icon: <Disc className="w-4 h-4" />, label: 'VM Images' },
-    { id: 'vm-mgmt', icon: <Server className="w-4 h-4" />, label: 'VM Management' },
-    { id: 'backup', icon: <Database className="w-4 h-4" />, label: 'Backup & Restore' },
-    { id: 'rancher', icon: <Cloud className="w-4 h-4" />, label: 'Rancher Integration' },
+    { id: 'overview', icon: <LayoutTemplate className="w-4 h-4" />, label: 'Visão Geral' },
+    { id: 'planning', icon: <Cpu className="w-4 h-4" />, label: 'Planejamento' },
+    { id: 'install', icon: <Play className="w-4 h-4" />, label: 'Instalação (ISO)' },
+    { id: 'config', icon: <Settings className="w-4 h-4" />, label: 'Configuração Inicial' },
+    { id: 'storage', icon: <HardDrive className="w-4 h-4" />, label: 'Armazenamento' },
+    { id: 'poc-goals', icon: <FileCheck className="w-4 h-4" />, label: 'Procedimentos da POC', count: goals.length },
+    { id: 'rancher', icon: <Cloud className="w-4 h-4" />, label: 'Integração Rancher' },
   ];
 
   const handleNext = () => {
@@ -90,446 +165,614 @@ export const InstallGuide: React.FC = () => {
       case 'overview':
         return (
           <div className="space-y-6 animate-fade-in">
-            <h1 className="text-3xl font-bold text-suse-dark">What is SUSE Virtualization?</h1>
+            <h1 className="text-3xl font-bold text-suse-dark">Documentação Técnica v1.7</h1>
             <p className="text-gray-600 leading-relaxed">
-              SUSE Virtualization is a modern, open, and interoperable Hyperconverged Infrastructure (HCI) solution built on top of Kubernetes.
-              It is an open-source alternative designed for operators looking for a cloud-native HCI solution.
-              SUSE Virtualization runs on bare metal servers and provides integrated capabilities for virtualization and distributed storage.
+              Este guia centraliza os procedimentos oficiais para a implementação do <strong>SUSE Virtualization (Harvester)</strong>. 
+              As seções abaixo foram adaptadas dinamicamente com base nos objetivos da sua POC.
             </p>
-            <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
-              <h3 className="font-bold text-blue-800">Key Technologies (Architecture)</h3>
-              <ul className="list-disc ml-5 mt-2 space-y-1 text-sm text-blue-700">
-                <li><strong>Linux OS:</strong> Elemental for SL-Micro 5.5 (Immutable).</li>
-                <li><strong>Kubernetes:</strong> Container orchestration under the hood.</li>
-                <li><strong>KubeVirt:</strong> VM management via KVM.</li>
-                <li><strong>Longhorn:</strong> Distributed block storage and tiering.</li>
-              </ul>
-            </div>
-            <div className="my-8">
-              <UISnapshot 
-                type="dashboard"
-                imageSrc="https://placehold.co/800x400/f1f5f9/334155?text=SUSE+Virtualization+Architecture+Diagram"
-                title="Figure: SUSE Virtualization Architecture (Page 4)"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-100 flex gap-4">
+                <Zap className="w-10 h-10 text-emerald-600 shrink-0" />
+                <div>
+                  <h4 className="font-bold text-emerald-800 text-sm">HCI Moderno</h4>
+                  <p className="text-[11px] text-emerald-700 mt-1">Infraestrutura Hiperconvergente 100% open-source baseada em KubeVirt e Longhorn.</p>
+                </div>
+              </div>
+              <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 flex gap-4">
+                <ShieldCheck className="w-10 h-10 text-blue-600 shrink-0" />
+                <div>
+                  <h4 className="font-bold text-blue-800 text-sm">Pronto para Produção</h4>
+                  <p className="text-[11px] text-blue-700 mt-1">Alta disponibilidade nativa e integração direta com Rancher para gestão multicluster.</p>
+                </div>
+              </div>
             </div>
           </div>
         );
 
       case 'planning':
         return (
-          <div className="space-y-6 animate-fade-in">
-            <h1 className="text-3xl font-bold text-suse-dark">Planning & Requirements</h1>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2"><Cpu className="w-5 h-5 text-purple-500"/> Minimum Hardware</h3>
-                    <ul className="text-sm space-y-2 text-gray-600">
-                        <li><strong>CPU:</strong> x86_64, 8 cores (min) / 16 cores (prod).</li>
-                        <li><strong>RAM:</strong> 32 GB (min) / 64 GB+ (prod).</li>
-                        <li><strong>Disk:</strong> 250 GB SSD/NVMe (5,000+ IOPS).</li>
-                        <li><strong>NIC:</strong> 1 Gbps (min) / 10 Gbps (prod).</li>
-                    </ul>
+          <div className="space-y-8 animate-fade-in">
+             <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-slate-800 rounded-2xl shadow-lg">
+                   <Cpu className="w-8 h-8 text-white" />
                 </div>
-                <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2"><Network className="w-5 h-5 text-blue-500"/> Topology</h3>
-                    <p className="text-sm text-gray-600">
-                        A 3-node cluster is required for High Availability (HA). 
-                        The first node is always a management node.
-                    </p>
+                <div>
+                   <h1 className="text-3xl font-bold text-suse-dark">Planejamento & Pré-requisitos</h1>
+                   <p className="text-sm text-gray-500">Prepare o ambiente antes de iniciar a instalação física.</p>
                 </div>
-            </div>
+             </div>
 
-            <h2 className="text-xl font-bold text-gray-800 mt-8 mb-4">Port Requirements (TCP/UDP)</h2>
-            <p className="text-sm text-gray-500 mb-4">Ensure the following ports are allowed between nodes.</p>
-            
-            <h3 className="font-bold text-sm text-suse-dark uppercase">Essential Ports</h3>
-            <PortTable ports={[
-                { port: "2379-2381", proto: "TCP", desc: "Etcd (Client, Peer, Health)" },
-                { port: "6443", proto: "TCP", desc: "Kubernetes API" },
-                { port: "10250", proto: "TCP", desc: "Kubelet" },
-                { port: "9345", proto: "TCP", desc: "Rancher/K8s API" },
-                { port: "8472", proto: "UDP", desc: "Canal CNI (VxLAN Overlay)" },
-                { port: "22", proto: "TCP", desc: "SSH Access" }
-            ]} />
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                   <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+                      <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                         <ShieldCheck className="w-4 h-4 text-suse-base" /> Hardware Mínimo (Por Nó)
+                      </h3>
+                      <div className="grid grid-cols-2 gap-4">
+                         <div className="p-3 bg-slate-50 rounded-xl">
+                            <div className="text-[9px] uppercase text-slate-400 font-bold">CPU</div>
+                            <div className="text-sm font-bold">8 Cores x86_64</div>
+                         </div>
+                         <div className="p-3 bg-slate-50 rounded-xl">
+                            <div className="text-[9px] uppercase text-slate-400 font-bold">RAM</div>
+                            <div className="text-sm font-bold">32 GB</div>
+                         </div>
+                         <div className="p-3 bg-slate-50 rounded-xl">
+                            <div className="text-[9px] uppercase text-slate-400 font-bold">Storage</div>
+                            <div className="text-sm font-bold">250 GB SSD/NVMe</div>
+                         </div>
+                         <div className="p-3 bg-slate-50 rounded-xl">
+                            <div className="text-[9px] uppercase text-slate-400 font-bold">Network</div>
+                            <div className="text-sm font-bold">10 Gbps (Rec.)</div>
+                         </div>
+                      </div>
+                      <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl flex gap-3 items-start">
+                         <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+                         <p className="text-[10px] text-amber-800">VT-x ou AMD-V deve estar habilitado na BIOS. Harvester não suporta instalação em VMs sem Nested Virtualization.</p>
+                      </div>
+                   </div>
+
+                   <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+                      <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                         <Network className="w-4 h-4 text-suse-base" /> Tabela de Portas Críticas
+                      </h3>
+                      <div className="overflow-hidden border border-gray-100 rounded-xl">
+                        <table className="min-w-full text-[10px]">
+                           <thead className="bg-gray-50 text-gray-500 font-bold">
+                              <tr>
+                                 <th className="px-3 py-2 text-left">Porta</th>
+                                 <th className="px-3 py-2 text-left">Uso</th>
+                              </tr>
+                           </thead>
+                           <tbody className="divide-y divide-gray-50 text-gray-700">
+                              <tr><td className="px-3 py-2 font-mono font-bold text-blue-600">443</td><td className="px-3 py-2">Dashboard UI & API</td></tr>
+                              <tr><td className="px-3 py-2 font-mono font-bold text-blue-600">6443</td><td className="px-3 py-2">K8s API Server</td></tr>
+                              <tr><td className="px-3 py-2 font-mono font-bold text-blue-600">2379-80</td><td className="px-3 py-2">Etcd Client/Peer</td></tr>
+                              <tr><td className="px-3 py-2 font-mono font-bold text-blue-600">8443</td><td className="px-3 py-2">Network Controller</td></tr>
+                           </tbody>
+                        </table>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="space-y-6">
+                   <div className="bg-slate-900 text-white p-8 rounded-3xl space-y-4">
+                      <h3 className="font-bold text-suse-base flex items-center gap-2">
+                         <Search className="w-5 h-5" /> Pre-flight Checklist
+                      </h3>
+                      <ul className="space-y-3">
+                         {[
+                            "IPs estáticos reservados para cada nó",
+                            "IP VIP disponível na mesma subnet",
+                            "Acesso à internet ou Proxy configurado",
+                            "DNS configurado (Resolução direta e reversa)",
+                            "NTP sincronizado entre os nós"
+                         ].map((item, i) => (
+                            <li key={i} className="flex items-center gap-3 text-xs text-slate-300">
+                               <div className="w-4 h-4 rounded border border-slate-700 flex items-center justify-center"><Check className="w-3 h-3"/></div>
+                               {item}
+                            </li>
+                         ))}
+                      </ul>
+                   </div>
+                   
+                   <a 
+                     href="https://docs.harvesterhci.io/v1.7/install/requirements/" 
+                     target="_blank" 
+                     rel="noreferrer"
+                     className="flex items-center justify-between bg-white border border-gray-200 p-5 rounded-3xl hover:border-suse-base transition-all group"
+                   >
+                      <div className="flex items-center gap-3">
+                         <BookOpen className="w-6 h-6 text-suse-base" />
+                         <span className="text-sm font-bold text-gray-800">Documentação de Requisitos</span>
+                      </div>
+                      <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-suse-base" />
+                   </a>
+                </div>
+             </div>
           </div>
         );
 
       case 'install':
         return (
-          <div className="space-y-6 animate-fade-in">
-            <h1 className="text-3xl font-bold text-suse-dark">ISO Installation</h1>
-            <p className="text-gray-600 mb-8">Step-by-step guide to install the first node of the cluster.</p>
-            
-            <StepGuide steps={[
-                {
-                    num: 1,
-                    title: "Boot & Installation Mode",
-                    description: "Mount the ISO and boot the server. Select 'Create a new SUSE Virtualization cluster' for the first node.",
-                    imgSrc: "https://placehold.co/600x400/2d3748/FFFFFF?text=GRUB+Menu:+Create+New+Cluster",
-                    caption: "Figure: Installation Mode Selection (Create/Join)"
-                },
-                {
-                    num: 2,
-                    title: "Disk Selection",
-                    description: "Select the Installation Disk (OS) and Data Disk (VM Storage). If using a single disk, set the persistent partition size (min 150GB).",
-                    imgSrc: "https://placehold.co/600x400/2d3748/FFFFFF?text=Select+Installation+Disk",
-                    caption: "Figure: Disk Selection"
-                },
-                {
-                    num: 3,
-                    title: "Hostname & Management Network",
-                    description: "Set the Hostname and configure the management network interface (Static IP, Gateway, DNS).",
-                    imgSrc: "https://placehold.co/600x400/2d3748/FFFFFF?text=Configure+Static+IP:+192.168.10.20",
-                    caption: "Figure: Management Interface Configuration"
-                },
-                {
-                    num: 4,
-                    title: "VIP & Cluster Token",
-                    description: "Configure the VIP (Virtual IP) for cluster access and define a secure Token for adding new nodes later.",
-                    imgSrc: "https://placehold.co/600x400/2d3748/FFFFFF?text=VIP:+192.168.10.10%0AToken:+*******",
-                    caption: "Figure: High Availability Configuration (VIP)"
-                }
-            ]} />
+          <div className="space-y-8 animate-fade-in">
+             <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-emerald-600 rounded-2xl shadow-lg shadow-emerald-200">
+                   <Play className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                   <h1 className="text-3xl font-bold text-suse-dark">Instalação via ISO (Manual)</h1>
+                   <p className="text-sm text-gray-500">Passo-a-passo detalhado do wizard de instalação.</p>
+                </div>
+             </div>
+
+             <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                   <div className="space-y-6">
+                      <h3 className="font-bold text-gray-800 flex items-center gap-2"><Disc className="w-5 h-5 text-suse-base"/> Processo do Primeiro Nó</h3>
+                      <div className="space-y-4">
+                         {[
+                            { t: "Boot & Menu", d: "Inicie pela ISO e selecione 'Harvester Installer'." },
+                            { t: "Create Mode", d: "Escolha 'Create a new Harvester cluster'." },
+                            { t: "Instalação de Disco", d: "Selecione o disco de instalação. Cuidado: Todos os dados serão apagados." },
+                            { t: "Configuração de Rede", d: "Defina Hostname, Interface de Gerência e IP Estático." },
+                            { t: "VIP & Token", d: "Defina o Cluster VIP e o Cluster Token (necessário para adicionar outros nós)." },
+                            { t: "Senha Admin", d: "Defina a senha que será usada no primeiro login do Dashboard." }
+                         ].map((s, i) => (
+                            <div key={i} className="flex gap-4">
+                               <div className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-[10px] shrink-0 border border-emerald-100">{i+1}</div>
+                               <div>
+                                  <h4 className="text-xs font-bold text-gray-800">{s.t}</h4>
+                                  <p className="text-[10px] text-gray-500 leading-relaxed">{s.d}</p>
+                               </div>
+                            </div>
+                         ))}
+                      </div>
+                   </div>
+
+                   <div className="space-y-6 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                      <h3 className="font-bold text-slate-800 flex items-center gap-2"><Layers className="w-5 h-5 text-blue-600"/> Adicionando Nós (2 e 3)</h3>
+                      <p className="text-[11px] text-slate-600 leading-relaxed">Para formar um cluster de alta disponibilidade, você deve repetir o processo nos outros nós, mas selecionando a opção <strong>'Join an existing cluster'</strong>.</p>
+                      <div className="p-4 bg-white rounded-xl border border-slate-200 space-y-3">
+                         <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest"><Key className="w-3 h-3"/> Info de Join</div>
+                         <p className="text-[10px] text-slate-500 italic">Você precisará do <strong>Cluster VIP</strong> e do <strong>Cluster Token</strong> definidos no primeiro nó.</p>
+                      </div>
+                      <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex gap-3">
+                         <ShieldAlert className="w-5 h-5 text-red-600 shrink-0" />
+                         <div>
+                            <h4 className="text-xs font-bold text-red-800">Troubleshooting: Boot Loops</h4>
+                            <p className="text-[10px] text-red-700 mt-1">Se o servidor reiniciar infinitamente, verifique se a ordem de boot na BIOS está configurada para o disco rígido após a instalação, e não para o USB/ISO.</p>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+             </div>
           </div>
         );
 
       case 'config':
         return (
-          <div className="space-y-6 animate-fade-in">
-            <h1 className="text-3xl font-bold text-suse-dark">Initial Configuration</h1>
-            <div className="bg-white border-l-4 border-yellow-400 p-4 rounded shadow-sm">
-                <p className="text-gray-700">
-                    After installation, the node will reboot. The console will display the Management URL: 
-                    <code className="bg-gray-100 px-2 py-1 rounded ml-2 font-bold">https://your-configured-vip</code>
-                </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
-                <div>
-                    <h3 className="font-bold text-lg mb-2">First Access</h3>
-                    <p className="text-gray-600 mb-4">
-                        1. Access the URL in a browser.<br/>
-                        2. Accept the self-signed certificate.<br/>
-                        3. Set the password for the <strong>admin</strong> user.
-                    </p>
-                    <UISnapshot 
-                        type="dashboard"
-                        imageSrc="https://placehold.co/500x300/e2e8f0/475569?text=Set+Admin+Password"
-                        title="First Login Screen"
-                    />
+          <div className="space-y-8 animate-fade-in">
+             <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-suse-dark rounded-2xl shadow-lg">
+                   <Settings className="w-8 h-8 text-suse-base" />
                 </div>
                 <div>
-                    <h3 className="font-bold text-lg mb-2">Dashboard</h3>
-                    <p className="text-gray-600 mb-4">
-                        The Dashboard provides an overview of CPU, Memory, and Storage of the cluster.
-                    </p>
-                    <UISnapshot 
-                        type="dashboard"
-                        imageSrc="https://placehold.co/500x300/e2e8f0/475569?text=Dashboard+Overview"
-                        title="Dashboard"
-                    />
+                   <h1 className="text-3xl font-bold text-suse-dark">Configuração Inicial Pós-Instalação</h1>
+                   <p className="text-sm text-gray-500">Primeiro acesso ao dashboard e ajustes essenciais.</p>
                 </div>
-            </div>
-          </div>
-        );
+             </div>
 
-      case 'network':
-        return (
-          <div className="space-y-6 animate-fade-in">
-            <h1 className="text-3xl font-bold text-suse-dark">Networking</h1>
-            
-            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
-                <h3 className="font-bold text-lg text-slate-800 mb-4">Key Concepts</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-white p-4 rounded border border-slate-200">
-                        <span className="font-bold text-blue-600 block mb-1">Management Network</span>
-                        <p className="text-sm text-gray-600">Internal cluster network (Canal/Flannel). Used for communication between nodes. VM IPs on this network are not externally accessible.</p>
-                    </div>
-                    <div className="bg-white p-4 rounded border border-slate-200">
-                        <span className="font-bold text-orange-600 block mb-1">VLAN Network (Bridge)</span>
-                        <p className="text-sm text-gray-600">Connects VMs to the external physical network. Uses Multus + Bridge CNI. Allows VMs to receive IPs from your corporate network (L2).</p>
-                    </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+                   <h3 className="font-bold text-gray-800 flex items-center gap-2"><Monitor className="w-5 h-5 text-suse-base"/> Primeiro Login</h3>
+                   <div className="space-y-4">
+                      {[
+                         "Acesse https://<CLUSTER_VIP> via navegador.",
+                         "Ignore o aviso de certificado auto-assinado (ou importe o seu).",
+                         "Defina a senha do usuário 'admin' (se solicitado novamente).",
+                         "Aceite os Termos e Condições."
+                      ].map((step, i) => (
+                         <div key={i} className="flex gap-3 text-xs text-gray-600">
+                            <div className="w-5 h-5 bg-gray-100 rounded flex items-center justify-center font-bold text-[10px] text-gray-400 shrink-0">{i+1}</div>
+                            {step}
+                         </div>
+                      ))}
+                   </div>
+                   <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl space-y-2">
+                      <h4 className="text-xs font-bold text-blue-800">Backup Target (Crucial)</h4>
+                      <p className="text-[10px] text-blue-700 leading-relaxed">Vá em <strong>Settings > backup-target</strong>. Configure um servidor NFS ou S3. Sem isso, você não pode realizar snapshots externos ou recuperação de desastres.</p>
+                   </div>
                 </div>
-            </div>
 
-            <div className="my-6">
-                 <UISnapshot 
-                    type="dashboard"
-                    imageSrc="https://placehold.co/800x300/f8fafc/64748b?text=Network+Topology+Diagram+(Page+30)"
-                    title="Figure: Network Flow Diagram"
-                 />
-            </div>
-
-            <h3 className="text-xl font-bold mt-8 mb-4">Creating a VLAN Network</h3>
-            <ol className="list-decimal list-inside space-y-4 text-gray-700 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                <li>Go to <strong>Networks &gt; VM Networks</strong>.</li>
-                <li>Click <strong>Create</strong>.</li>
-                <li>Select type <strong>L2VlanNetwork</strong>.</li>
-                <li>Define the <strong>VLAN ID</strong> (e.g., 100) and Cluster Network (mgmt).</li>
-                <li>On the <strong>Route</strong> tab, configure Gateway and CIDR if DHCP is not available on the VLAN.</li>
-            </ol>
+                <div className="space-y-6">
+                   <div className="bg-slate-900 p-8 rounded-3xl space-y-4 text-white">
+                      <h3 className="font-bold text-emerald-400 flex items-center gap-2"><RefreshCw className="w-5 h-5"/> Configurações de Rede</h3>
+                      <ul className="space-y-4">
+                         <li className="space-y-1">
+                            <div className="text-xs font-bold uppercase tracking-widest text-slate-500">VLAN Networks</div>
+                            <p className="text-[10px] text-slate-300">Navegue até <strong>Networks > VM Networks</strong> para criar redes L2 isoladas.</p>
+                         </li>
+                         <li className="space-y-1">
+                            <div className="text-xs font-bold uppercase tracking-widest text-slate-500">IP Pools (v1.7)</div>
+                            <p className="text-[10px] text-slate-300">Configure pools de IPs para o serviço de Load Balancer integrado ao Harvester.</p>
+                         </li>
+                      </ul>
+                   </div>
+                   <div className="bg-amber-50 border border-amber-200 p-6 rounded-3xl flex gap-4">
+                      <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0" />
+                      <div>
+                         <h4 className="text-xs font-bold text-amber-800">Dica: Repositórios</h4>
+                         <p className="text-[10px] text-amber-700 mt-1 leading-relaxed">Se o cluster estiver atrás de um proxy, configure-o em <strong>Settings > http-proxy</strong> para que o download de imagens Cloud funcione corretamente.</p>
+                      </div>
+                   </div>
+                </div>
+             </div>
           </div>
         );
 
       case 'storage':
         return (
-          <div className="space-y-6 animate-fade-in">
-            <h1 className="text-3xl font-bold text-suse-dark">Storage</h1>
-            <p className="text-gray-600">SUSE Virtualization uses <strong>Longhorn</strong> for distributed block storage.</p>
+          <div className="space-y-8 animate-fade-in">
+             <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-purple-600 rounded-2xl shadow-lg shadow-purple-200">
+                   <HardDrive className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                   <h1 className="text-3xl font-bold text-suse-dark">Armazenamento com Longhorn 1.7</h1>
+                   <p className="text-sm text-gray-500">Gestão de volumes distribuídos e alta disponibilidade de dados.</p>
+                </div>
+             </div>
 
-            <div className="space-y-4">
-                <div className="border border-gray-200 rounded-lg p-4 bg-white">
-                    <h3 className="font-bold text-lg mb-2">Storage Classes</h3>
-                    <p className="text-sm text-gray-600 mb-2">Defines replication policies. By default, 3 replicas are kept for redundancy.</p>
-                    <CodeBlock code={`kind: StorageClass\nname: longhorn\nparameters:\n  numberOfReplicas: "3"`} />
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+                   <h3 className="font-bold text-gray-800 flex items-center gap-2"><Database className="w-5 h-5 text-purple-600"/> Arquitetura Longhorn</h3>
+                   <p className="text-xs text-gray-600 leading-relaxed">O Longhorn transforma discos locais em volumes de bloco distribuídos. Ele é gerenciado nativamente pelo Harvester.</p>
+                   
+                   <div className="space-y-4">
+                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                         <h4 className="text-xs font-bold text-slate-800 mb-1">Storage Classes</h4>
+                         <p className="text-[10px] text-slate-500">Defina classes com diferentes números de réplicas. Para HA, use <strong>Number of Replicas: 3</strong>.</p>
+                      </div>
+                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                         <h4 className="text-xs font-bold text-slate-800 mb-1">Volume Health</h4>
+                         <p className="text-[10px] text-slate-500">Volumes em 'Healthy' possuem todas as réplicas sincronizadas. 'Degraded' indica que uma réplica falhou, mas o dado ainda está acessível.</p>
+                      </div>
+                   </div>
                 </div>
 
-                <div className="border border-gray-200 rounded-lg p-4 bg-white">
-                    <h3 className="font-bold text-lg mb-2">Volumes</h3>
-                    <p className="text-sm text-gray-600 mb-4">Volumes are virtual disks that can be attached to VMs. They can be created empty or from Images.</p>
-                    <UISnapshot 
-                        type="dashboard"
-                        imageSrc="https://placehold.co/700x200/e2e8f0/475569?text=Create+Volume+UI"
-                        title="Create Volume Screen"
-                    />
+                <div className="space-y-6">
+                   <div className="bg-purple-50 border border-purple-200 p-8 rounded-3xl space-y-4">
+                      <h3 className="font-bold text-purple-800 flex items-center gap-2"><ShieldAlert className="w-5 h-5"/> Manutenção & Discos</h3>
+                      <ul className="space-y-3">
+                         {[
+                            "Evite remover discos sem antes colocar o nó em modo manutenção.",
+                            "O Longhorn requer discos formatados em EXT4 ou XFS.",
+                            "Verifique o status do Longhorn Dashboard via 'Advanced' no Harvester.",
+                            "Mantenha pelo menos 20% de espaço livre nos discos para evitar erros de escrita."
+                         ].map((item, i) => (
+                            <li key={i} className="flex items-start gap-3 text-xs text-purple-700">
+                               <CheckCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                               {item}
+                            </li>
+                         ))}
+                      </ul>
+                   </div>
+                   <div className="bg-white border border-gray-200 p-6 rounded-3xl flex items-center justify-between group hover:border-purple-600 transition-all">
+                      <div className="flex items-center gap-3">
+                         <Activity className="w-6 h-6 text-purple-600" />
+                         <div>
+                            <h4 className="text-xs font-bold text-gray-800">Monitoramento de I/O</h4>
+                            <p className="text-[9px] text-gray-400">Acompanhe a latência de escrita em tempo real.</p>
+                         </div>
+                      </div>
+                      <a href="https://longhorn.io/docs/1.7.0/" target="_blank" rel="noreferrer" className="p-2 bg-purple-50 rounded-lg text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-all">
+                         <ExternalLink className="w-4 h-4" />
+                      </a>
+                   </div>
                 </div>
-            </div>
+             </div>
           </div>
         );
 
-      case 'vm-images':
+      case 'poc-goals':
         return (
-          <div className="space-y-6 animate-fade-in">
-            <h1 className="text-3xl font-bold text-suse-dark">VM Images</h1>
-            <p className="text-gray-600">Support for ISO, RAW, and QCOW2 images.</p>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                <h3 className="font-bold text-lg mb-4">Step-by-Step: Upload via URL</h3>
-                <ol className="space-y-4">
-                    <li className="flex gap-4">
-                        <div className="bg-gray-100 px-3 py-1 rounded font-bold h-fit">1</div>
-                        <div>Go to the <strong>Images</strong> tab and click <strong>Create</strong>.</div>
-                    </li>
-                    <li className="flex gap-4">
-                        <div className="bg-gray-100 px-3 py-1 rounded font-bold h-fit">2</div>
-                        <div>Enter the name (e.g., <code>opensuse-leap-15.6</code>).</div>
-                    </li>
-                    <li className="flex gap-4">
-                        <div className="bg-gray-100 px-3 py-1 rounded font-bold h-fit">3</div>
-                        <div>Select <strong>Download via URL</strong> and paste the qcow2 image link.</div>
-                    </li>
-                    <li className="flex gap-4">
-                        <div className="bg-gray-100 px-3 py-1 rounded font-bold h-fit">4</div>
-                        <div>Click Create and wait for the status to change to <span className="text-green-600 font-bold">Active</span>.</div>
-                    </li>
-                </ol>
-            </div>
-          </div>
-        );
-
-      case 'vm-mgmt':
-        return (
-          <div className="space-y-6 animate-fade-in">
-            <h1 className="text-3xl font-bold text-suse-dark">VM Management</h1>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                    <h3 className="font-bold text-lg">Create VM</h3>
-                    <p className="text-sm text-gray-600">Configure CPU, Memory, SSH Keys, and Networks. Use Cloud-Init in the Advanced tab for automation.</p>
-                    <UISnapshot 
-                        type="dashboard"
-                        imageSrc="https://placehold.co/500x300/e2e8f0/475569?text=Create+VM+Wizard"
-                        title="Create VM Form"
-                    />
-                </div>
-                <div className="space-y-4">
-                    <h3 className="font-bold text-lg">Console Access</h3>
-                    <p className="text-sm text-gray-600">Access via VNC (Graphic) or Serial (Text) directly from the browser.</p>
-                    <UISnapshot 
-                        type="dashboard"
-                        imageSrc="https://placehold.co/500x300/000000/FFFFFF?text=Web+VNC+Console"
-                        title="Web Console"
-                    />
+          <div className="space-y-8 animate-fade-in">
+            <div className="flex items-center justify-between border-b pb-4">
+                <h1 className="text-3xl font-bold text-suse-dark">Manual de Execução da POC</h1>
+                <div className="px-3 py-1 bg-suse-base/10 text-suse-base rounded-full text-[10px] font-bold uppercase tracking-widest border border-suse-base/20">
+                    {goals.length} Itens de Validação
                 </div>
             </div>
 
-            <div className="bg-purple-50 p-6 rounded-lg border border-purple-100 mt-6">
-                <h3 className="font-bold text-purple-900 mb-2 flex items-center gap-2">
-                    <Shuffle className="w-5 h-5"/> Live Migration
-                </h3>
-                <p className="text-sm text-purple-800 mb-4">
-                    Move VMs between nodes without downtime. Requires Shared Storage (Longhorn) and correctly configured networks.
-                </p>
-                <div className="bg-white p-3 rounded text-sm text-gray-600 border border-purple-100">
-                    Action: Select VM &gt; Click 3 dots &gt; <strong>Migrate</strong> &gt; Choose Target Node.
-                </div>
-            </div>
-          </div>
-        );
+            {goals.length === 0 ? (
+              <div className="py-24 text-center border-2 border-dashed border-gray-200 rounded-3xl bg-gray-50/50">
+                 <Target className="w-16 h-16 mx-auto text-gray-300 mb-4 opacity-40" />
+                 <h3 className="text-gray-500 font-bold">Nenhum objetivo selecionado</h3>
+                 <p className="text-gray-400 text-sm max-w-xs mx-auto mt-1">Volte ao menu "Client Information" e selecione os itens que deseja validar nesta prova de conceito.</p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {goals.map((goal, idx) => {
+                  const data = GOAL_PROCEDURES[goal] || { steps: ["Procedimento em elaboração. Consulte o docs.harvesterhci.io."], icon: Target, dependencies: ["Nenhuma registrada."], docsUrl: "https://docs.harvesterhci.io", tip: "Consulte o manual oficial." };
+                  const Icon = data.icon;
+                  return (
+                    <div key={idx} className="bg-white border-2 border-gray-100 rounded-3xl shadow-sm overflow-hidden group hover:border-suse-base transition-all duration-300">
+                      
+                      {/* Header do Objetivo */}
+                      <div className="bg-gray-50/80 px-8 py-5 border-b border-gray-100 flex items-center justify-between group-hover:bg-suse-base/5 transition-colors">
+                        <div className="flex items-center gap-5">
+                            <div className="p-3 bg-white rounded-2xl shadow-sm border border-gray-100 text-suse-base">
+                            <Icon className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-gray-800 text-lg leading-tight">{goal}</h4>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <LinkIcon className="w-3 h-3 text-gray-400" />
+                                    <a href={data.docsUrl} target="_blank" rel="noreferrer" className="text-[10px] text-gray-400 uppercase font-bold tracking-widest hover:text-suse-base flex items-center gap-1 transition-colors">
+                                        Documentação Oficial <ExternalLink className="w-2.5 h-2.5" />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                      </div>
 
-      case 'backup':
-        return (
-          <div className="space-y-6 animate-fade-in">
-            <h1 className="text-3xl font-bold text-suse-dark">Backup & Restore</h1>
-            <p className="text-gray-600">Configure external targets for data safety.</p>
+                      <div className="p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        
+                        {/* Passo a Passo */}
+                        <div className="lg:col-span-8 space-y-6">
+                            <div className="flex items-center gap-2 text-gray-700 font-bold text-xs uppercase tracking-widest mb-2">
+                                <Monitor className="w-4 h-4 text-suse-base" /> Procedimento de Execução
+                            </div>
+                            <ul className="space-y-4">
+                            {data.steps.map((s, sIdx) => (
+                                <li key={sIdx} className="flex gap-4 text-sm text-gray-600 leading-relaxed group/item">
+                                <span className="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center shrink-0 font-bold text-xs text-slate-500 group-hover/item:bg-suse-base group-hover/item:text-white transition-colors">{sIdx + 1}</span>
+                                <span className="pt-0.5">{s}</span>
+                                </li>
+                            ))}
+                            </ul>
+                            <div className="mt-8 p-5 bg-amber-50/50 border border-amber-100 rounded-2xl flex gap-4 items-start">
+                                <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-[11px] text-amber-800 font-bold uppercase tracking-widest mb-1">Dica de Especialista</p>
+                                    <p className="text-[11px] text-amber-900/80 leading-relaxed">{data.tip}</p>
+                                </div>
+                            </div>
+                        </div>
 
-            <div className="space-y-6">
-                <div className="border-l-4 border-blue-500 pl-4">
-                    <h3 className="font-bold text-lg">1. Configure Backup Target</h3>
-                    <p className="text-sm text-gray-600 mb-2">Go to <strong>Advanced Settings &gt; backup-target</strong>.</p>
-                    <p className="text-sm text-gray-600">Supports S3 (AWS/MinIO) and NFS.</p>
-                    <CodeBlock code={`type: s3\nendpoint: https://s3.amazonaws.com\nbucketName: my-backups\naccessKeyId: ...\nsecretAccessKey: ...`} />
-                </div>
+                        {/* Dependências e Recursos */}
+                        <div className="lg:col-span-4 space-y-8 lg:border-l lg:pl-8 border-gray-100">
+                            
+                            {/* Dependências */}
+                            <div>
+                                <div className="flex items-center gap-2 text-gray-700 font-bold text-[10px] uppercase tracking-widest mb-4">
+                                    <AlertCircle className="w-3.5 h-3.5 text-orange-500" /> Dependências Técnicas
+                                </div>
+                                <ul className="space-y-2">
+                                    {data.dependencies.map((dep, dIdx) => (
+                                        <li key={dIdx} className="flex items-center gap-2 text-[11px] text-gray-500 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
+                                            {dep}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
 
-                <div className="border-l-4 border-green-500 pl-4">
-                    <h3 className="font-bold text-lg">2. Take Backup</h3>
-                    <p className="text-sm text-gray-600">Go to Virtual Machines, select the VM, and click <strong>Take Backup</strong>.</p>
-                </div>
-
-                <div className="border-l-4 border-orange-500 pl-4">
-                    <h3 className="font-bold text-lg">3. Restore</h3>
-                    <p className="text-sm text-gray-600">Go to <strong>Backup & Snapshot</strong>, select the backup, and choose:</p>
-                    <ul className="list-disc ml-5 text-sm text-gray-600">
-                        <li><strong>New VM:</strong> Creates a clone.</li>
-                        <li><strong>Replace Existing:</strong> Overwrites current VM.</li>
-                    </ul>
-                </div>
-            </div>
+                            {/* Recursos Úteis */}
+                            {data.resourceLinks && (
+                                <div>
+                                    <div className="flex items-center gap-2 text-gray-700 font-bold text-[10px] uppercase tracking-widest mb-4">
+                                        <Download className="w-3.5 h-3.5 text-blue-500" /> Links de Recurso
+                                    </div>
+                                    <div className="space-y-2">
+                                        {data.resourceLinks.map((link, lIdx) => (
+                                            <a 
+                                                key={lIdx}
+                                                href={link.url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="flex items-center justify-between bg-blue-50/50 border border-blue-100 px-4 py-3 rounded-xl hover:bg-blue-100 transition-colors group/link"
+                                            >
+                                                <span className="text-[11px] font-bold text-blue-700">{link.label}</span>
+                                                <ExternalLink className="w-3.5 h-3.5 text-blue-400 group-hover/link:translate-x-0.5 transition-transform" />
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
 
       case 'rancher':
         return (
-          <div className="space-y-6 animate-fade-in">
-            <h1 className="text-3xl font-bold text-suse-dark">Rancher Integration & RKE2 Provisioning</h1>
-            <p className="text-gray-600">
-              Integrate SUSE Virtualization with Rancher Manager to enable multi-cluster management and provision downstream Kubernetes (RKE2/K3s) clusters directly on top of VMs.
-            </p>
+          <div className="space-y-8 animate-fade-in">
+             <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-200">
+                   <Cloud className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                   <h1 className="text-3xl font-bold text-suse-dark">Integração Rancher Manager v2.8+</h1>
+                   <p className="text-sm text-gray-500 leading-relaxed">O Rancher é a plataforma central de gerenciamento multicluster que unifica o ciclo de vida de VMs (Harvester) e Containers (K8s).</p>
+                </div>
+             </div>
 
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-                <h4 className="font-bold text-blue-800 text-sm uppercase mb-1">Prerequisites</h4>
-                <ul className="list-disc ml-5 text-sm text-blue-700">
-                    <li>Rancher Manager v2.6.3+ (v2.7+ recommended).</li>
-                    <li><strong>Network:</strong> Rancher must be reachable from SUSE Virtualization VIP (port 443), and SUSE Virtualization VIP must be reachable from Rancher.</li>
-                    <li><strong>Feature Flag:</strong> Ensure 'Virtualization Management' (Harvester) is enabled in Rancher Global Settings.</li>
-                </ul>
-            </div>
+             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                {/* Tutorial de Integração */}
+                <div className="lg:col-span-7 space-y-6">
+                   <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-8">
+                      <h3 className="text-lg font-bold text-gray-800 flex items-center gap-3">
+                         <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Play className="w-5 h-5" /></div> 
+                         Passos para Habilitação
+                      </h3>
+                      
+                      <div className="space-y-8 relative before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-0.5 before:bg-blue-50">
+                         {[
+                            { 
+                              title: "Habilitar Virtualização (Feature Flag)", 
+                              desc: "No Rancher Manager, navegue até 'Global Settings' > 'Feature Flags'. Localize a flag 'harvester' (ou 'virtualization') e mude o status para 'Enabled'. Isso ativará o menu de Virtualização no menu lateral principal.",
+                              doc: "https://ranchermanager.docs.rancher.com/v2.8/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/virtualization-management"
+                            },
+                            { 
+                              title: "Importar Cluster Harvester", 
+                              desc: "No menu 'Virtualization Management', clique em 'Import Cluster'. Insira o nome do cluster e o Kubeconfig do Harvester (baixado no Harvester Dashboard). O Rancher instalará o agente do Harvester no cluster alvo.",
+                              doc: "https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/#importing-harvester-cluster"
+                            },
+                            { 
+                              title: "Configurar Cloud Credentials", 
+                              desc: "Vá em 'Cluster Management' > 'Cloud Credentials'. Crie uma nova credencial do tipo 'Harvester'. Isso permite que o Rancher autentique chamadas de API para criar e destruir VMs automaticamente.",
+                              doc: "https://ranchermanager.docs.rancher.com/v2.8/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/set-up-cloud-providers/harvester"
+                            },
+                            { 
+                              title: "Provisionar Cluster RKE2", 
+                              desc: "Em 'Cluster Management' > 'Create', selecione 'Harvester' como provedor. Defina os pools de máquinas (ex: 3 masters, 3 workers) e selecione a versão do RKE2. O Rancher cuidará do provisionamento das VMs e do K8s.",
+                              doc: "https://docs.harvesterhci.io/v1.7/rancher/node-driver/"
+                            }
+                         ].map((s, i) => (
+                            <div key={i} className="flex gap-6 relative z-10 group">
+                               <div className="w-10 h-10 rounded-full bg-white border-4 border-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0 shadow-sm group-hover:border-blue-200 transition-all">
+                                  {i + 1}
+                               </div>
+                               <div className="space-y-2">
+                                  <div className="flex items-center gap-3">
+                                    <h4 className="text-base font-bold text-gray-800">{s.title}</h4>
+                                    <a href={s.doc} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-600"><LinkIcon className="w-3 h-3"/></a>
+                                  </div>
+                                  <p className="text-xs text-gray-500 leading-relaxed">{s.desc}</p>
+                               </div>
+                            </div>
+                         ))}
+                      </div>
 
-            <StepGuide steps={[
-                {
-                    num: 1,
-                    title: "Enable Virtualization Management",
-                    description: "In Rancher, navigate to Global Settings &gt; Feature Flags. Locate 'harvester' and ensure it is set to 'Active'. This enables the Harvester node driver and dashboard integration.",
-                    imgSrc: "https://placehold.co/800x400/2c3e50/ffffff?text=Rancher+Menu:+Enable+Harvester+Flag",
-                    caption: "Figure: Enable Harvester Feature Flag"
-                },
-                {
-                    num: 2,
-                    title: "Import Cluster",
-                    description: "Navigate to 'Virtualization Management' in the side menu. Click 'Import Existing', name your cluster (e.g., 'harvester-poc'), and click Create.",
-                    imgSrc: "https://placehold.co/800x400/e2e8f0/475569?text=Rancher:+Import+Harvester+Cluster",
-                    caption: "Figure: Import Cluster Wizard"
-                },
-                {
-                    num: 3,
-                    title: "Register via SSH",
-                    description: "Copy the `kubectl apply` command generated by Rancher. SSH into any SUSE Virtualization node (user: rancher) and run the command. This installs the cattle-cluster-agent.",
-                    imgSrc: "https://placehold.co/600x150/1e293b/FFFFFF?text=rancher@node1:~>+kubectl+apply+-f+https://rancher.../import.yaml",
-                    caption: "Figure: Registration Command Execution"
-                },
-                {
-                   num: 4,
-                   title: "Create RKE2 Guest Cluster",
-                   description: "Once Active, go to Cluster Management &gt; Create &gt; RKE2/K3s &gt; Harvester. Select the imported Harvester cluster as the Cloud Credential.",
-                   imgSrc: "https://placehold.co/800x500/e2e8f0/475569?text=Rancher:+Create+RKE2+on+Harvester",
-                   caption: "Figure: Provision RKE2 Cluster"
-                },
-                {
-                   num: 5,
-                   title: "Configure Node Pools",
-                   description: "Define Machine Pools for your Kubernetes nodes. You can specify CPU, Memory, and Disk size directly. Rancher will spin up VMs in SUSE Virtualization automatically.",
-                   imgSrc: "https://placehold.co/800x400/e2e8f0/475569?text=RKE2+Node+Pools:+VM+Sizing",
-                   caption: "Figure: Machine Pool Configuration"
-                }
-            ]} />
-            
-            <div className="mt-8 border-t border-gray-200 pt-8">
-                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-suse-base"/> Troubleshooting & Verification
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                        <h4 className="font-bold text-red-600 mb-2">Cluster Stuck in \"Pending\"</h4>
-                        <ul className="list-disc ml-5 text-sm text-gray-500 space-y-1">
-                            <li><strong>Connectivity:</strong> Can the Harvester nodes reach the Rancher URL? Check DNS and Firewalls.</li>
-                            <li><strong>Certificates:</strong> If using self-signed certs on Rancher, ensure the `CATTLE_CA_CHECKSUM` is correct in the import YAML.</li>
-                            <li><strong>Logs:</strong> Check `kubectl logs -n cattle-system -l app=cattle-cluster-agent`.</li>
-                        </ul>
-                    </div>
-                    
-                    <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                         <h4 className="font-bold text-amber-600 mb-2">Cloud Provider Issues</h4>
-                         <ul className="list-disc ml-5 text-sm text-gray-500 space-y-1">
-                             <li><strong>Load Balancer:</strong> If LoadBalancer services stay 'Pending', check if the `harvester-load-balancer` is enabled in the RKE2 config.</li>
-                             <li><strong>IP Pool:</strong> Ensure a VM Network IP Pool is configured in SUSE Virtualization for the VLAN used by the guest cluster.</li>
-                         </ul>
-                    </div>
+                      <div className="pt-8 border-t border-gray-100 flex items-center justify-between">
+                         <div className="flex items-center gap-3">
+                            <img src="https://rancher.com/assets/img/logos/rancher-logo-stacked-color.svg" className="h-6 opacity-40" alt="Rancher" />
+                            <div className="w-0.5 h-4 bg-gray-200"></div>
+                            <img src="https://harvesterhci.io/img/logo_horizontal.svg" className="h-4 opacity-40" alt="Harvester" />
+                         </div>
+                         <a 
+                           href="https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/" 
+                           target="_blank" 
+                           rel="noreferrer"
+                           className="flex items-center gap-2 text-xs font-bold text-blue-600 hover:underline"
+                         >
+                            Guia Oficial de Integração <ExternalLink className="w-3 h-3" />
+                         </a>
+                      </div>
+                   </div>
                 </div>
 
-                <div className="mt-6 flex gap-4 flex-wrap">
-                    <a href="https://ranchermanager.docs.rancher.com/how-to-guides/new-user-guides/manage-clusters/register-existing-clusters" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:underline">
-                        <ExternalLink className="w-4 h-4" /> Official Rancher Registration Docs
-                    </a>
-                     <a href="https://docs.harvesterhci.io/v1.4/rancher/rancher-integration/" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:underline">
-                        <ExternalLink className="w-4 h-4" /> SUSE Virtualization Integration Guide
-                    </a>
-                    <a href="https://docs.harvesterhci.io/v1.4/troubleshooting/rancher/" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:underline">
-                        <ExternalLink className="w-4 h-4" /> Troubleshooting Guide
-                    </a>
+                {/* Troubleshooting & Requisitos */}
+                <div className="lg:col-span-5 space-y-6">
+                   <div className="bg-slate-900 text-white p-8 rounded-3xl space-y-6 shadow-xl">
+                      <h3 className="font-bold text-suse-base flex items-center gap-3 text-lg">
+                         <ShieldCheck className="w-6 h-6" /> Pré-requisitos Críticos
+                      </h3>
+                      <ul className="space-y-4">
+                         {[
+                            { l: "Versão do Rancher", d: "Mínimo v2.8.0 para suporte pleno ao Harvester v1.7." },
+                            { l: "Conectividade VIP", d: "O Rancher deve alcançar o VIP do Harvester na porta 443 via HTTPS." },
+                            { l: "Porta 6443/8443", d: "Acesso à API do Kubernetes do Harvester e Webhook controller." },
+                            { l: "DNS FQDN", d: "Rancher e Harvester devem ter registros DNS válidos; IPs brutos não são recomendados." }
+                         ].map((req, i) => (
+                            <li key={i} className="flex items-start gap-4 p-4 bg-white/5 rounded-2xl border border-white/10">
+                               <div className="w-2 h-2 rounded-full bg-suse-base mt-1.5 shrink-0"></div>
+                               <div>
+                                  <div className="text-xs font-bold text-white">{req.l}</div>
+                                  <div className="text-[10px] text-gray-400 mt-1">{req.d}</div>
+                               </div>
+                            </li>
+                         ))}
+                      </ul>
+                   </div>
+
+                   <div className="bg-red-50 border border-red-100 p-8 rounded-3xl space-y-6">
+                      <h3 className="font-bold text-red-800 flex items-center gap-3 text-lg">
+                         <ShieldAlert className="w-6 h-6" /> Troubleshooting Comum
+                      </h3>
+                      <div className="space-y-4">
+                         <div className="bg-white p-4 rounded-2xl border border-red-100 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                               <AlertCircle className="w-4 h-4 text-red-600" />
+                               <h4 className="text-xs font-bold text-red-900">Webhook Timeout / Connection Refused</h4>
+                            </div>
+                            <p className="text-[10px] text-red-700 leading-relaxed">Isso ocorre quando o Rancher tenta validar as Cloud Credentials mas não consegue alcançar o cluster Harvester. Verifique se existe um firewall interceptando a porta <strong>8443</strong> ou se o <code>harvester-network-controller</code> está saudável.</p>
+                         </div>
+                         <div className="bg-white p-4 rounded-2xl border border-red-100 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                               <Lock className="w-4 h-4 text-red-600" />
+                               <h4 className="text-xs font-bold text-red-900">x509: Certificate Signed by Unknown Authority</h4>
+                            </div>
+                            <p className="text-[10px] text-red-700 leading-relaxed">Comum em certificados Self-Signed. Você deve copiar a <strong>CA pública</strong> do Harvester e adicioná-la ao diretório <code>/etc/pki/trust/anchors/</code> do servidor Rancher ou usar a opção de 'Trusted CA' na Cloud Credential.</p>
+                         </div>
+                         <div className="bg-white p-4 rounded-2xl border border-red-100 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                               <Activity className="w-4 h-4 text-red-600" />
+                               <h4 className="text-xs font-bold text-red-900">VM stuck in 'Waiting for machine agent'</h4>
+                            </div>
+                            <p className="text-[10px] text-red-700 leading-relaxed">A VM iniciou mas não consegue baixar os binários do RKE2/K3s do Rancher. Verifique se a VM tem acesso à internet ou se o Rancher está acessível via rede de VLAN.</p>
+                         </div>
+                      </div>
+                   </div>
                 </div>
-            </div>
+             </div>
           </div>
         );
 
-      default: return null;
+      default:
+        return (
+            <div className="py-20 text-center opacity-50">
+                <Search className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+                <p className="text-gray-400 italic">Selecione uma seção no menu lateral para visualizar os detalhes técnicos.</p>
+            </div>
+        );
     }
   };
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 min-h-[600px]">
-      {/* Sidebar Navigation */}
       <aside className="lg:w-64 flex-shrink-0">
         <nav className="space-y-1 sticky top-24">
           {sections.map((section) => (
             <button
               key={section.id}
               onClick={() => setActiveSection(section.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              className={`w-full flex items-center gap-3 px-4 py-4 text-sm font-medium rounded-2xl transition-all text-left ${
                 activeSection === section.id
-                  ? 'bg-suse-base text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-suse-base text-white shadow-xl translate-x-1 shadow-suse-base/20'
+                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
               }`}
             >
-              {section.icon}
-              {section.label}
+              <div className="flex items-center gap-3 flex-1">
+                {section.icon}
+                <span className="font-bold">{section.label}</span>
+              </div>
+              {section.count !== undefined && section.count > 0 && (
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${activeSection === section.id ? 'bg-white text-suse-base' : 'bg-suse-base/10 text-suse-base'}`}>
+                  {section.count}
+                </span>
+              )}
             </button>
           ))}
         </nav>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-1 bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+      <div className="flex-1 bg-white p-10 rounded-3xl border border-gray-200 shadow-sm min-h-[500px]">
         {renderContent()}
-        
-        {/* Navigation Footer */}
-        <div className="mt-12 pt-6 border-t border-gray-100 flex justify-end">
+        <div className="mt-16 pt-8 border-t border-gray-100 flex justify-end no-print">
             {activeSection !== 'rancher' && (
                 <button 
                     onClick={handleNext}
-                    className="flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-black transition-colors"
+                    className="flex items-center gap-3 bg-suse-dark text-white px-8 py-4 rounded-2xl hover:bg-black transition-all font-bold shadow-xl hover:scale-105 active:scale-95"
                 >
-                    Next Topic <ArrowRight className="w-4 h-4" />
+                    Próximo Tópico <ArrowRight className="w-5 h-5" />
                 </button>
             )}
         </div>

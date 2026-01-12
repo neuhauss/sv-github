@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { POCData } from '../types';
-import { ClipboardList, Target, User, Building, CheckSquare, Square, Flag, Calendar, Phone, Mail, AlertCircle } from 'lucide-react';
+import { ClipboardList, Target, User, Building, CheckSquare, Square, Flag, Calendar, Phone, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface Props {
   data: POCData;
@@ -39,6 +39,14 @@ export const PocDetailsForm: React.FC<Props> = ({ data, updateData }) => {
     }
   };
 
+  const toggleAllGoals = () => {
+    if (data.goals.length === POC_GOALS_OPTIONS.length) {
+      updateData({ goals: [] });
+    } else {
+      updateData({ goals: [...POC_GOALS_OPTIONS] });
+    }
+  };
+
   const getBorderClass = (val: string, type: 'text' | 'email' | 'required' = 'text') => {
     if (!val) return "border-gray-300 focus:ring-suse-base";
     if (type === 'email' && !isValidEmail(val)) return "border-red-500 ring-1 ring-red-100 focus:ring-red-500";
@@ -47,6 +55,8 @@ export const PocDetailsForm: React.FC<Props> = ({ data, updateData }) => {
   };
 
   const inputClasses = "w-full pl-3 pr-3 py-2.5 bg-white border rounded-lg focus:ring-2 placeholder-gray-400 shadow-sm transition-all outline-none";
+
+  const allSelected = data.goals.length === POC_GOALS_OPTIONS.length;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -221,14 +231,25 @@ export const PocDetailsForm: React.FC<Props> = ({ data, updateData }) => {
 
         {/* POC Goals Segment */}
         <div className="mt-8 pt-6 border-t border-gray-100">
-          <div className="flex items-center gap-2 mb-4">
-             <div className="p-2 bg-suse-accent/10 rounded-lg">
-                <Flag className="w-6 h-6 text-suse-accent" />
+          <div className="flex items-center justify-between mb-4">
+             <div className="flex items-center gap-2">
+                <div className="p-2 bg-suse-accent/10 rounded-lg">
+                    <Flag className="w-6 h-6 text-suse-accent" />
+                </div>
+                <div>
+                    <h3 className="text-xl font-bold text-gray-800">POC Goals</h3>
+                    <p className="text-sm text-gray-500">Select objectives to track progress.</p>
+                </div>
              </div>
-             <div>
-                <h3 className="text-xl font-bold text-gray-800">POC Goals</h3>
-                <p className="text-sm text-gray-500">Select at least one goal to track progress.</p>
-             </div>
+             
+             {/* Select All Toggle */}
+             <button 
+                onClick={toggleAllGoals}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 border ${allSelected ? 'bg-suse-base border-suse-base text-white shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+             >
+                {allSelected ? <CheckCircle2 className="w-4 h-4" /> : <CheckSquare className="w-4 h-4" />}
+                {allSelected ? "Deselect All" : "Select All Options"}
+             </button>
           </div>
           
           <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">

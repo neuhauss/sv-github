@@ -9,17 +9,19 @@ import { InstallationChecklist } from './components/InstallationChecklist';
 import { InitialConfig } from './components/InitialConfig';
 import { CloudInitGenerator } from './components/CloudInitGenerator';
 import { InstallGuide } from './components/InstallGuide';
+import { ShellToolbox } from './components/ShellToolbox';
+import { TestPlan } from './components/TestPlan';
 import { Summary } from './components/Summary';
 import { DashboardMenu } from './components/DashboardMenu';
+import { GeminiAssistant } from './components/GeminiAssistant';
 import { Button } from './components/ui/Button';
-import { LayoutTemplate, ArrowLeft, Home, Check, Upload } from 'lucide-react';
+import { LayoutTemplate, ArrowLeft, Home, Check, Upload, Sparkles } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<POCStep>(POCStep.DASHBOARD);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // State
-  const initialPocData: POCData = {
+  const [pocData, setPocData] = useState<POCData>({
     projectName: '',
     leadEngineer: '',
     leadEmail: '',
@@ -32,31 +34,37 @@ const App: React.FC = () => {
     startDate: new Date().toISOString().split('T')[0],
     targetDate: '',
     goals: []
-  };
+  });
 
-  const initialHwSpecs: HardwareSpecs = {
+  const [hwSpecs, setHwSpecs] = useState<HardwareSpecs>({
     cpuCores: 16,
     ramGb: 64,
     diskGb: 500,
     diskType: 'SSD',
     networkSpeedGb: 10,
-    nodeCount: 3
-  };
+    nodeCount: 3,
+    hasGpu: false
+  });
 
-  const initialNetSpecs: NetworkSpecs = {
+  const [netSpecs, setNetSpecs] = useState<NetworkSpecs>({
     managementCidr: '',
+    subnetMask: '255.255.255.0',
     gatewayIp: '',
     clusterVip: '',
-    dnsServers: '',
+    dnsServers: '8.8.8.8, 1.1.1.1',
+    ntpServers: 'pool.ntp.org',
     vlanId: '',
-    nodes: Array.from({ length: 3 }, (_, i) => ({
-        name: `node-${i + 1}`,
-        ip: '',
-        role: 'Hybrid'
-    }))
-  };
+    nodes: Array.from({ length: 3 }, (_, i) => ({ name: `node-${i + 1}`, ip: '', role: 'Hybrid' })),
+    ipPools: [],
+    hasFirewall: true,
+    hasProxy: false,
+    hasAirGap: false,
+    hasExternalStorage: false,
+    hasRancher: false,
+    hasLoadBalancer: true
+  });
 
-  const initialCloudInit: CloudInitConfig = {
+  const [cloudInitConfig, setCloudInitConfig] = useState<CloudInitConfig>({
     user: 'opensuse',
     password: '',
     sshKeys: [],
@@ -68,282 +76,60 @@ const App: React.FC = () => {
     locale: 'en_US.UTF-8',
     mounts: [],
     networkInterfaces: []
-  };
+  });
 
-  const [pocData, setPocData] = useState<POCData>(initialPocData);
-  const [hwSpecs, setHwSpecs] = useState<HardwareSpecs>(initialHwSpecs);
-  const [netSpecs, setNetSpecs] = useState<NetworkSpecs>(initialNetSpecs);
-  const [cloudInitConfig, setCloudInitConfig] = useState<CloudInitConfig>(initialCloudInit);
+  const [status, setStatus] = useState({ details: false, hardware: true, network: false, install: false, config: false });
 
-  // Status States
-  const [detailsValid, setDetailsValid] = useState<boolean>(false);
-  const [hwValid, setHwValid] = useState<boolean>(true);
-  const [netValid, setNetValid] = useState<boolean>(false);
-  const [installComplete, setInstallComplete] = useState<boolean>(false);
-  const [configComplete, setConfigComplete] = useState<boolean>(false);
-
-  // Check Details Validity
-  useEffect(() => {
-    setDetailsValid(
-        pocData.projectName.length > 0 && 
-        pocData.leadEngineer.length > 0 &&
-        pocData.clientOrganization.length > 0
-    );
-  }, [pocData]);
-
-  // Handlers
-  const handlePocUpdate = (data: Partial<POCData>) => setPocData({ ...pocData, ...data });
-  
-  const handleHwUpdate = (data: Partial<HardwareSpecs>) => {
-    if (data.nodeCount !== undefined && data.nodeCount !== hwSpecs.nodeCount) {
-       const targetCount = data.nodeCount;
-       setNetSpecs(prev => {
-          const currentCount = prev.nodes.length;
-          if (currentCount === targetCount) return prev;
-          let newNodes = [...prev.nodes];
-          if (targetCount > currentCount) {
-            const nodesToAdd = targetCount - currentCount;
-            for (let i = 0; i < nodesToAdd; i++) {
-              newNodes.push({ name: `node-${currentCount + i + 1}`, ip: '', role: 'Hybrid' });
-            }
-          } else {
-             newNodes = newNodes.slice(0, targetCount);
-          }
-          return { ...prev, nodes: newNodes };
-       });
-    }
-    setHwSpecs({ ...hwSpecs, ...data });
-  };
-
-  const handleNetUpdate = (data: Partial<NetworkSpecs>) => {
-     if (data.nodes && data.nodes.length !== hwSpecs.nodeCount) {
-         setHwSpecs(prev => ({ ...prev, nodeCount: data.nodes!.length }));
-     }
-     setNetSpecs({ ...netSpecs, ...data });
-  };
-
-  const handleReset = () => {
-    if (window.confirm("Are you sure you want to start a new POC? Current data will be lost.")) {
-      setPocData(initialPocData);
-      setHwSpecs(initialHwSpecs);
-      setNetSpecs(initialNetSpecs); 
-      setCloudInitConfig(initialCloudInit);
-      setInstallComplete(false);
-      setConfigComplete(false);
-      setCurrentStep(POCStep.DASHBOARD);
-      window.scrollTo(0, 0);
-    }
-  };
-
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const json = JSON.parse(e.target?.result as string);
-        
-        // Basic Validation
-        if (!json.pocData || !json.hardwareSpecs || !json.networkSpecs) {
-          throw new Error("Invalid file format. Missing core POC data components.");
-        }
-
-        setPocData(json.pocData);
-        setHwSpecs(json.hardwareSpecs);
-        setNetSpecs(json.networkSpecs);
-        if (json.cloudInitConfig) setCloudInitConfig(json.cloudInitConfig);
-        
-        alert("POC data imported successfully!");
-        setCurrentStep(POCStep.DASHBOARD);
-      } catch (err) {
-        alert("Error importing file: " + (err as Error).message);
-      }
-    };
-    reader.readAsText(file);
-    event.target.value = ''; // Reset input
-  };
-
-  const goHome = () => {
-      setCurrentStep(POCStep.DASHBOARD);
-      window.scrollTo(0, 0);
-  };
+  const goHome = () => setCurrentStep(POCStep.DASHBOARD);
 
   const renderContent = () => {
     switch (currentStep) {
         case POCStep.DASHBOARD:
-            return <DashboardMenu 
-                onSelectStep={setCurrentStep} 
-                onImport={handleImportClick}
-                status={{
-                    details: detailsValid,
-                    hardware: hwValid,
-                    network: netValid,
-                    install: installComplete,
-                    config: configComplete
-                }}
-            />;
+            return <DashboardMenu onSelectStep={setCurrentStep} onImport={() => {}} status={status} />;
         case POCStep.POC_DETAILS:
-            return <PocDetailsForm data={pocData} updateData={handlePocUpdate} />;
+            return <PocDetailsForm data={pocData} updateData={(d) => setPocData({...pocData, ...d})} />;
         case POCStep.HARDWARE_VALIDATION:
-            return <HardwareValidation 
-              specs={hwSpecs} 
-              updateSpecs={handleHwUpdate} 
-              onValidationChange={(status) => setHwValid(status.isValid)} 
-            />;
+            return <HardwareValidation specs={hwSpecs} updateSpecs={(d) => setHwSpecs({...hwSpecs, ...d})} onValidationChange={(s) => setStatus({...status, hardware: s.isValid})} />;
         case POCStep.NETWORK_CONFIG:
-            return <NetworkValidation 
-              specs={netSpecs} 
-              updateSpecs={handleNetUpdate} 
-              onValidationChange={(status) => setNetValid(status.isValid)} 
-            />;
-        case POCStep.ARCHITECTURE_PREVIEW:
-            return <ArchitecturePreview specs={hwSpecs} pocData={pocData} netSpecs={netSpecs} />;
-        case POCStep.INSTALLATION_PROCESS:
-            return <InstallationChecklist onComplete={setInstallComplete} />;
+            return <NetworkValidation specs={netSpecs} updateSpecs={(d) => setNetSpecs({...netSpecs, ...d})} onValidationChange={(s) => setStatus({...status, network: s.isValid})} nodeCount={hwSpecs.nodeCount} />;
         case POCStep.INSTALL_GUIDE:
-            return <InstallGuide />;
+            return <InstallGuide netSpecs={netSpecs} goals={pocData.goals} />;
+        case POCStep.SHELL_TOOLBOX:
+            return <ShellToolbox />;
+        case POCStep.TEST_PLAN:
+            return <TestPlan goals={pocData.goals} />;
         case POCStep.INITIAL_CONFIG:
-            return <InitialConfig onComplete={setConfigComplete} goals={pocData.goals} />;
+            return <InitialConfig onComplete={(s) => setStatus({...status, config: s})} goals={pocData.goals} netSpecs={netSpecs} />;
         case POCStep.CLOUD_INIT:
             return <CloudInitGenerator config={cloudInitConfig} updateConfig={setCloudInitConfig} onComplete={goHome} />;
         case POCStep.COMPLETED:
-            return <Summary pocData={pocData} specs={hwSpecs} netSpecs={netSpecs} cloudInitConfig={cloudInitConfig} onReset={handleReset} />;
+            return <Summary pocData={pocData} specs={hwSpecs} netSpecs={netSpecs} cloudInitConfig={cloudInitConfig} onReset={goHome} />;
         default:
             return null;
     }
   };
 
-  const getTitle = () => {
-      switch(currentStep) {
-          case POCStep.POC_DETAILS: return "Client Information";
-          case POCStep.HARDWARE_VALIDATION: return "Hardware Specs";
-          case POCStep.NETWORK_CONFIG: return "Network Plan";
-          case POCStep.ARCHITECTURE_PREVIEW: return "Topology Preview";
-          case POCStep.INSTALLATION_PROCESS: return "Installation";
-          case POCStep.INSTALL_GUIDE: return "Documentation & Guide";
-          case POCStep.INITIAL_CONFIG: return "POC Goals Validation";
-          case POCStep.CLOUD_INIT: return "Cloud-Init Generator";
-          case POCStep.COMPLETED: return "POC Report";
-          default: return "Dashboard";
-      }
-  };
-
-  const PROGRESS_STEPS = [
-    { id: POCStep.POC_DETAILS, label: 'Plan' },
-    { id: POCStep.HARDWARE_VALIDATION, label: 'Hardware' },
-    { id: POCStep.NETWORK_CONFIG, label: 'Network' },
-    { id: POCStep.INSTALLATION_PROCESS, label: 'Install' },
-    { id: POCStep.INITIAL_CONFIG, label: 'Config' },
-    { id: POCStep.COMPLETED, label: 'Report' },
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-900 pb-20 print:pb-0">
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        onChange={handleFileImport} 
-        accept=".json" 
-        className="hidden" 
-      />
-      <header className="bg-suse-dark text-white shadow-lg print:hidden sticky top-0 z-50 transition-all duration-300">
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-900 pb-20">
+      <GeminiAssistant />
+      <header className="bg-suse-dark text-white shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={goHome}>
-            <div className="bg-white/10 p-2 rounded-lg group-hover:bg-white/20 transition-colors">
-               <LayoutTemplate className="w-6 h-6 text-suse-base" />
-            </div>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={goHome}>
+            <LayoutTemplate className="w-6 h-6 text-suse-base" />
             <div>
-              <h1 className="text-lg font-bold tracking-tight">SUSE Virtualization</h1>
-              <p className="text-[10px] text-suse-light opacity-80 uppercase tracking-wider font-semibold">POC Assistant v1.6</p>
+              <h1 className="text-lg font-bold">SUSE Virtualization</h1>
+              <p className="text-[9px] text-suse-light uppercase tracking-widest font-bold">v1.7 Enterprise Readiness</p>
             </div>
           </div>
-          
-          {currentStep !== POCStep.DASHBOARD && (
-            <div className="hidden lg:flex items-center">
-                {PROGRESS_STEPS.map((step, idx) => {
-                    const isActive = currentStep === step.id;
-                    const isCompleted = currentStep > step.id || (step.id === POCStep.COMPLETED && currentStep === POCStep.COMPLETED);
-                    const isLast = idx === PROGRESS_STEPS.length - 1;
-                    return (
-                        <div key={step.id} className="flex items-center">
-                            <div 
-                                onClick={() => setCurrentStep(step.id)}
-                                className={`flex flex-col items-center gap-1 cursor-pointer group relative z-10 px-2`}
-                            >
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
-                                    isActive ? 'bg-suse-base border-suse-base text-white scale-110 shadow-lg shadow-suse-base/40' : 
-                                    isCompleted ? 'bg-suse-dark border-suse-base text-suse-base' : 
-                                    'bg-suse-dark border-gray-600 text-gray-400 group-hover:border-gray-500'
-                                }`}>
-                                    {isCompleted && !isActive ? <Check className="w-4 h-4" /> : <span className="text-xs font-bold">{idx + 1}</span>}
-                                </div>
-                                <span className={`text-[10px] font-semibold uppercase tracking-wide ${isActive ? 'text-white' : isCompleted ? 'text-suse-light' : 'text-gray-500'}`}>
-                                    {step.label}
-                                </span>
-                            </div>
-                            {!isLast && (
-                                <div className={`w-12 h-0.5 -mt-4 transition-colors duration-500 ${isCompleted ? 'bg-suse-base' : 'bg-gray-700'}`}></div>
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
-          )}
-          
-          <div className="flex items-center gap-2">
-            {currentStep === POCStep.DASHBOARD && (
-              <Button variant="outline" onClick={handleImportClick} className="text-xs px-4 py-2 flex items-center gap-2 border-white/30 text-white hover:bg-white/10 hover:border-white rounded-full">
-                <Upload className="w-3.5 h-3.5" /> <span>Import JSON</span>
-              </Button>
-            )}
-            {currentStep !== POCStep.DASHBOARD && (
-              <Button variant="secondary" onClick={goHome} className="text-xs px-4 py-2 flex items-center gap-2 bg-white/10 hover:bg-white/20 border-none rounded-full shadow-inner">
-                  <Home className="w-3.5 h-3.5" /> <span className="hidden xl:inline">Dashboard</span>
-              </Button>
-            )}
-          </div>
+          <Button variant="secondary" onClick={goHome} className="text-xs px-4 py-2 bg-white/10 rounded-full">
+            <Home className="w-3.5 h-3.5" /> <span>Dashboard</span>
+          </Button>
         </div>
       </header>
 
-      {currentStep !== POCStep.DASHBOARD && (
-          <div className="bg-white border-b border-gray-200 py-4 px-6 shadow-sm print:hidden">
-              <div className="max-w-6xl mx-auto flex items-center gap-4">
-                  <button onClick={goHome} className="text-gray-400 hover:text-suse-dark transition-colors p-1 rounded-full hover:bg-gray-100">
-                      <ArrowLeft className="w-5 h-5" />
-                  </button>
-                  <div className="h-6 w-px bg-gray-200"></div>
-                  <div>
-                    <h2 className="font-bold text-gray-800 text-lg leading-tight">{getTitle()}</h2>
-                    <p className="text-xs text-gray-500">Step {PROGRESS_STEPS.findIndex(p => p.id === currentStep) !== -1 ? PROGRESS_STEPS.findIndex(p => p.id === currentStep) + 1 : '?'} of {PROGRESS_STEPS.length}</p>
-                  </div>
-              </div>
-          </div>
-      )}
-
-      <main className="max-w-6xl mx-auto px-6 py-8 print:max-w-full print:px-8">
-        <div className="min-h-[400px]">
-          {renderContent()}
-        </div>
+      <main className="max-w-6xl mx-auto px-6 py-8">
+        {renderContent()}
       </main>
-
-      {currentStep !== POCStep.DASHBOARD && currentStep !== POCStep.COMPLETED && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] print:hidden z-40">
-          <div className="max-w-6xl mx-auto flex justify-between items-center">
-            <span className="text-sm text-gray-500 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                Auto-saved
-            </span>
-            <Button onClick={goHome}>
-              Save & Return to Dashboard
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

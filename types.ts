@@ -8,29 +8,25 @@ export enum POCStep {
   INSTALLATION_PROCESS = 4,
   INITIAL_CONFIG = 5,
   CLOUD_INIT = 6,
-  INSTALL_GUIDE = 7, // New Step
-  COMPLETED = 8
+  INSTALL_GUIDE = 7,
+  SHELL_TOOLBOX = 8,
+  TEST_PLAN = 9,
+  COMPLETED = 10,
+  AI_ASSISTANT = 11
 }
 
 export interface POCData {
   projectName: string;
-  
-  // Partner / SUSE Lead Info
   leadEngineer: string;
   leadEmail: string;
-  organization: string; // Partner/Integrator Organization
-
-  // Client Info
+  organization: string;
   clientOrganization: string;
   clientContactName: string;
   clientContactRole: string;
   clientContactEmail: string;
   clientContactPhone: string;
-
-  // Schedule
   startDate: string;
-  targetDate: string; // Expected End Date
-  
+  targetDate: string;
   goals: string[];
 }
 
@@ -41,6 +37,8 @@ export interface HardwareSpecs {
   diskType: 'SSD' | 'HDD' | 'NVMe';
   networkSpeedGb: number;
   nodeCount: number;
+  hasGpu: boolean;
+  gpuType?: string;
 }
 
 export interface NodeNetworkConfig {
@@ -49,27 +47,47 @@ export interface NodeNetworkConfig {
   role: 'Master' | 'Worker' | 'Hybrid';
 }
 
+export interface IpPool {
+  name: string;
+  subnet: string;
+  rangeStart: string;
+  rangeEnd: string;
+}
+
 export interface NetworkSpecs {
   managementCidr: string;
+  subnetMask: string;
   gatewayIp: string;
   clusterVip: string;
   dnsServers: string;
+  ntpServers: string;
   vlanId: string;
-  nodes: NodeNetworkConfig[]; 
+  httpProxy?: string;
+  httpsProxy?: string;
+  noProxy?: string;
+  nodes: NodeNetworkConfig[];
+  ipPools: IpPool[];
+  // Topology Flags
+  hasFirewall: boolean;
+  hasProxy: boolean;
+  hasAirGap: boolean;
+  hasExternalStorage: boolean;
+  hasRancher: boolean;
+  hasLoadBalancer: boolean;
 }
 
 export interface MountPoint {
-  device: string; // e.g., /dev/vdb
-  mountPath: string; // e.g., /data
-  fsType: string; // e.g., ext4, xfs
+  device: string;
+  mountPath: string;
+  fsType: string;
 }
 
 export interface NetworkInterface {
-  name: string; // e.g., eth1
+  name: string;
   dhcp: boolean;
-  ip?: string; // e.g. 192.168.1.100/24
+  ip?: string;
   gateway?: string;
-  nameservers?: string; // Comma separated
+  nameservers?: string;
 }
 
 export interface CloudInitConfig {
@@ -81,20 +99,9 @@ export interface CloudInitConfig {
   writeFiles: { path: string; content: string; permissions: string }[];
   timezone: string;
   hostnamePattern: string;
-  // New Fields
   locale: string;
   mounts: MountPoint[];
   networkInterfaces: NetworkInterface[];
-}
-
-export interface ArchitectureExtras {
-  hasFirewall: boolean;
-  hasProxy: boolean;
-  hasAirGap: boolean;
-  hasRancher: boolean;
-  hasExternalStorage: boolean;
-  hasBastion: boolean;
-  hasNTP: boolean;
 }
 
 export interface ValidationStatus {
@@ -107,6 +114,15 @@ export interface ChecklistItem {
   label: string;
   description?: string;
   details?: string;
-  troubleshooting?: string[];
   checked: boolean;
+}
+
+export interface ArchitectureExtras {
+  hasFirewall: boolean;
+  hasProxy: boolean;
+  hasAirGap: boolean;
+  hasRancher: boolean;
+  hasExternalStorage: boolean;
+  hasBastion: boolean;
+  hasNTP: boolean;
 }
