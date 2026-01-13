@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Server, Settings, Network, HardDrive, Disc, LayoutTemplate, Play, Database, Cloud, ArrowRight, ShieldCheck, Cpu, Shuffle, Lock, Globe, Clock, CheckCircle, Sliders, Laptop, ExternalLink, Info, Calculator, Zap, Monitor, Search, Terminal, Copy, Check, Key, Layers, RefreshCw, Target, FileCheck, Eye, Link as LinkIcon, Download, AlertCircle, ShieldAlert, Wifi, Activity, BookOpen, FileText, AlertTriangle } from 'lucide-react';
+import { Server, Settings, Network, HardDrive, Disc, LayoutTemplate, Play, Database, Cloud, ArrowRight, ShieldCheck, Cpu, Shuffle, Lock, Globe, Clock, CheckCircle, Sliders, Laptop, ExternalLink, Info, Calculator, Zap, Monitor, Search, Terminal, Copy, Check, Key, Layers, RefreshCw, Target, FileCheck, Eye, Link as LinkIcon, Download, AlertCircle, ShieldAlert, Wifi, Activity, BookOpen, FileText, AlertTriangle, Wrench, Bug } from 'lucide-react';
 import { UISnapshot } from './ui/UISnapshot';
 import { NetworkSpecs } from '../types';
 
@@ -32,9 +32,26 @@ const GOAL_PROCEDURES: Record<string, GoalProcedure> = {
     docsUrl: "https://docs.harvesterhci.io/v1.7/install/iso-install/",
     resourceLinks: [
       { label: "Download Harvester ISO v1.7", url: "https://harvesterhci.io/releases" },
-      { label: "Guia de Preparação de Hardware", url: "https://docs.harvesterhci.io/v1.7/install/requirements/" }
+      { label: "Guia de Preparação de Hardware", url: "https://docs.harvesterhci.io/v1.7/install/requirements/" },
+      { label: "Harvester v1.7 Release Notes", url: "https://github.com/harvester/harvester/releases/tag/v1.7.0" }
     ],
     tip: "Se usar IPMI, certifique-se que o Virtual Media não tenha latência alta, pois isso pode corromper a instalação."
+  },
+  "Optional. Provision hosts through PXE boot": {
+    icon: Network,
+    steps: [
+      "Configure um servidor DHCP com opções 66 (TFTP Server) e 67 (Boot File).",
+      "Prepare os arquivos 'vmlinuz' e 'initrd' extraídos da ISO v1.7.",
+      "Crie o arquivo de configuração iPXE apontando para o script de auto-instalação (harvester-config.yaml).",
+      "Inicie o host via rede e monitore a instalação automatizada."
+    ],
+    dependencies: ["Servidor PXE/TFTP funcional", "Rede local com suporte a DHCP", "Harvester Config YAML válido"],
+    docsUrl: "https://docs.harvesterhci.io/v1.7/install/pxe-boot-install/",
+    resourceLinks: [
+      { label: "Documentação PXE Boot", url: "https://docs.harvesterhci.io/v1.7/install/pxe-boot-install/" },
+      { label: "Exemplos de Harvester Config", url: "https://docs.harvesterhci.io/v1.7/install/harvester-configuration/" }
+    ],
+    tip: "O PXE boot é ideal para implementações em larga escala (Edge/Bare Metal) onde a inserção manual de ISOs é inviável."
   },
   "Register an image to use for VMs": {
     icon: Target,
@@ -48,14 +65,15 @@ const GOAL_PROCEDURES: Record<string, GoalProcedure> = {
     docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#images",
     resourceLinks: [
       { label: "openSUSE Leap 15.5 Cloud Images", url: "https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.5/images/" },
-      { label: "SLES 15 SP5 Cloud Images (Trial)", url: "https://www.suse.com/download/sles/" }
+      { label: "SLES 15 SP5 Cloud Images (Trial)", url: "https://www.suse.com/download/sles/" },
+      { label: "Ubuntu Cloud Images", url: "https://cloud-images.ubuntu.com/releases/" }
     ],
     tip: "Imagens Cloud (.qcow2) são preferíveis pois permitem o uso de Cloud-Init para injetar chaves SSH automaticamente."
   },
   "Create a Storage Class and Volume": {
     icon: Database,
     steps: [
-      "Vá em 'Storage' &gt; 'StorageClasses' e clique em 'Create'.",
+      "Vá em 'Storage' > 'StorageClasses' e clique em 'Create'.",
       "Defina o número de réplicas. O padrão é 3 para HA total em 3 nós.",
       "Em 'Volumes', crie um novo volume manual ou deixe o wizard da VM criar automaticamente.",
       "Verifique no dashboard do Longhorn se o volume está 'Healthy' e replicado corretamente."
@@ -63,14 +81,15 @@ const GOAL_PROCEDURES: Record<string, GoalProcedure> = {
     dependencies: ["Nós com discos SSD/NVMe de performance similar", "Cluster em estado estável"],
     docsUrl: "https://docs.harvesterhci.io/v1.7/storage/storage-class/",
     resourceLinks: [
-      { label: "Longhorn Architecture", url: "https://longhorn.io/docs/1.7.0/concepts/architecture/" }
+      { label: "Longhorn 1.7 Documentation", url: "https://longhorn.io/docs/1.7.0/" },
+      { label: "Best Practices for Storage", url: "https://docs.harvesterhci.io/v1.7/storage/storage-class/#best-practices" }
     ],
     tip: "Evite misturar tipos de discos (ex: misturar SSD com HDD) na mesma Storage Class para não criar gargalos."
   },
   "Create a VLAN network in SUSE Virtualization": {
     icon: Layers,
     steps: [
-      "Navegue até 'Networks' &gt; 'VM Networks'.",
+      "Navegue até 'Networks' > 'VM Networks'.",
       "Crie uma nova 'L2VlanNetwork'.",
       "Insira o VLAN ID (deve coincidir com a configuração Trunk da Switch Física).",
       "Anexe esta rede a uma VM e teste o tráfego externo."
@@ -78,27 +97,32 @@ const GOAL_PROCEDURES: Record<string, GoalProcedure> = {
     dependencies: ["Switch física configurada como Trunk (802.1Q)", "VLAN ID liberado nas portas dos nós"],
     docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/",
     resourceLinks: [
-      { label: "Configurando Redes VLAN", url: "https://docs.harvesterhci.io/v1.7/networking/vm-network/" }
+      { label: "Configurando Redes VLAN", url: "https://docs.harvesterhci.io/v1.7/networking/vm-network/" },
+      { label: "Harvester Network Controller Docs", url: "https://github.com/harvester/harvester-network-controller" }
     ],
     tip: "Se a VM não pegar IP, verifique se existe um servidor DHCP ativo na VLAN específica ou configure IP estático na VM."
   },
   "Create a VM": {
     icon: Laptop,
     steps: [
-      "Menu 'Virtual Machines' &gt; 'Create'.",
+      "Menu 'Virtual Machines' > 'Create'.",
       "Selecione 'Basics': CPU, RAM e Imagem.",
       "Em 'Networks', escolha a rede criada (Management ou VLAN).",
       "Em 'Cloud Config', cole o script YAML para definir senha e SSH.",
-      "Inicie a VM e acesse via 'Console' &gt; 'Open in VNC'."
+      "Inicie a VM e acesse via 'Console' > 'Open in VNC'."
     ],
     dependencies: ["Pelo menos uma imagem registrada", "Recursos de CPU/RAM disponíveis no cluster"],
     docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/",
+    resourceLinks: [
+      { label: "VM Management Guide", url: "https://docs.harvesterhci.io/v1.7/vm/create-vm/" },
+      { label: "Cloud-Init Examples", url: "https://cloudinit.readthedocs.io/en/latest/topics/examples.html" }
+    ],
     tip: "Use o recurso de 'Hot Plug' no v1.7 para adicionar discos ou memória sem precisar reiniciar a VM."
   },
   "Configure a backup target": {
     icon: RefreshCw,
     steps: [
-      "Settings &gt; 'backup-target'.",
+      "Settings > 'backup-target'.",
       "Para NFS: Use o formato 'nfs://1.2.3.4:/path/to/share'.",
       "Para S3: Insira Access Key, Secret Key, Bucket e Endpoint.",
       "Clique em 'Save' e verifique se o status é 'Ready'."
@@ -106,7 +130,8 @@ const GOAL_PROCEDURES: Record<string, GoalProcedure> = {
     dependencies: ["Servidor NFS externo ou Bucket S3/RadosGW disponível"],
     docsUrl: "https://docs.harvesterhci.io/v1.7/advanced/backup-restore/",
     resourceLinks: [
-      { label: "Configurando S3 MinIO para Backup", url: "https://min.io/docs/minio/linux/index.html" }
+      { label: "Backup and Restore Guide", url: "https://docs.harvesterhci.io/v1.7/advanced/backup-restore/" },
+      { label: "MinIO S3 Quickstart", url: "https://min.io/docs/minio/linux/index.html" }
     ],
     tip: "O backup target é essencial para mover VMs entre clusters ou recuperar de falha total do hardware."
   },
@@ -120,27 +145,64 @@ const GOAL_PROCEDURES: Record<string, GoalProcedure> = {
     ],
     dependencies: ["Mínimo de 2 nós ativos", "Storage replicado (Longhorn)", "Rede estável entre os nós"],
     docsUrl: "https://docs.harvesterhci.io/v1.7/vm/live-migration/",
+    resourceLinks: [
+      { label: "Live Migration Documentation", url: "https://docs.harvesterhci.io/v1.7/vm/live-migration/" },
+      { label: "Troubleshooting Migration", url: "https://docs.harvesterhci.io/v1.7/troubleshooting/vm/#vm-migration-failures" }
+    ],
     tip: "Se a migração falhar, verifique se a VM possui dispositivos locais (como CD-ROM de ISO local) que impedem a movimentação."
   },
   "Integration with Rancher. Provision a RKE2 Kubernetes cluster on top of a SUSE Virtualization cluster": {
     icon: Cloud,
     steps: [
       "No Rancher v2.8+, vá em 'Virtualization Management' e importe o Harvester.",
-      "Em 'Cluster Management' &gt; 'Create' &gt; 'Harvester'.",
+      "Em 'Cluster Management' > 'Create' > 'Harvester'.",
       "Defina o pool de máquinas (VMs worker) e a versão do RKE2.",
       "Aguarde o Rancher criar as VMs no Harvester e provisionar o K8s automaticamente."
     ],
     dependencies: ["Rancher Manager v2.8.0 ou superior", "Connectivity entre Rancher e VIP do Harvester"],
     docsUrl: "https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/",
     resourceLinks: [
-      { label: "Instalação do Rancher Manager", url: "https://rancher.com/docs/rancher/v2.8/en/installation/" }
+      { label: "Rancher v2.8 Installation Guide", url: "https://ranchermanager.docs.rancher.com/v2.8/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/virtualization-management" },
+      { label: "Harvester Node Driver Guide", url: "https://docs.harvesterhci.io/v1.7/rancher/node-driver/" },
+      { label: "Harvester Cloud Provider", url: "https://docs.harvesterhci.io/v1.7/rancher/cloud-provider/" }
     ],
     tip: "O uso de Cloud Credentials no Rancher é o que permite a automação total do ciclo de vida das VMs de nó."
+  },
+  "Create a backup of a VM": {
+    icon: Database,
+    steps: [
+      "Vá na VM desejada e clique em 'Actions' > 'Take Backup'.",
+      "Insira um nome para o snapshot de backup.",
+      "Acompanhe o progresso na aba 'Backups'.",
+      "Verifique se o backup foi enviado com sucesso para o target configurado."
+    ],
+    dependencies: ["Backup Target configurado e saudável", "VM em estado estável"],
+    docsUrl: "https://docs.harvesterhci.io/v1.7/advanced/backup-restore/#backing-up-a-virtual-machine",
+    resourceLinks: [
+      { label: "Guia de Backup de VM", url: "https://docs.harvesterhci.io/v1.7/advanced/backup-restore/#backing-up-a-virtual-machine" }
+    ],
+    tip: "Backups podem ser realizados com a VM ligada (Snapshot-based), mas recomenda-se cautela com bancos de dados de alta escrita."
+  },
+  "Restore a VM from a backup": {
+    icon: RefreshCw,
+    steps: [
+      "Navegue até 'Backups' no menu lateral.",
+      "Selecione o backup desejado e clique em 'Restore'.",
+      "Escolha se deseja restaurar para uma nova VM ou sobrescrever a existente.",
+      "Aguarde o provisionamento e valide os dados."
+    ],
+    dependencies: ["Backup anterior concluído com sucesso", "Recursos disponíveis para nova VM"],
+    docsUrl: "https://docs.harvesterhci.io/v1.7/advanced/backup-restore/#restoring-a-virtual-machine",
+    resourceLinks: [
+      { label: "Guia de Restauração de VM", url: "https://docs.harvesterhci.io/v1.7/advanced/backup-restore/#restoring-a-virtual-machine" }
+    ],
+    tip: "A restauração para uma 'New VM' é a forma mais segura de validar backups sem afetar o ambiente de produção."
   }
 };
 
 export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
   const [activeSection, setActiveSection] = useState('overview');
+  const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
 
   const sections = [
     { id: 'overview', icon: <LayoutTemplate className="w-4 h-4" />, label: 'Visão Geral' },
@@ -150,7 +212,14 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
     { id: 'storage', icon: <HardDrive className="w-4 h-4" />, label: 'Armazenamento' },
     { id: 'poc-goals', icon: <FileCheck className="w-4 h-4" />, label: 'Procedimentos da POC', count: goals.length },
     { id: 'rancher', icon: <Cloud className="w-4 h-4" />, label: 'Integração Rancher' },
+    { id: 'troubleshooting', icon: <Bug className="w-4 h-4" />, label: 'Troubleshooting' },
   ];
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedCmd(text);
+    setTimeout(() => setCopiedCmd(null), 2000);
+  };
 
   const handleNext = () => {
     const idx = sections.findIndex(s => s.id === activeSection);
@@ -381,7 +450,7 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                    </div>
                    <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl space-y-2">
                       <h4 className="text-xs font-bold text-blue-800">Backup Target (Crucial)</h4>
-                      <p className="text-[10px] text-blue-700 leading-relaxed">Vá em <strong>Settings &gt; backup-target</strong>. Configure um servidor NFS ou S3. Sem isso, você não pode realizar snapshots externos ou recuperação de desastres.</p>
+                      <p className="text-[10px] text-blue-700 leading-relaxed">Vá em <strong>Settings > backup-target</strong>. Configure um servidor NFS ou S3. Sem isso, você não pode realizar snapshots externos ou recuperação de desastres.</p>
                    </div>
                 </div>
 
@@ -391,7 +460,7 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                       <ul className="space-y-4">
                          <li className="space-y-1">
                             <div className="text-xs font-bold uppercase tracking-widest text-slate-500">VLAN Networks</div>
-                            <p className="text-[10px] text-slate-300">Navegue até <strong>Networks &gt; VM Networks</strong> para criar redes L2 isoladas.</p>
+                            <p className="text-[10px] text-slate-300">Navegue até <strong>Networks > VM Networks</strong> para criar redes L2 isoladas.</p>
                          </li>
                          <li className="space-y-1">
                             <div className="text-xs font-bold uppercase tracking-widest text-slate-500">IP Pools (v1.7)</div>
@@ -403,7 +472,7 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                       <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0" />
                       <div>
                          <h4 className="text-xs font-bold text-amber-800">Dica: Repositórios</h4>
-                         <p className="text-[10px] text-amber-700 mt-1 leading-relaxed">Se o cluster estiver atrás de um proxy, configure-o em <strong>Settings &gt; http-proxy</strong> para que o download de imagens Cloud funcione corretamente.</p>
+                         <p className="text-[10px] text-amber-700 mt-1 leading-relaxed">Se o cluster estiver atrás de um proxy, configure-o em <strong>Settings > http-proxy</strong> para que o download de imagens Cloud funcione corretamente.</p>
                       </div>
                    </div>
                 </div>
@@ -617,7 +686,7 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                          {[
                             { 
                               title: "Habilitação da Feature de Virtualização", 
-                              desc: "No Rancher Manager, navegue até 'Global Settings' &gt; 'Feature Flags'. Localize a flag 'harvester' (ou 'virtualization' em versões mais recentes). Certifique-se que o status é 'Enabled'. Isso habilita o painel de Virtualização no menu lateral esquerdo do Rancher.",
+                              desc: "No Rancher Manager, navegue até 'Global Settings' > 'Feature Flags'. Localize a flag 'harvester' (ou 'virtualization' em versões mais recentes). Certifique-se que o status é 'Enabled'. Isso habilita o painel de Virtualização no menu lateral esquerdo do Rancher.",
                               doc: "https://ranchermanager.docs.rancher.com/v2.8/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/virtualization-management"
                             },
                             { 
@@ -627,12 +696,12 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                             },
                             { 
                               title: "Criação de Cloud Credentials", 
-                              desc: "Para que o Rancher gerencie máquinas no Harvester, você deve criar credenciais. Vá em 'Cluster Management' &gt; 'Cloud Credentials' &gt; 'Create'. Selecione 'Harvester'. O Rancher usará essas credenciais para interagir com a API do Harvester via seu Virtual IP (VIP).",
+                              desc: "Para que o Rancher gerencie máquinas no Harvester, você deve criar credenciais. Vá em 'Cluster Management' > 'Cloud Credentials' > 'Create'. Selecione 'Harvester'. O Rancher usará essas credenciais para interagir com a API do Harvester via seu Virtual IP (VIP).",
                               doc: "https://ranchermanager.docs.rancher.com/v2.8/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/set-up-cloud-providers/harvester"
                             },
                             { 
                               title: "Provisionamento de Cluster RKE2", 
-                              desc: "Agora, em 'Cluster Management' &gt; 'Create', escolha 'Harvester' como o Cloud Provider. Configure o 'Machine Pool' definindo CPU, Memória e a Imagem de SO (ex: SLES 15 ou openSUSE). O Rancher criará automaticamente as VMs no Harvester e as configurará como nós do seu novo cluster K8s.",
+                              desc: "Agora, em 'Cluster Management' > 'Create', escolha 'Harvester' como the Cloud Provider. Configure o 'Machine Pool' definindo CPU, Memória e a Imagem de SO (ex: SLES 15 ou openSUSE). O Rancher criará automaticamente as VMs no Harvester e as configurará como nós do seu novo cluster K8s.",
                               doc: "https://docs.harvesterhci.io/v1.7/rancher/node-driver/"
                             },
                             {
@@ -685,7 +754,7 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                             { l: "Versão do Rancher", d: "Rancher v2.8.0+ é necessário para integração total com Harvester v1.7.0+." },
                             { l: "Acesso à API (VIP)", d: "O Rancher Manager deve conseguir acessar o Cluster VIP do Harvester na porta 443 sem interrupções." },
                             { l: "Porta 8443 (Webhook)", d: "Crucial para a comunicação de admissão de recursos entre Rancher e Harvester." },
-                            { l: "Certificados Confiáveis", d: "Se usar certificados auto-assinados no Harvester, você deve importar a CA no Rancher ou habilitar 'Allow Insecure' nas credenciais." }
+                            { l: "Certificados Confiáveis", d: "Se usar certificados auto-assinados no Harvester, você deve importar a CA no Rancher or habilitar 'Allow Insecure' nas credenciais." }
                          ].map((req, i) => (
                             <li key={i} className="flex items-start gap-4 p-4 bg-white/5 rounded-2xl border border-white/10">
                                <div className="w-2 h-2 rounded-full bg-suse-base mt-1.5 shrink-0"></div>
@@ -740,6 +809,162 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
           </div>
         );
 
+      case 'troubleshooting':
+        return (
+          <div className="space-y-8 animate-fade-in">
+             <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-red-600 rounded-2xl shadow-lg">
+                   <Wrench className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                   <h1 className="text-3xl font-bold text-suse-dark">Troubleshooting & Diagnóstico</h1>
+                   <p className="text-sm text-gray-500">Comandos essenciais para identificar e resolver problemas comuns no Harvester.</p>
+                </div>
+             </div>
+
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Diagnóstico de Instalação */}
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+                  <h3 className="font-bold text-gray-800 flex items-center gap-2 text-sm">
+                    <Terminal className="w-4 h-4 text-red-500" /> Logs de Instalação e Boot
+                  </h3>
+                  <div className="space-y-4">
+                    {[
+                      { 
+                        label: "Logs do Cloud-Init", 
+                        cmd: "cat /var/log/cloud-init-output.log", 
+                        desc: "Primeiro lugar para checar se scripts de pós-instalação falharam." 
+                      },
+                      { 
+                        label: "Journal do Instalador", 
+                        cmd: "journalctl -u harvester-installer -f", 
+                        desc: "Monitora logs do wizard de instalação em tempo real." 
+                      }
+                    ].map((item, i) => (
+                      <div key={i} className="group bg-slate-50 p-3 rounded-xl border border-slate-100 hover:border-red-200 transition-all">
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{item.label}</span>
+                          <button onClick={() => copyToClipboard(item.cmd)} className="text-slate-300 hover:text-red-500 transition-colors">
+                            {copiedCmd === item.cmd ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                          </button>
+                        </div>
+                        <code className="block bg-slate-900 text-red-400 p-2 rounded text-[10px] font-mono break-all mb-1">{item.cmd}</code>
+                        <p className="text-[9px] text-slate-400 italic leading-tight">{item.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Status do Cluster e Pods */}
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+                  <h3 className="font-bold text-gray-800 flex items-center gap-2 text-sm">
+                    <Layers className="w-4 h-4 text-blue-500" /> Status de Pods e K8s Interno
+                  </h3>
+                  <div className="space-y-4">
+                    {[
+                      { 
+                        label: "Pods com Erro", 
+                        cmd: "kubectl get pods -A | grep -v Running | grep -v Completed", 
+                        desc: "Lista apenas pods que estão em CrashLoopBackOff ou Error." 
+                      },
+                      { 
+                        label: "Eventos do Cluster", 
+                        cmd: "kubectl get events -A --sort-by='.lastTimestamp'", 
+                        desc: "Mostra os últimos eventos significativos (erros de agendamento, etc)." 
+                      }
+                    ].map((item, i) => (
+                      <div key={i} className="group bg-slate-50 p-3 rounded-xl border border-slate-100 hover:border-blue-200 transition-all">
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{item.label}</span>
+                          <button onClick={() => copyToClipboard(item.cmd)} className="text-slate-300 hover:text-blue-500 transition-colors">
+                            {copiedCmd === item.cmd ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                          </button>
+                        </div>
+                        <code className="block bg-slate-900 text-blue-300 p-2 rounded text-[10px] font-mono break-all mb-1">{item.cmd}</code>
+                        <p className="text-[9px] text-slate-400 italic leading-tight">{item.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Rede e Conectividade */}
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+                  <h3 className="font-bold text-gray-800 flex items-center gap-2 text-sm">
+                    <Wifi className="w-4 h-4 text-emerald-500" /> Conectividade e VIP
+                  </h3>
+                  <div className="space-y-4">
+                    {[
+                      { 
+                        label: "Verificar VIP do Cluster", 
+                        cmd: "ip addr show kube-ipvs0", 
+                        desc: "Confirma se o VIP está atribuído corretamente ao nó master." 
+                      },
+                      { 
+                        label: "Teste de Saída DNS", 
+                        cmd: "nslookup registry.suse.com", 
+                        desc: "Valida se a resolução de nomes externa está funcionando." 
+                      }
+                    ].map((item, i) => (
+                      <div key={i} className="group bg-slate-50 p-3 rounded-xl border border-slate-100 hover:border-emerald-200 transition-all">
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{item.label}</span>
+                          <button onClick={() => copyToClipboard(item.cmd)} className="text-slate-300 hover:text-emerald-500 transition-colors">
+                            {copiedCmd === item.cmd ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                          </button>
+                        </div>
+                        <code className="block bg-slate-900 text-emerald-400 p-2 rounded text-[10px] font-mono break-all mb-1">{item.cmd}</code>
+                        <p className="text-[9px] text-slate-400 italic leading-tight">{item.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Armazenamento Longhorn */}
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+                  <h3 className="font-bold text-gray-800 flex items-center gap-2 text-sm">
+                    <Database className="w-4 h-4 text-purple-500" /> Armazenamento (Longhorn)
+                  </h3>
+                  <div className="space-y-4">
+                    {[
+                      { 
+                        label: "Status dos Volumes", 
+                        cmd: "kubectl get volumes.longhorn.io -n longhorn-system", 
+                        desc: "Checa se existem volumes Degraded ou Detached indevidamente." 
+                      },
+                      { 
+                        label: "Nós do Longhorn", 
+                        cmd: "kubectl get nodes.longhorn.io -n longhorn-system", 
+                        desc: "Verifica o espaço disponível em disco para o storage distribuído." 
+                      }
+                    ].map((item, i) => (
+                      <div key={i} className="group bg-slate-50 p-3 rounded-xl border border-slate-100 hover:border-purple-200 transition-all">
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{item.label}</span>
+                          <button onClick={() => copyToClipboard(item.cmd)} className="text-slate-300 hover:text-purple-500 transition-colors">
+                            {copiedCmd === item.cmd ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                          </button>
+                        </div>
+                        <code className="block bg-slate-900 text-purple-300 p-2 rounded text-[10px] font-mono break-all mb-1">{item.cmd}</code>
+                        <p className="text-[9px] text-slate-400 italic leading-tight">{item.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+             </div>
+
+             <div className="p-6 bg-slate-900 text-white rounded-3xl flex gap-6 items-center">
+               <div className="p-4 bg-white/10 rounded-2xl">
+                 <ShieldAlert className="w-10 h-10 text-suse-base" />
+               </div>
+               <div>
+                 <h4 className="font-bold text-lg">Support Bundle (Evidência Final)</h4>
+                 <p className="text-xs text-slate-400 mt-1 leading-relaxed">Se o problema persistir, gere o bundle de suporte completo para enviar aos especialistas. O comando abaixo cria um pacote zipado com todos os logs do cluster.</p>
+                 <code className="inline-block bg-slate-800 px-3 py-1.5 rounded mt-3 text-suse-base font-mono text-xs">harvester-support-bundle</code>
+               </div>
+             </div>
+          </div>
+        );
+
       default:
         return (
             <div className="py-20 text-center opacity-50">
@@ -781,7 +1006,7 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
       <div className="flex-1 bg-white p-10 rounded-3xl border border-gray-200 shadow-sm min-h-[500px]">
         {renderContent()}
         <div className="mt-16 pt-8 border-t border-gray-100 flex justify-end no-print">
-            {activeSection !== 'rancher' && (
+            {activeSection !== 'troubleshooting' && (
                 <button 
                     onClick={handleNext}
                     className="flex items-center gap-3 bg-suse-dark text-white px-8 py-4 rounded-2xl hover:bg-black transition-all font-bold shadow-xl hover:scale-105 active:scale-95"
