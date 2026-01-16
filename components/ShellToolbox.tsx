@@ -197,7 +197,7 @@ export const ShellToolbox: React.FC<Props> = ({ lang }) => {
                     </div>
                     <h4 className="text-2xl font-black uppercase tracking-tight">Rancher Integration Cleanup</h4>
                     <p className="text-sm text-slate-400 leading-relaxed">
-                        If a Harvester cluster is deleted in Rancher but remains in a "Removing" or "Terminating" state, local cleanup is required to release physical node resources.
+                        If a Harvester cluster is deleted in Rancher but remains in a &quot;Removing&quot; or &quot;Terminating&quot; state, local cleanup is required to release physical node resources.
                     </p>
                     <div className="p-5 bg-red-500/10 border-l-4 border-red-500 rounded-xl">
                         <p className="text-[10px] text-red-400 font-bold uppercase mb-1 flex items-center gap-2"><AlertCircle className="w-3.5 h-3.5"/> Warning</p>
@@ -211,7 +211,7 @@ export const ShellToolbox: React.FC<Props> = ({ lang }) => {
                            <span className="w-8 h-8 rounded-xl bg-purple-600/20 flex items-center justify-center font-black text-xs border border-purple-500/20">1</span>
                            <span className="text-xs font-black uppercase tracking-widest">Manual Purge</span>
                         </div>
-                        <p className="text-[10px] text-slate-400">Use this if the cluster doesn't disappear from the Harvester UI after Rancher removal.</p>
+                        <p className="text-[10px] text-slate-400">Use this if the cluster doesn&apos;t disappear from the Harvester UI after Rancher removal.</p>
                         <div className="bg-black/40 p-3 rounded-xl font-mono text-[9px] text-purple-300 border border-purple-500/10">
                             kubectl delete cluster.management.cattle.io [ID] --force
                         </div>

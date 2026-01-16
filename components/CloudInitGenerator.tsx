@@ -612,7 +612,7 @@ spec:
                   </div>
                   <button 
                     onClick={handleCopy}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded text-[10px] font-bold transition-all ${copied ? 'bg-green-500 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'}`}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded text-[10px] font-bold transition-all ${copied ? 'bg-green-50 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'}`}
                   >
                     {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                     {copied ? 'Copiado!' : 'Copiar YAML'}

@@ -134,7 +134,7 @@ export const InstallGuide: React.FC<Props> = ({ lang, netSpecs, goals = [] }) =>
                                  <AlertCircle className="w-4 h-4 shrink-0" /> 
                                  <div>
                                     <span className="block mb-1 text-blue-900 uppercase tracking-widest">VIP Warning</span>
-                                    Ensure the VIP is statically assigned in your switch/router and doesn't conflict with any active DHCP pools. etcd relies heavily on this IP stability.
+                                    Ensure the VIP is statically assigned in your switch/router and doesn&apos;t conflict with any active DHCP pools. etcd relies heavily on this IP stability.
                                  </div>
                               </div>
                           </div>
@@ -165,14 +165,14 @@ export const InstallGuide: React.FC<Props> = ({ lang, netSpecs, goals = [] }) =>
                         <StepBox icon={Database} title="Backup Target" desc={t.installGuide.config.backup} colorClass="bg-purple-50 border-purple-100 text-purple-900" />
                     </div>
                     <div className="space-y-6">
-                        <UISnapshot type="dashboard" title="Settings -> Management Network" imageSrc="https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/initial-settings.png" />
+                        <UISnapshot type="dashboard" title="Settings -&gt; Management Network" imageSrc="https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/initial-settings.png" />
                         <div className="bg-amber-50 p-6 rounded-[2rem] border border-amber-100">
                             <h5 className="text-[11px] font-black text-amber-800 uppercase tracking-widest mb-3 flex items-center gap-2">
                                 <AlertTriangle className="w-4 h-4" /> Config Troubleshooting
                             </h5>
                             <ul className="text-[10px] text-amber-700 space-y-2 font-medium leading-relaxed">
                                 <li className="flex items-start gap-2"><div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1"></div> If VMs lose connectivity during large file transfers, verify that the Harvester Bridge MTU matches the physical switch MTU.</li>
-                                <li className="flex items-start gap-2"><div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1"></div> Ensure the NTP servers are reachable. Time drift > 500ms will cause etcd to crash.</li>
+                                <li className="flex items-start gap-2"><div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1"></div> Ensure the NTP servers are reachable. Time drift &gt; 500ms will cause etcd to crash.</li>
                             </ul>
                         </div>
                     </div>
@@ -340,7 +340,7 @@ export const InstallGuide: React.FC<Props> = ({ lang, netSpecs, goals = [] }) =>
                     </div>
                     <UISnapshot 
                         type="dashboard" 
-                        title="Rancher Global Settings -> Feature Flags" 
+                        title="Rancher Global Settings -&gt; Feature Flags" 
                         imageSrc="https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/rancher-feature-flag.png" 
                     />
                 </div>
@@ -362,7 +362,7 @@ export const InstallGuide: React.FC<Props> = ({ lang, netSpecs, goals = [] }) =>
                         <p className="text-sm text-gray-600 leading-relaxed bg-slate-50 p-6 rounded-[2rem] border border-slate-100">{t.installGuide.rancher.step2Desc}</p>
                         <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-3">
                             <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                            <span className="text-[10px] text-amber-800 font-medium italic">Important: If using self-signed certificates, ensure 'Skip TLS verification' is checked or the Harvester CA is imported into Rancher.</span>
+                            <span className="text-[10px] text-amber-800 font-medium italic">Important: If using self-signed certificates, ensure &apos;Skip TLS verification&apos; is checked or the Harvester CA is imported into Rancher.</span>
                         </div>
                     </div>
                 </div>
@@ -384,8 +384,8 @@ export const InstallGuide: React.FC<Props> = ({ lang, netSpecs, goals = [] }) =>
                                 <span className="text-xs font-black uppercase tracking-widest">Credential Flow</span>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <div className="bg-white/10 px-4 py-3 rounded-xl border border-white/10 text-white text-[10px] font-mono">1. Cluster Mgmt > Cloud Credentials</div>
-                                <div className="bg-white/10 px-4 py-3 rounded-xl border border-white/10 text-white text-[10px] font-mono">2. Select 'Harvester' provider</div>
+                                <div className="bg-white/10 px-4 py-3 rounded-xl border border-white/10 text-white text-[10px] font-mono">1. Cluster Mgmt -&gt; Cloud Credentials</div>
+                                <div className="bg-white/10 px-4 py-3 rounded-xl border border-white/10 text-white text-[10px] font-mono">2. Select &apos;Harvester&apos; provider</div>
                                 <div className="bg-white/10 px-4 py-3 rounded-xl border border-white/10 text-white text-[10px] font-mono">3. Paste Harvester Bearer Token</div>
                             </div>
                         </div>
@@ -424,7 +424,7 @@ export const InstallGuide: React.FC<Props> = ({ lang, netSpecs, goals = [] }) =>
                                 <div className="w-8 h-8 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center shrink-0 font-black text-xs">!</div>
                                 <div>
                                     <h5 className="font-bold text-sm text-white">Certificate Trust Issues</h5>
-                                    <p className="text-[10px] text-slate-400 leading-relaxed mt-1">If the cluster stays in 'Pending' for > 10m, check the cattle-cluster-agent pods for "x509: certificate signed by unknown authority". Add your Rancher CA to Harvester Settings > Additional-CA.</p>
+                                    <p className="text-[10px] text-slate-400 leading-relaxed mt-1">If the cluster stays in &apos;Pending&apos; for &gt; 10m, check the cattle-cluster-agent pods for &quot;x509: certificate signed by unknown authority&quot;. Add your Rancher CA to Harvester Settings -&gt; Additional-CA.</p>
                                 </div>
                             </div>
                             <div className="flex gap-4">
@@ -445,7 +445,7 @@ export const InstallGuide: React.FC<Props> = ({ lang, netSpecs, goals = [] }) =>
                             </div>
                             <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
                                 <p className="text-[10px] font-black uppercase tracking-widest text-suse-base mb-2">Support Tip</p>
-                                <p className="text-[10px] text-slate-300 italic">"Always verify that Harvester can resolve the Rancher URL via DNS before starting the import process."</p>
+                                <p className="text-[10px] text-slate-300 italic">&quot;Always verify that Harvester can resolve the Rancher URL via DNS before starting the import process.&quot;</p>
                             </div>
                         </div>
                     </div>
