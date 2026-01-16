@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { NetworkSpecs, ValidationStatus, NodeNetworkConfig, Language } from '../types';
-import { Network, Shield, Lock, Cloud, Database, Shuffle, Wifi, Activity, Check, X, Sliders, Server, Clock } from 'lucide-react';
+import { NetworkSpecs, HardwareSpecs, ValidationStatus, NodeNetworkConfig, Language } from '../types';
+import { Network, Shield, Lock, Cloud, Database, Shuffle, Wifi, Activity, Check, X, Sliders, Server, Clock, Plus, Minus, AlertCircle } from 'lucide-react';
 import { InfraDiagram } from './InfraDiagram';
 import { translations } from '../i18n';
 
@@ -11,9 +11,10 @@ interface Props {
   updateSpecs: (specs: Partial<NetworkSpecs>) => void;
   onValidationChange: (status: ValidationStatus) => void;
   nodeCount: number;
+  updateHwSpecs?: (specs: Partial<HardwareSpecs>) => void;
 }
 
-export const NetworkValidation: React.FC<Props> = ({ lang, specs, updateSpecs, onValidationChange, nodeCount }) => {
+export const NetworkValidation: React.FC<Props> = ({ lang, specs, updateSpecs, onValidationChange, nodeCount, updateHwSpecs }) => {
   const t = translations[lang];
   const [activeTab, setActiveTab] = useState<'topology' | 'addressing' | 'nodes' | 'connectivity'>('topology');
   const [isRunningTests, setIsRunningTests] = useState(false);
@@ -36,6 +37,12 @@ export const NetworkValidation: React.FC<Props> = ({ lang, specs, updateSpecs, o
 
   const toggleFlag = (key: keyof NetworkSpecs) => {
     updateSpecs({ [key]: !specs[key] });
+  };
+
+  const handleNodeCountChange = (newValue: number) => {
+    if (newValue >= 3 && updateHwSpecs) {
+      updateHwSpecs({ nodeCount: newValue });
+    }
   };
 
   const inputClasses = "w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-suse-base outline-none";
@@ -107,23 +114,58 @@ export const NetworkValidation: React.FC<Props> = ({ lang, specs, updateSpecs, o
         )}
 
         {activeTab === 'nodes' && (
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
-              {specs.nodes.map((node, i) => (
-                <div key={i} className="bg-slate-50 p-5 rounded-2xl border border-gray-100 space-y-3">
-                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Node #{i+1}</div>
-                    <label className="text-[9px] font-bold text-gray-400 uppercase">{t.network.labels.staticIp}</label>
-                    <input 
-                        value={node.ip} 
-                        onChange={(e) => {
-                            const newNodes = [...specs.nodes];
-                            newNodes[i].ip = e.target.value;
-                            updateSpecs({ nodes: newNodes });
-                        }}
-                        className={inputClasses}
-                        placeholder="192.168.1.11"
-                    />
+           <div className="space-y-8 animate-fade-in">
+              {/* Dynamic Node Count Adjuster */}
+              <div className="bg-suse-dark text-white p-6 rounded-3xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-suse-base rounded-2xl text-white">
+                    <Server className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg">{t.network.labels.nodeCapacity}</h4>
+                    <p className="text-xs text-suse-light opacity-80">{t.network.labels.minNodesInfo}</p>
+                  </div>
                 </div>
-              ))}
+                
+                <div className="flex items-center gap-4 bg-white/10 p-2 rounded-2xl border border-white/10">
+                  <button 
+                    onClick={() => handleNodeCountChange(nodeCount - 1)}
+                    disabled={nodeCount <= 3}
+                    className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  >
+                    <Minus className="w-5 h-5" />
+                  </button>
+                  <div className="w-12 text-center font-black text-2xl">{nodeCount}</div>
+                  <button 
+                    onClick={() => handleNodeCountChange(nodeCount + 1)}
+                    className="w-10 h-10 rounded-xl bg-suse-base flex items-center justify-center hover:scale-110 transition-all"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {specs.nodes.map((node, i) => (
+                  <div key={i} className="bg-slate-50 p-5 rounded-2xl border border-gray-100 space-y-3 transition-all hover:border-suse-base/30">
+                      <div className="flex justify-between items-center">
+                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Node #{i+1}</div>
+                        {i === 0 && <span className="text-[9px] font-bold bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full uppercase">Seed / Master</span>}
+                      </div>
+                      <label className="text-[9px] font-bold text-gray-400 uppercase">{t.network.labels.staticIp}</label>
+                      <input 
+                          value={node.ip} 
+                          onChange={(e) => {
+                              const newNodes = [...specs.nodes];
+                              newNodes[i].ip = e.target.value;
+                              updateSpecs({ nodes: newNodes });
+                          }}
+                          className={inputClasses}
+                          placeholder={`192.168.1.1${i+1}`}
+                      />
+                  </div>
+                ))}
+              </div>
            </div>
         )}
 

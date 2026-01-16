@@ -163,7 +163,14 @@ const App: React.FC = () => {
         case POCStep.HARDWARE_VALIDATION:
             return <HardwareValidation lang={lang} specs={hwSpecs} updateSpecs={(d) => setHwSpecs({...hwSpecs, ...d})} onValidationChange={(s) => setStatus({...status, hardware: s.isValid})} />;
         case POCStep.NETWORK_CONFIG:
-            return <NetworkValidation lang={lang} specs={netSpecs} updateSpecs={(d) => setNetSpecs({...netSpecs, ...d})} onValidationChange={(s) => setStatus({...status, network: s.isValid})} nodeCount={hwSpecs.nodeCount} />;
+            return <NetworkValidation 
+                      lang={lang} 
+                      specs={netSpecs} 
+                      updateSpecs={(d) => setNetSpecs({...netSpecs, ...d})} 
+                      onValidationChange={(s) => setStatus({...status, network: s.isValid})} 
+                      nodeCount={hwSpecs.nodeCount} 
+                      updateHwSpecs={(d) => setHwSpecs({...hwSpecs, ...d})}
+                    />;
         case POCStep.ARCHITECTURE_PREVIEW:
             return <ArchitecturePreview lang={lang} specs={hwSpecs} pocData={pocData} netSpecs={netSpecs} />;
         case POCStep.INSTALLATION_PROCESS:
