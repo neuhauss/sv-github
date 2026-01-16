@@ -1,9 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
-import { HardwareSpecs, ValidationStatus } from '../types';
+import { HardwareSpecs, ValidationStatus, Language } from '../types';
+import { translations } from '../i18n';
 import { Server, Cpu, HardDrive, CheckCircle2, AlertTriangle, Check, Zap, Cpu as GpuIcon, ShieldCheck } from 'lucide-react';
 
 interface Props {
+  lang: Language;
   specs: HardwareSpecs;
   updateSpecs: (specs: Partial<HardwareSpecs>) => void;
   onValidationChange: (status: ValidationStatus) => void;
@@ -45,7 +47,8 @@ const ValidatedInput = ({
     </div>
 );
 
-export const HardwareValidation: React.FC<Props> = ({ specs, updateSpecs, onValidationChange }) => {
+export const HardwareValidation: React.FC<Props> = ({ lang, specs, updateSpecs, onValidationChange }) => {
+  const t = translations[lang];
   const [validation, setValidation] = useState<ValidationStatus>({ isValid: false, messages: [] });
 
   const REQ = {
@@ -60,65 +63,61 @@ export const HardwareValidation: React.FC<Props> = ({ specs, updateSpecs, onVali
     let isValid = true;
 
     if (specs.nodeCount < 3) {
-      messages.push("Aviso: Mínimo de 3 nós recomendado para Alta Disponibilidade (v1.7).");
+      messages.push(lang === 'pt' ? "Mínimo de 3 nós recomendado." : lang === 'es' ? "Mínimo de 3 nodos recomendado." : "Min 3 nodes recommended.");
     }
 
     if (specs.cpuCores < REQ.CPU_CORES) {
-      messages.push(`Erro: Mínimo ${REQ.CPU_CORES} cores necessários.`);
+      messages.push(`${t.common.required}: ${REQ.CPU_CORES} Cores.`);
       isValid = false;
     }
 
     if (specs.ramGb < REQ.RAM_GB) {
-      messages.push(`Erro: Mínimo ${REQ.RAM_GB} GB RAM necessários.`);
+      messages.push(`${t.common.required}: ${REQ.RAM_GB} GB RAM.`);
       isValid = false;
-    }
-
-    if (specs.hasGpu) {
-      messages.push("Info: Modo AI/GPU Habilitado. Certifique-se que o hardware suporta IOMMU na BIOS.");
     }
 
     setValidation({ isValid, messages });
     onValidationChange({ isValid, messages });
-  }, [specs, onValidationChange]);
+  }, [specs, onValidationChange, lang]);
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-suse-dark flex items-center gap-2">
-                <Server className="w-6 h-6 text-suse-base" /> Validação de Hardware v1.7
+                <Server className="w-6 h-6 text-suse-base" /> {t.hardware.title}
             </h2>
-            <span className="text-[10px] font-bold bg-suse-base/10 text-suse-base px-2 py-1 rounded">Perfil Enterprise</span>
+            <span className="text-[10px] font-bold bg-suse-base/10 text-suse-base px-2 py-1 rounded">{t.hardware.profile}</span>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-           <ValidatedInput label="Nós Físicos" value={specs.nodeCount} onChange={(e: any) => updateSpecs({ nodeCount: parseInt(e.target.value) || 0 })} isValid={specs.nodeCount >= 3} min={3} />
-           <ValidatedInput label="Cores p/ Nó" icon={Cpu} value={specs.cpuCores} onChange={(e: any) => updateSpecs({ cpuCores: parseInt(e.target.value) || 0 })} isValid={specs.cpuCores >= REQ.CPU_CORES} min={REQ.CPU_CORES} />
-           <ValidatedInput label="RAM GB p/ Nó" value={specs.ramGb} onChange={(e: any) => updateSpecs({ ramGb: parseInt(e.target.value) || 0 })} isValid={specs.ramGb >= REQ.RAM_GB} min={REQ.RAM_GB} />
+           <ValidatedInput label={t.hardware.nodes} value={specs.nodeCount} onChange={(e: any) => updateSpecs({ nodeCount: parseInt(e.target.value) || 0 })} isValid={specs.nodeCount >= 3} min={3} />
+           <ValidatedInput label={t.hardware.cores} icon={Cpu} value={specs.cpuCores} onChange={(e: any) => updateSpecs({ cpuCores: parseInt(e.target.value) || 0 })} isValid={specs.cpuCores >= REQ.CPU_CORES} min={REQ.CPU_CORES} />
+           <ValidatedInput label={t.hardware.ram} value={specs.ramGb} onChange={(e: any) => updateSpecs({ ramGb: parseInt(e.target.value) || 0 })} isValid={specs.ramGb >= REQ.RAM_GB} min={REQ.RAM_GB} />
            
            <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
              <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                <GpuIcon className="w-4 h-4 text-purple-500" /> Aceleração GPU (AI Readiness)
+                <GpuIcon className="w-4 h-4 text-purple-500" /> {t.hardware.gpu}
              </label>
              <button 
                 onClick={() => updateSpecs({ hasGpu: !specs.hasGpu })}
                 className={`w-full py-3 px-4 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-2 ${specs.hasGpu ? 'bg-purple-600 text-white shadow-lg shadow-purple-200' : 'bg-white border border-gray-200 text-gray-400'}`}
              >
                 {specs.hasGpu ? <ShieldCheck className="w-4 h-4"/> : null}
-                {specs.hasGpu ? "GPU Habilitada (Pass-through)" : "Desabilitado"}
+                {specs.hasGpu ? t.hardware.gpuEnabled : t.hardware.gpuDisabled}
              </button>
            </div>
 
            <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
-            <label className="block text-sm font-bold text-gray-700 mb-2">Tipo de Storage (v1.7 Support)</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">{t.hardware.storageType}</label>
             <select 
               value={specs.diskType}
               onChange={(e) => updateSpecs({ diskType: e.target.value as any })}
               className="w-full p-3 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-suse-base"
             >
-              <option value="NVMe">NVMe (Alta Performance - Recomendado)</option>
-              <option value="SSD">SSD Standard</option>
-              <option value="HDD">HDD (Apenas para Arquivamento)</option>
+              <option value="NVMe">NVMe</option>
+              <option value="SSD">SSD</option>
+              <option value="HDD">HDD</option>
             </select>
            </div>
         </div>
@@ -126,7 +125,7 @@ export const HardwareValidation: React.FC<Props> = ({ specs, updateSpecs, onVali
         <div className={`p-4 rounded-md transition-all duration-300 ${validation.isValid ? 'bg-green-50 border border-green-200' : 'bg-orange-50 border border-orange-200'}`}>
           <h3 className="font-bold flex items-center gap-2 mb-2">
             {validation.isValid ? <CheckCircle2 className="text-green-600"/> : <AlertTriangle className="text-orange-600"/>}
-            {validation.isValid ? 'Hardware Compatível v1.7' : 'Requisitos Não Atendidos'}
+            {validation.isValid ? t.hardware.compatible : t.hardware.notMet}
           </h3>
           <ul className="space-y-1 ml-6 list-disc text-sm text-gray-700">
             {validation.messages.map((msg, idx) => <li key={idx}>{msg}</li>)}

@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChecklistItem, NetworkSpecs } from '../types';
-import { Database, MousePointer, Terminal, CheckCircle, ChevronDown, ChevronUp, CheckSquare, Square, Flag, ExternalLink, HelpCircle, ArrowRight, Play, Settings, Monitor, Image as ImageIcon, Search, Target } from 'lucide-react';
+import { Database, MousePointer, Terminal, CheckCircle, ChevronDown, ChevronUp, CheckSquare, Square, Flag, ExternalLink, HelpCircle, ArrowRight, Play, Settings, Monitor, Image as ImageIcon, Search, Target, ShieldAlert, Wrench } from 'lucide-react';
 
 interface StepDetail {
-  type: 'action' | 'command' | 'verify';
+  type: 'action' | 'command' | 'verify' | 'troubleshoot';
   label: string;
   description?: React.ReactNode;
   code?: string;
@@ -45,26 +45,44 @@ const GOAL_DATA: Record<string, GoalConfig> = {
         type: 'verify',
         label: "3. Validação de Acesso Web",
         description: <span>Após o reinício, tente acessar o dashboard em: <code className="bg-emerald-100 px-1 rounded text-emerald-800 font-bold">https://{net?.clusterVip || 'SEU-VIP'}</code>.</span>
+      },
+      {
+        type: 'troubleshoot',
+        label: "Troubleshooting: etcd slow fsync",
+        description: "Se o nó travar ou reiniciar sozinho, verifique a latência de escrita do disco.",
+        code: "fio --filename=/var/lib/etcd/test --rw=write --bs=4k --size=50M --name=etcd_check --fsync=1"
       }
     ],
-    docs: [{ title: "Harvester Installation Guide", url: "https://docs.harvesterhci.io/v1.4/install/iso-install/" }]
+    docs: [{ title: "Harvester Installation Guide", url: "https://docs.harvesterhci.io/v1.7/install/iso-install/" }]
   },
   "Create a VM": {
     goal: "Deploy and run a Virtual Machine instance.",
     steps: (net) => [
-      { type: 'action', label: "1. Wizard de Criação", description: "Vá em 'Virtual Machines' &gt; 'Create'. Selecione a imagem e recursos desejados." },
+      { type: 'action', label: "1. Wizard de Criação", description: "Vá em 'Virtual Machines' > 'Create'. Selecione a imagem e recursos desejados." },
       { type: 'action', label: "2. Atribuição de Rede", description: <span>Associe a interface de rede à rede <strong>{net?.vlanId ? `VLAN ${net.vlanId}` : 'Management Default'}</strong>.</span> },
-      { type: 'verify', label: "3. Verificação Funcional", description: "Abra o VNC Console e confirme que o sistema operacional da VM iniciou corretamente." }
+      { type: 'verify', label: "3. Verificação Funcional", description: "Abra o VNC Console e confirme que o sistema operacional da VM iniciou corretamente." },
+      {
+        type: 'troubleshoot',
+        label: "Troubleshooting: VM stuck in 'Starting'",
+        description: "Verifique se os pods do KubeVirt no namespace 'harvester-system' estão saudáveis.",
+        code: "kubectl get pods -n harvester-system | grep virt-handler"
+      }
     ],
-    docs: [{ title: "VM Management", url: "https://docs.harvesterhci.io/v1.4/vm/" }]
+    docs: [{ title: "VM Management", url: "https://docs.harvesterhci.io/v1.7/vm/" }]
   },
   "Create a VLAN network in SUSE Virtualization": {
     goal: "Configure Layer 2 isolated networks for VMs.",
     steps: (net) => [
-      { type: 'action', label: "1. Criação do Recurso", description: <span>Vá em 'Networks' &gt; 'VM Networks'. Crie uma 'L2VlanNetwork' com o ID <strong>{net?.vlanId || 'configurado'}</strong>.</span> },
-      { type: 'verify', label: "2. Validação Multus", description: "Verifique se o status da rede está 'Active' e se os pods do 'network-controller' estão rodando sem erros." }
+      { type: 'action', label: "1. Criação do Recurso", description: <span>Vá em 'Networks' > 'VM Networks'. Crie uma 'L2VlanNetwork' com o ID <strong>{net?.vlanId || 'configurado'}</strong>.</span> },
+      { type: 'verify', label: "2. Validação Multus", description: "Verifique se o status da rede está 'Active' e se os pods do 'network-controller' estão rodando sem erros." },
+      {
+        type: 'troubleshoot',
+        label: "Troubleshooting: No Connectivity in VLAN",
+        description: "Certifique-se que o ClusterNetwork 'mgmt' tem a interface física correta associada.",
+        code: "kubectl get clusternetwork"
+      }
     ],
-    docs: [{ title: "Networking Guide", url: "https://docs.harvesterhci.io/v1.4/networking/harvester-network/" }]
+    docs: [{ title: "Networking Guide", url: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/" }]
   }
 };
 
@@ -148,25 +166,46 @@ export const InitialConfig: React.FC<Props> = ({ onComplete, goals = [], netSpec
                             <Monitor className="w-3 h-3"/> Passo-a-passo Executável
                         </div>
                         {goalConfig.steps(netSpecs).map((s, idx) => (
-                          <div key={idx} className={`flex gap-4 p-3 rounded-lg border border-l-4 ${s.type === 'verify' ? 'bg-green-50 border-green-200 border-l-green-500' : 'bg-slate-50 border-slate-200 border-l-blue-500'}`}>
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${s.type === 'verify' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'}`}>
-                              {s.type === 'verify' ? <Search className="w-3 h-3"/> : idx + 1}
+                          <div key={idx} className={`flex gap-4 p-3 rounded-lg border border-l-4 ${
+                            s.type === 'verify' ? 'bg-green-50 border-green-200 border-l-green-500' : 
+                            s.type === 'troubleshoot' ? 'bg-red-50 border-red-200 border-l-red-500' :
+                            'bg-slate-50 border-slate-200 border-l-blue-500'
+                          }`}>
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                              s.type === 'verify' ? 'bg-green-500 text-white' : 
+                              s.type === 'troubleshoot' ? 'bg-red-500 text-white' :
+                              'bg-blue-500 text-white'
+                            }`}>
+                              {s.type === 'verify' ? <Search className="w-3 h-3"/> : 
+                               s.type === 'troubleshoot' ? <Wrench className="w-3 h-3"/> :
+                               idx + 1}
                             </div>
                             <div className="flex-1">
                               <div className="text-sm font-bold text-gray-800 flex items-center gap-2">
                                 {s.label}
                                 {s.type === 'verify' && <span className="text-[9px] bg-green-200 text-green-800 px-1.5 py-0.5 rounded font-bold uppercase tracking-widest">Verificação</span>}
+                                {s.type === 'troubleshoot' && <span className="text-[9px] bg-red-200 text-red-800 px-1.5 py-0.5 rounded font-bold uppercase tracking-widest">Fix / Troubleshoot</span>}
                               </div>
                               <div className="text-xs text-gray-600 mt-1 leading-relaxed">{s.description}</div>
                               {s.code && (
                                 <div className="mt-2 group relative">
-                                    <pre className="p-2 bg-gray-900 text-green-400 rounded text-[10px] font-mono border border-gray-700">{s.code}</pre>
-                                    <button className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-white transition-opacity"><Terminal className="w-3 h-3"/></button>
+                                    <pre className="p-2 bg-gray-900 text-green-400 rounded text-[10px] font-mono border border-gray-700 overflow-x-auto">{s.code}</pre>
+                                    <button 
+                                      onClick={() => navigator.clipboard.writeText(s.code || '')}
+                                      className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-white transition-opacity p-1 bg-gray-800 rounded"
+                                    >
+                                      <Terminal className="w-3 h-3"/>
+                                    </button>
                                 </div>
                               )}
                             </div>
                           </div>
                         ))}
+                        <div className="mt-4 flex justify-end">
+                           <a href={goalConfig.docs[0].url} target="_blank" rel="noreferrer" className="text-[10px] text-blue-600 font-bold flex items-center gap-1 hover:underline">
+                              Documentação Oficial {goalConfig.docs[0].title} <ExternalLink className="w-3 h-3"/>
+                           </a>
+                        </div>
                       </div>
                     ) : (
                       <div className="text-sm text-gray-600 p-4 border-2 border-dashed border-gray-100 rounded text-center italic">

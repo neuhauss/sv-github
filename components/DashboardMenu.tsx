@@ -1,10 +1,12 @@
 
 import React from 'react';
-import { POCStep } from '../types';
+import { POCStep, Language } from '../types';
+import { translations } from '../i18n';
 import { ClipboardList, Server, Network, LayoutTemplate, PlayCircle, FileText, CheckCircle2, Circle, ArrowRight, FileCode, Target, BookOpen, Clock, Upload, Terminal, CheckSquare, Layers } from 'lucide-react';
 import { Button } from './ui/Button';
 
 interface Props {
+  lang: Language;
   onSelectStep: (step: POCStep) => void;
   onImport: () => void;
   status: {
@@ -16,13 +18,14 @@ interface Props {
   };
 }
 
-export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status }) => {
-  
+export const DashboardMenu: React.FC<Props> = ({ lang, onSelectStep, onImport, status }) => {
+  const t = translations[lang];
+
   const menuItems = [
     {
       step: POCStep.POC_DETAILS,
-      title: "Client Information",
-      desc: "Define project scope, engineer details, and goals.",
+      title: t.nav.project,
+      desc: t.pocDetails.subtitle,
       icon: <ClipboardList className="w-6 h-6 text-blue-600" />,
       isValid: status.details,
       colorClass: "hover:border-blue-400 hover:shadow-blue-100",
@@ -30,8 +33,8 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
     },
     {
       step: POCStep.HARDWARE_VALIDATION,
-      title: "Hardware Validation",
-      desc: "Check node specs against SUSE requirements.",
+      title: t.nav.hardware,
+      desc: t.hardware.profile,
       icon: <Server className="w-6 h-6 text-purple-600" />,
       isValid: status.hardware,
       colorClass: "hover:border-purple-400 hover:shadow-purple-100",
@@ -39,7 +42,7 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
     },
     {
       step: POCStep.NETWORK_CONFIG,
-      title: "Network & Validation",
+      title: t.nav.network,
       desc: "Configure IPs, VLANs, and validate topology.",
       icon: <Network className="w-6 h-6 text-orange-600" />,
       isValid: status.network,
@@ -57,7 +60,7 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
     },
     {
       step: POCStep.INSTALL_GUIDE,
-      title: "Full Installation Guide",
+      title: "Installation Guide",
       desc: "Comprehensive documentation and step-by-step manual.",
       icon: <BookOpen className="w-6 h-6 text-emerald-600" />,
       isValid: true, 
@@ -66,7 +69,7 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
     },
     {
       step: POCStep.CLOUD_INIT_CRD,
-      title: "Cloud Init & CRD",
+      title: t.nav.automation,
       desc: "Generate Cloud-Init YAML and Harvester K8s Manifests (CRDs).",
       icon: <div className="relative"><FileCode className="w-6 h-6 text-teal-600" /><Layers className="w-3 h-3 text-teal-400 absolute -bottom-1 -right-1" /></div>,
       isValid: true,
@@ -75,7 +78,7 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
     },
     {
       step: POCStep.TEST_PLAN,
-      title: "Test & Sign-off Plan",
+      title: t.nav.tests,
       desc: "Detailed test cases for your specific POC goals.",
       icon: <CheckSquare className="w-6 h-6 text-amber-600" />,
       isValid: true,
@@ -84,7 +87,7 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
     },
     {
       step: POCStep.INITIAL_CONFIG,
-      title: "POC Goals Validation",
+      title: t.nav.validation,
       desc: "Step-by-step guides for specific POC success criteria.",
       icon: <Target className="w-6 h-6 text-cyan-600" />,
       isValid: status.config,
@@ -95,15 +98,15 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
 
   const StatusBadge = ({ valid, label }: { valid?: boolean, label?: string }) => {
      if (valid === undefined) {
-         return <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200 flex items-center gap-1">Reference</span>;
+         return <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200 flex items-center gap-1">{t.common.reference}</span>;
      }
      return valid ? (
          <span className="text-[10px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full border border-green-200 flex items-center gap-1">
-             <CheckCircle2 className="w-3 h-3"/> {label || 'Completed'}
+             <CheckCircle2 className="w-3 h-3"/> {label || t.common.completed}
          </span>
      ) : (
          <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200 flex items-center gap-1">
-             <Clock className="w-3 h-3"/> Pending
+             <Clock className="w-3 h-3"/> {t.common.pending}
          </span>
      );
   };
@@ -111,14 +114,14 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
   return (
     <div className="animate-fade-in pb-12">
       <div className="mb-10 text-center max-w-2xl mx-auto">
-        <h2 className="text-3xl font-bold text-suse-dark">Welcome to SUSE Virtualization</h2>
+        <h2 className="text-3xl font-bold text-suse-dark">{t.dashboard.welcome}</h2>
         <p className="text-gray-600 mt-3 text-lg">
-            This assistant guides you through the planning, installation, and validation of your Proof of Concept. 
+            {t.dashboard.subtitle}
         </p>
         
         <div className="mt-6 flex justify-center gap-3">
             <Button variant="outline" onClick={onImport} className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50">
-                <Upload className="w-4 h-4" /> Import Existing Project (JSON)
+                <Upload className="w-4 h-4" /> {t.dashboard.import}
             </Button>
         </div>
       </div>
@@ -141,7 +144,7 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
             <p className="text-[11px] text-gray-500 mb-6 leading-relaxed min-h-[40px]">{item.desc}</p>
             
             <div className="flex items-center text-[10px] font-bold text-gray-400 group-hover:text-suse-base transition-colors uppercase tracking-widest">
-              Open <ArrowRight className="w-3 h-3 ml-2 transition-transform group-hover:translate-x-1" />
+              {t.common.home} <ArrowRight className="w-3 h-3 ml-2 transition-transform group-hover:translate-x-1" />
             </div>
           </button>
         ))}
@@ -154,14 +157,14 @@ export const DashboardMenu: React.FC<Props> = ({ onSelectStep, onImport, status 
               <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm border border-white/10">
                 <FileText className="w-6 h-6 text-white" />
               </div>
-              <span className="text-[10px] font-bold text-white/80 bg-white/10 px-2 py-0.5 rounded-full border border-white/20">Executive Summary</span>
+              <span className="text-[10px] font-bold text-white/80 bg-white/10 px-2 py-0.5 rounded-full border border-white/20">{t.nav.report}</span>
             </div>
             
-            <h3 className="text-xl font-bold text-white mb-2">Generate Final POC Report</h3>
-            <p className="text-sm text-gray-300 mb-6 leading-relaxed">Combine configuration, validation results, and sign-off sheets into a professional PDF for stakeholders.</p>
+            <h3 className="text-xl font-bold text-white mb-2">{t.dashboard.reportTitle}</h3>
+            <p className="text-sm text-gray-300 mb-6 leading-relaxed">{t.dashboard.reportDesc}</p>
             
             <div className="flex items-center text-sm font-bold text-white/70 group-hover:text-white transition-colors">
-              View & Print Report <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+              {t.common.finish} <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
             </div>
         </button>
       </div>

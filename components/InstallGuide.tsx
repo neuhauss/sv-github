@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Server, Settings, Network, HardDrive, Disc, LayoutTemplate, Play, Database, Cloud, ArrowRight, ShieldCheck, Cpu, Shuffle, Lock, Globe, Clock, CheckCircle, Sliders, Laptop, ExternalLink, Info, Calculator, Zap, Monitor, Search, Terminal, Copy, Check, Key, Layers, RefreshCw, Target, FileCheck, Eye, Link as LinkIcon, Download, AlertCircle, ShieldAlert, Wifi, Activity, BookOpen, FileText, AlertTriangle, Wrench, Bug } from 'lucide-react';
+import { Server, Settings, Network, HardDrive, Disc, LayoutTemplate, Play, Database, Cloud, ArrowRight, ShieldCheck, Cpu, Shuffle, Lock, Globe, Clock, CheckCircle, Sliders, Laptop, ExternalLink, Info, Calculator, Zap, Monitor, Search, Terminal, Copy, Check, Key, Layers, RefreshCw, Target, FileCheck, Eye, Link as LinkIcon, Download, AlertCircle, ShieldAlert, Wifi, Activity, BookOpen, FileText, AlertTriangle, Wrench, Bug, ShieldX } from 'lucide-react';
 import { UISnapshot } from './ui/UISnapshot';
 import { NetworkSpecs } from '../types';
 
@@ -57,7 +57,7 @@ const GOAL_PROCEDURES: Record<string, GoalProcedure> = {
     icon: Target,
     steps: [
       "Acesse 'Images' no menu lateral e clique em 'Create'.",
-      "Utilize a opção 'Download from URL' para performance ou 'Upload' para arquivos locais.",
+      "Utilize a option 'Download from URL' para performance ou 'Upload' para arquivos locais.",
       "Insira o nome (ex: openSUSE-Leap-15.5) e a URL da imagem Cloud.",
       "Aguarde o status mudar de 'Downloading' para 'Active'."
     ],
@@ -182,21 +182,6 @@ const GOAL_PROCEDURES: Record<string, GoalProcedure> = {
       { label: "Guia de Backup de VM", url: "https://docs.harvesterhci.io/v1.7/advanced/backup-restore/#backing-up-a-virtual-machine" }
     ],
     tip: "Backups podem ser realizados com a VM ligada (Snapshot-based), mas recomenda-se cautela com bancos de dados de alta escrita."
-  },
-  "Restore a VM from a backup": {
-    icon: RefreshCw,
-    steps: [
-      "Navegue até 'Backups' no menu lateral.",
-      "Selecione o backup desejado e clique em 'Restore'.",
-      "Escolha se deseja restaurar para uma nova VM ou sobrescrever a existente.",
-      "Aguarde o provisionamento e valide os dados."
-    ],
-    dependencies: ["Backup anterior concluído com sucesso", "Recursos disponíveis para nova VM"],
-    docsUrl: "https://docs.harvesterhci.io/v1.7/advanced/backup-restore/#restoring-a-virtual-machine",
-    resourceLinks: [
-      { label: "Guia de Restauração de VM", url: "https://docs.harvesterhci.io/v1.7/advanced/backup-restore/#restoring-a-virtual-machine" }
-    ],
-    tip: "A restauração para uma 'New VM' é a forma mais segura de validar backups sem afetar o ambiente de produção."
   }
 };
 
@@ -558,7 +543,7 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
               <div className="py-24 text-center border-2 border-dashed border-gray-200 rounded-3xl bg-gray-50/50">
                  <Target className="w-16 h-16 mx-auto text-gray-300 mb-4 opacity-40" />
                  <h3 className="text-gray-500 font-bold">Nenhum objetivo selecionado</h3>
-                 <p className="text-gray-400 text-sm max-w-xs mx-auto mt-1">Volte ao menu "Client Information" e selecione os itens que deseja validar nesta prova de conceito.</p>
+                 <p className="text-gray-400 text-sm max-w-xs mx-auto mt-1">Volte ao menu \"Client Information\" e selecione os itens que deseja validar nesta prova de conceito.</p>
               </div>
             ) : (
               <div className="space-y-8">
@@ -662,149 +647,158 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
 
       case 'rancher':
         return (
-          <div className="space-y-8 animate-fade-in">
-             <div className="flex items-center gap-4 mb-6">
+          <div className="space-y-12 animate-fade-in">
+             <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-200">
                    <Cloud className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                   <h1 className="text-3xl font-bold text-suse-dark">Integração Rancher Manager v2.8+</h1>
-                   <p className="text-sm text-gray-500 leading-relaxed">O Rancher Manager fornece uma interface única para gerenciar clusters Harvester e clusters Kubernetes RKE2/K3s executados sobre o Harvester.</p>
+                   <h1 className="text-3xl font-bold text-suse-dark">Integração com Rancher Manager</h1>
+                   <p className="text-sm text-gray-500 leading-relaxed">
+                     O Rancher Manager v2.8+ atua como o plano de controle centralizado para gerenciar a virtualização do Harvester e orquestrar clusters RKE2 nativos.
+                   </p>
                 </div>
              </div>
 
-             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                {/* Tutorial de Integração */}
-                <div className="lg:col-span-7 space-y-6">
-                   <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-8">
-                      <h3 className="text-lg font-bold text-gray-800 flex items-center gap-3">
-                         <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Play className="w-5 h-5" /></div> 
-                         Workflow de Implementação Detalhado
-                      </h3>
-                      
-                      <div className="space-y-8 relative before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-0.5 before:bg-blue-50">
-                         {[
-                            { 
-                              title: "Habilitação da Feature de Virtualização", 
-                              desc: "No Rancher Manager, navegue até 'Global Settings' > 'Feature Flags'. Localize a flag 'harvester' (ou 'virtualization' em versões mais recentes). Certifique-se que o status é 'Enabled'. Isso habilita o painel de Virtualização no menu lateral esquerdo do Rancher.",
-                              doc: "https://ranchermanager.docs.rancher.com/v2.8/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/virtualization-management"
-                            },
-                            { 
-                              title: "Importação do Cluster Harvester", 
-                              desc: "No menu lateral 'Virtualization Management', clique em 'Import Cluster'. Insira um nome identificável para o cluster Harvester. Você precisará do arquivo Kubeconfig do seu cluster Harvester (disponível no canto inferior esquerdo do Harvester Dashboard). O Rancher implantará agentes especializados (harvester-cloud-provider) no cluster.",
-                              doc: "https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/#importing-harvester-cluster"
-                            },
-                            { 
-                              title: "Criação de Cloud Credentials", 
-                              desc: "Para que o Rancher gerencie máquinas no Harvester, você deve criar credenciais. Vá em 'Cluster Management' > 'Cloud Credentials' > 'Create'. Selecione 'Harvester'. O Rancher usará essas credenciais para interagir com a API do Harvester via seu Virtual IP (VIP).",
-                              doc: "https://ranchermanager.docs.rancher.com/v2.8/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/set-up-cloud-providers/harvester"
-                            },
-                            { 
-                              title: "Provisionamento de Cluster RKE2", 
-                              desc: "Agora, em 'Cluster Management' > 'Create', escolha 'Harvester' como the Cloud Provider. Configure o 'Machine Pool' definindo CPU, Memória e a Imagem de SO (ex: SLES 15 ou openSUSE). O Rancher criará automaticamente as VMs no Harvester e as configurará como nós do seu novo cluster K8s.",
-                              doc: "https://docs.harvesterhci.io/v1.7/rancher/node-driver/"
-                            },
-                            {
-                              title: "Habilitação do Harvester Cloud Provider",
-                              desc: "Durante a criação do cluster no Rancher, na aba 'Cloud Provider', certifique-se de selecionar 'Harvester'. Isso integra o cluster convidado com o Load Balancer e o Storage (Longhorn) do Harvester de forma nativa.",
-                              doc: "https://docs.harvesterhci.io/v1.7/rancher/cloud-provider/"
-                            }
-                         ].map((s, i) => (
-                            <div key={i} className="flex gap-6 relative z-10 group">
-                               <div className="w-10 h-10 rounded-full bg-white border-4 border-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0 shadow-sm group-hover:border-blue-200 transition-all">
-                                  {i + 1}
-                               </div>
-                               <div className="space-y-2">
-                                  <div className="flex items-center gap-3">
-                                    <h4 className="text-base font-bold text-gray-800">{s.title}</h4>
-                                    <a href={s.doc} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-600"><LinkIcon className="w-3 h-3"/></a>
-                                  </div>
-                                  <p className="text-xs text-gray-500 leading-relaxed">{s.desc}</p>
-                               </div>
-                            </div>
-                         ))}
-                      </div>
-
-                      <div className="pt-8 border-t border-gray-100 flex items-center justify-between">
-                         <div className="flex items-center gap-3">
-                            <img src="https://rancher.com/assets/img/logos/rancher-logo-stacked-color.svg" className="h-6 opacity-40" alt="Rancher" />
-                            <div className="w-0.5 h-4 bg-gray-200"></div>
-                            <img src="https://harvesterhci.io/img/logo_horizontal.svg" className="h-4 opacity-40" alt="Harvester" />
-                         </div>
-                         <a 
-                           href="https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/" 
-                           target="_blank" 
-                           rel="noreferrer"
-                           className="flex items-center gap-2 text-xs font-bold text-blue-600 hover:underline"
-                         >
-                            Guia Oficial de Integração <ExternalLink className="w-3 h-3" />
-                         </a>
-                      </div>
-                   </div>
+             {/* Guia Visual Passo-a-Passo */}
+             <div className="space-y-16">
+                
+                {/* Passo 1 */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <span className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg">1</span>
+                            <h3 className="text-xl font-bold text-gray-800">Habilitar Dashboard de Virtualização</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          No Rancher, a gestão de virtualização é uma feature flag. Você deve ativá-la para ver o menu 'Virtualization Management'.
+                        </p>
+                        <ul className="space-y-3">
+                            {[
+                                "Navegue até 'Global Settings' > 'Feature Flags'.",
+                                "Localize a flag chamada 'harvester' ou 'virtualization'.",
+                                "Clique em 'Activate' e aguarde a atualização da interface."
+                            ].map((s, i) => (
+                                <li key={i} className="flex gap-3 text-xs text-gray-500">
+                                    <CheckCircle className="w-4 h-4 text-blue-500 shrink-0" /> {s}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    <UISnapshot 
+                        type="dashboard" 
+                        title="Rancher Global Settings - Feature Flags" 
+                        imageSrc="https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/rancher-feature-flag.png" 
+                    />
                 </div>
 
-                {/* Troubleshooting & Requisitos */}
-                <div className="lg:col-span-5 space-y-6">
-                   <div className="bg-slate-900 text-white p-8 rounded-3xl space-y-6 shadow-xl">
-                      <h3 className="font-bold text-suse-base flex items-center gap-3 text-lg">
-                         <ShieldCheck className="w-6 h-6" /> Pré-requisitos de Arquitetura
-                      </h3>
-                      <ul className="space-y-4">
-                         {[
-                            { l: "Versão do Rancher", d: "Rancher v2.8.0+ é necessário para integração total com Harvester v1.7.0+." },
-                            { l: "Acesso à API (VIP)", d: "O Rancher Manager deve conseguir acessar o Cluster VIP do Harvester na porta 443 sem interrupções." },
-                            { l: "Porta 8443 (Webhook)", d: "Crucial para a comunicação de admissão de recursos entre Rancher e Harvester." },
-                            { l: "Certificados Confiáveis", d: "Se usar certificados auto-assinados no Harvester, você deve importar a CA no Rancher or habilitar 'Allow Insecure' nas credenciais." }
-                         ].map((req, i) => (
-                            <li key={i} className="flex items-start gap-4 p-4 bg-white/5 rounded-2xl border border-white/10">
-                               <div className="w-2 h-2 rounded-full bg-suse-base mt-1.5 shrink-0"></div>
-                               <div>
-                                  <div className="text-xs font-bold text-white">{req.l}</div>
-                                  <div className="text-[10px] text-gray-400 mt-1">{req.d}</div>
-                               </div>
-                            </li>
-                         ))}
-                      </ul>
-                   </div>
-
-                   <div className="bg-red-50 border border-red-100 p-8 rounded-3xl space-y-6">
-                      <h3 className="font-bold text-red-800 flex items-center gap-3 text-lg">
-                         <ShieldAlert className="w-6 h-6" /> Troubleshooting Comum
-                      </h3>
-                      <div className="space-y-4">
-                         <div className="bg-white p-4 rounded-2xl border border-red-100 shadow-sm">
-                            <div className="flex items-center gap-2 mb-2">
-                               <AlertCircle className="w-4 h-4 text-red-600" />
-                               <h4 className="text-xs font-bold text-red-900">Erro x509: Unknown Authority</h4>
-                            </div>
-                            <p className="text-[10px] text-red-700 leading-relaxed">Causa: O Rancher não confia no certificado do Harvester. Solução: Em 'Cloud Credentials', adicione a CA do Harvester no campo 'Certificate Authority' ou marque 'Ignore Certificate Errors'.</p>
-                         </div>
-                         <div className="bg-white p-4 rounded-2xl border border-red-100 shadow-sm">
-                            <div className="flex items-center gap-2 mb-2">
-                               <Lock className="w-4 h-4 text-red-600" />
-                               <h4 className="text-xs font-bold text-red-900">Stuck in 'Provisioning'</h4>
-                            </div>
-                            <p className="text-[10px] text-red-700 leading-relaxed">Causa: A VM no Harvester não consegue baixar pacotes do Rancher ou via Internet. Solução: Verifique as configurações de rede da VM e certifique-se que o VIP do Rancher é acessível a partir da VLAN da VM.</p>
-                         </div>
-                         <div className="bg-white p-4 rounded-2xl border border-red-100 shadow-sm">
-                            <div className="flex items-center gap-2 mb-2">
-                               <Layers className="w-4 h-4 text-red-600" />
-                               <h4 className="text-xs font-bold text-red-900">Cloud Provider não inicia</h4>
-                            </div>
-                            <p className="text-[10px] text-red-700 leading-relaxed">Causa: Falha na comunicação entre o cluster convidado e a API do Harvester. Solução: Verifique se os nós worker têm rota para o VIP do Harvester e se as portas 6443/443 estão abertas.</p>
-                         </div>
-                      </div>
-                   </div>
-
-                   <div className="p-6 bg-blue-50 border border-blue-200 rounded-3xl">
-                      <h4 className="text-xs font-bold text-blue-800 flex items-center gap-2 mb-3">
-                        <Info className="w-4 h-4" /> Dica de Topologia
-                      </h4>
-                      <p className="text-[10px] text-blue-700 leading-relaxed">
-                        Para melhor performance em produção, recomenda-se que o Rancher Manager seja executado fora do próprio cluster Harvester que ele gerencia, evitando loops de dependência em caso de falha total do hardware.
-                      </p>
-                   </div>
+                {/* Passo 2 */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                    <div className="order-2 lg:order-1">
+                        <UISnapshot 
+                            type="dashboard" 
+                            title="Importing Harvester Cluster" 
+                            imageSrc="https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/rancher-import-harvester.png" 
+                        />
+                    </div>
+                    <div className="space-y-6 order-1 lg:order-2">
+                        <div className="flex items-center gap-3">
+                            <span className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg">2</span>
+                            <h3 className="text-xl font-bold text-gray-800">Importar Cluster Harvester</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          Importe o seu cluster Harvester para que o Rancher possa orquestrar VMs e Cloud Credentials.
+                        </p>
+                        <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Procedimento</h4>
+                            <p className="text-xs text-slate-700 italic">"Menu > Virtualization Management > Import. Cole o Kubeconfig do Harvester."</p>
+                        </div>
+                    </div>
                 </div>
+
+                {/* Passo 3 */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <span className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg">3</span>
+                            <h3 className="text-xl font-bold text-gray-800">Cloud Credentials & RKE2</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          Crie credenciais de nuvem para permitir que o Rancher crie automaticamente as VMs que formarão seu novo cluster Kubernetes.
+                        </p>
+                        <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl flex gap-3">
+                            <Info className="w-5 h-5 text-blue-600 shrink-0" />
+                            <p className="text-[10px] text-blue-800">Use o <strong>Harvester Node Driver</strong> para automatizar o ciclo de vida (Scaling/Healing) das VMs worker.</p>
+                        </div>
+                    </div>
+                    <UISnapshot 
+                        type="dashboard" 
+                        title="Provisioning RKE2 on Harvester" 
+                        imageSrc="https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/rancher-provision-rke2.png" 
+                    />
+                </div>
+             </div>
+
+             {/* Tabela de Troubleshooting Avançado */}
+             <div className="pt-12 border-t">
+                <h3 className="text-2xl font-bold text-suse-dark flex items-center gap-3 mb-8">
+                    <Wrench className="w-7 h-7 text-red-600" /> Troubleshooting de Integração
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[
+                        {
+                            error: "CATTLE_AGENT_CONNECTION_FAILURE",
+                            cause: "Nó Harvester não alcança o Rancher via WebSocket.",
+                            solution: "Libere as portas 443/TCP e 80/TCP. Verifique se o VIP do Harvester tem rota para o Rancher.",
+                            link: "https://docs.harvesterhci.io/v1.7/troubleshooting/rancher-integration/"
+                        },
+                        {
+                            error: "RKE2 Provisioning Timeout",
+                            cause: "VM criada mas o bootstrap do Kubernetes não finaliza.",
+                            solution: "Verifique se a VM tem acesso à internet (ou Proxy) para baixar binários do RKE2.",
+                            link: "https://docs.harvesterhci.io/v1.7/rancher/node-driver/#troubleshooting"
+                        },
+                        {
+                            error: "Cloud Provider Auth Error",
+                            cause: "VIP do Harvester mudou ou Token expirou.",
+                            solution: "Atualize o VIP nas Cloud Credentials do Rancher e valide o acesso à API.",
+                            link: "https://docs.harvesterhci.io/v1.7/rancher/cloud-provider/"
+                        },
+                        {
+                            error: "Storage/Volume Mount Failure",
+                            cause: "Incompatibilidade de versão do CSI driver.",
+                            solution: "Garanta que o Rancher e o Harvester estão nas versões compatíveis conforme a matriz de suporte SUSE.",
+                            link: "https://longhorn.io/docs/1.7.0/troubleshooting/"
+                        }
+                    ].map((issue, i) => (
+                        <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4 hover:border-red-200 transition-colors">
+                            <div className="flex justify-between items-start">
+                                <span className="text-[10px] font-black text-red-600 bg-red-50 px-2 py-0.5 rounded-full uppercase tracking-tighter">{issue.error}</span>
+                                <a href={issue.link} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-red-600"><ExternalLink className="w-4 h-4"/></a>
+                            </div>
+                            <div>
+                                <h4 className="text-xs font-bold text-gray-800">Causa Provável</h4>
+                                <p className="text-[10px] text-gray-500 mt-1">{issue.cause}</p>
+                            </div>
+                            <div className="pt-3 border-t border-gray-50">
+                                <h4 className="text-xs font-bold text-suse-dark">Ação Recomendada</h4>
+                                <p className="text-[10px] text-gray-600 mt-1 italic">{issue.solution}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+             </div>
+
+             <div className="flex justify-center pt-10">
+                <a 
+                    href="https://ranchermanager.docs.rancher.com/v2.8/how-to-guides/new-user-guides/kubernetes-clusters-in-rancher-setup/virtualization-management"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-3 px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 shadow-xl transition-all"
+                >
+                    <BookOpen className="w-5 h-5" /> Ver Guia de Integração Completo (v2.8)
+                </a>
              </div>
           </div>
         );
@@ -823,6 +817,41 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
              </div>
 
              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* NOVO: Problemas Críticos e Soluções Rápidas */}
+                <div className="md:col-span-2 bg-red-50 border-2 border-red-100 p-8 rounded-3xl space-y-6 shadow-sm">
+                   <h3 className="font-bold text-red-900 flex items-center gap-3 text-lg">
+                      <ShieldX className="w-6 h-6" /> Problemas Críticos na Instalação
+                   </h3>
+                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-red-50 space-y-3">
+                         <div className="flex items-center gap-2 text-red-600">
+                            <RefreshCw className="w-4 h-4" />
+                            <h4 className="text-sm font-bold">Boot Loops</h4>
+                         </div>
+                         <p className="text-[10px] text-slate-500 leading-relaxed"><strong>Sintoma:</strong> O nó reinicia e volta para o menu da ISO após completar a instalação.</p>
+                         <p className="text-[10px] text-slate-500 leading-relaxed"><strong>Solução:</strong> Remova o USB ou altere a ordem de boot na BIOS para priorizar o disco local (SSD/NVMe) onde o Harvester foi instalado.</p>
+                      </div>
+                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-red-50 space-y-3">
+                         <div className="flex items-center gap-2 text-red-600">
+                            <Wifi className="w-4 h-4" />
+                            <h4 className="text-sm font-bold">Network Failures</h4>
+                         </div>
+                         <p className="text-[10px] text-slate-500 leading-relaxed"><strong>Sintoma:</strong> Nó não consegue pingar o Gateway ou nós vizinhos.</p>
+                         <p className="text-[10px] text-slate-500 leading-relaxed"><strong>Diagnóstico:</strong> <code>ip addr</code> e <code>ping -c 4 [gateway]</code>.</p>
+                         <p className="text-[10px] text-slate-500 leading-relaxed"><strong>Solução:</strong> Verifique se a porta da switch física está configurada como Trunk e se o VLAN ID no Harvester corresponde ao esperado.</p>
+                      </div>
+                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-red-50 space-y-3">
+                         <div className="flex items-center gap-2 text-red-600">
+                            <AlertCircle className="w-4 h-4" />
+                            <h4 className="text-sm font-bold">VIP Conflicts</h4>
+                         </div>
+                         <p className="text-[10px] text-slate-500 leading-relaxed"><strong>Sintoma:</strong> O dashboard não carrega ou apresenta erro 404 intermitente.</p>
+                         <p className="text-[10px] text-slate-500 leading-relaxed"><strong>Diagnóstico:</strong> <code>arping -I [mgmt_interface] [VIP_IP]</code> de fora do cluster.</p>
+                         <p className="text-[10px] text-slate-500 leading-relaxed"><strong>Solução:</strong> Garanta que o VIP não esteja em uso por outro dispositivo na rede. O VIP deve ser exclusivo do cluster Harvester.</p>
+                      </div>
+                   </div>
+                </div>
+
                 {/* Diagnóstico de Instalação */}
                 <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
                   <h3 className="font-bold text-gray-800 flex items-center gap-2 text-sm">
@@ -937,7 +966,7 @@ export const InstallGuide: React.FC<Props> = ({ netSpecs, goals = [] }) => {
                         desc: "Verifica o espaço disponível em disco para o storage distribuído." 
                       }
                     ].map((item, i) => (
-                      <div key={i} className="group bg-slate-50 p-3 rounded-xl border border-slate-100 hover:border-purple-200 transition-all">
+                      <div key={i} className="group bg-slate-50 p-3 rounded-xl border border-slate-200 p-4 hover:border-purple-200 transition-all">
                         <div className="flex justify-between items-center mb-1.5">
                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{item.label}</span>
                           <button onClick={() => copyToClipboard(item.cmd)} className="text-slate-300 hover:text-purple-500 transition-colors">

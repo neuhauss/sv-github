@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { CloudInitConfig, MountPoint, NetworkInterface, HardwareSpecs, NetworkSpecs } from '../types';
-import { FileCode, Plus, Trash2, Save, Copy, Globe, Network, Info, AlertCircle, Settings, Check, Upload, Layers, Box, Database, Image as ImageIcon } from 'lucide-react';
+import { FileCode, Plus, Trash2, Save, Copy, Globe, Network, Info, AlertCircle, Settings, Check, Upload, Layers, Box, Database, Image as ImageIcon, HelpCircle } from 'lucide-react';
 
 interface Props {
   config: CloudInitConfig;
@@ -12,15 +12,72 @@ interface Props {
 }
 
 const YamlPreview: React.FC<{ code: string }> = ({ code }) => {
+  const highlightLine = (line: string) => {
+    // Check for comments
+    const trimmed = line.trim();
+    if (trimmed.startsWith('#')) {
+      return <span className="text-slate-500 italic">{line}</span>;
+    }
+
+    // Check for YAML keys and values
+    const colonIndex = line.indexOf(':');
+    if (colonIndex !== -1) {
+      const keyPart = line.substring(0, colonIndex + 1);
+      const valuePart = line.substring(colonIndex + 1);
+
+      // Determine if it's a primary CRD/Cloud-Init directive
+      const isPrimaryDirective = /^(apiVersion|kind|metadata|spec|status|hostname|users|network|packages|timezone|locale):/.test(trimmed);
+      const keyColor = isPrimaryDirective ? 'text-amber-400' : 'text-sky-400';
+
+      // Highlight strings or boolean values
+      const isBool = /^\s*(true|false)\s*$/.test(valuePart);
+      const valueColor = isBool ? 'text-purple-400 font-bold' : 'text-emerald-400';
+
+      return (
+        <>
+          <span className={`${keyColor} font-bold`}>{keyPart}</span>
+          <span className={valueColor}>{valuePart}</span>
+        </>
+      );
+    }
+
+    // List items or generic text
+    if (trimmed.startsWith('-')) {
+      return <span className="text-emerald-300 font-medium">{line}</span>;
+    }
+
+    return <span className="text-slate-300">{line}</span>;
+  };
+
   return (
-    <div className="font-mono text-[10px] leading-5 overflow-x-auto whitespace-pre font-medium text-gray-300">
+    <div className="font-mono text-[11px] leading-6 overflow-x-auto whitespace-pre font-medium text-slate-300">
       {code.split('\n').map((line, i) => {
-        const lineNum = <span className="inline-block w-6 text-right pr-2 mr-3 text-gray-700 select-none border-r border-gray-800">{i + 1}</span>;
-        return <div key={i}>{lineNum}{line}</div>;
+        const lineNum = (
+          <span className="inline-block w-8 text-right pr-3 mr-4 text-slate-600 select-none border-r border-slate-800">
+            {i + 1}
+          </span>
+        );
+        return (
+          <div key={i} className="hover:bg-white/5 transition-colors group px-1">
+            {lineNum}
+            {highlightLine(line)}
+          </div>
+        );
       })}
     </div>
   );
 };
+
+const Tooltip: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+  <div className="group relative inline-block ml-1.5 align-middle">
+    <HelpCircle className="w-3.5 h-3.5 text-slate-300 hover:text-suse-base cursor-help transition-colors" />
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-slate-900 text-white text-[10px] rounded-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none shadow-2xl leading-relaxed">
+      <div className="font-bold text-suse-base uppercase tracking-widest mb-1">{title}</div>
+      {children}
+      <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45"></div>
+    </div>
+  </div>
+);
 
 const isValidHostname = (h: string) => /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/.test(h.replace(/{.*}/g, 'node'));
 
@@ -110,9 +167,11 @@ export const CloudInitGenerator: React.FC<Props> = ({ config, updateConfig, onCo
             yaml += `      gateway4: ${iface.gateway}\n`;
           }
           if (iface.nameservers) {
-            const nsList = iface.nameservers.split(',').map(s => s.trim());
-            yaml += `      nameservers:\n`;
-            yaml += `        addresses: [${nsList.join(', ')}]\n`;
+            const nsList = iface.nameservers.split(',').map(s => s.trim()).filter(s => s !== '');
+            if (nsList.length > 0) {
+              yaml += `      nameservers:\n`;
+              yaml += `        addresses: [${nsList.join(', ')}]\n`;
+            }
           }
         }
       });
@@ -271,7 +330,12 @@ spec:
                       {activeTab === 'users' && (
                         <div className="space-y-6 animate-fade-in">
                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                             <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Default OS User</label>
+                             <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">
+                               Default OS User
+                               <Tooltip title="Usuário do Sistema">
+                                 Define o nome do usuário principal que será criado no sistema operacional. Este usuário terá permissões sudo sem senha.
+                               </Tooltip>
+                             </label>
                              <input 
                                value={config.user} 
                                onChange={(e) => updateConfig({...config, user: e.target.value.replace(/\s/g, '').toLowerCase()})}
@@ -281,7 +345,12 @@ spec:
                            </div>
 
                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                             <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Authorized SSH Keys</label>
+                             <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">
+                               Authorized SSH Keys
+                               <Tooltip title="Chaves SSH Públicas">
+                                 Chaves RSA/Ed25519 para acesso remoto sem senha. Essencial para automação e segurança no gerenciamento de nós.
+                               </Tooltip>
+                             </label>
                              <textarea 
                                value={newSshKey} 
                                onChange={(e) => setNewSshKey(e.target.value)}
@@ -319,7 +388,12 @@ spec:
                       {activeTab === 'system' && (
                         <div className="space-y-6 animate-fade-in">
                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                             <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Hostname Pattern</label>
+                             <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">
+                               Hostname Pattern
+                               <Tooltip title="Padrão de Nome de Host">
+                                 Define como a VM será nomeada no nível do SO. O token <code>{'{dsp}'}</code> é substituído pelo índice ou identificador único do nó durante o provisionamento.
+                               </Tooltip>
+                             </label>
                              <input 
                                value={config.hostnamePattern} 
                                onChange={(e) => updateConfig({...config, hostnamePattern: e.target.value.toLowerCase().replace(/[^a-z0-9-{}]/g, '')})}
@@ -332,23 +406,104 @@ spec:
 
                       {activeTab === 'network' && (
                         <div className="space-y-6 animate-fade-in">
-                           <button onClick={addInterface} className="w-full py-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-200 text-xs font-bold flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors">
-                              <Plus className="w-4 h-4" /> Adicionar Interface de Rede
-                           </button>
-                           {config.networkInterfaces.map((iface, idx) => (
-                             <div key={idx} className="bg-slate-50 rounded-xl border border-slate-200 p-4 relative group">
-                                <button onClick={() => handleRemoveItem('networkInterfaces', idx)} className="absolute top-4 right-4 text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                           <div className="flex items-center justify-between mb-2">
+                              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                                Interfaces de Rede
+                                <Tooltip title="Configuração de Interfaces">
+                                  Configure múltiplas interfaces virtuais. Você pode alternar entre DHCP para automação ou IPs estáticos para serviços fixos.
+                                </Tooltip>
+                              </h4>
+                              <button onClick={addInterface} className="py-1.5 px-4 bg-blue-50 text-blue-600 rounded-lg border border-blue-200 text-[10px] font-bold flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors">
+                                <Plus className="w-3.5 h-3.5" /> Nova Interface
+                              </button>
+                           </div>
+                           
+                           {config.networkInterfaces.length === 0 ? (
+                             <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl">
+                               <p className="text-xs text-slate-400">Nenhuma interface configurada. O padrão do Harvester será utilizado.</p>
+                             </div>
+                           ) : config.networkInterfaces.map((iface, idx) => (
+                             <div key={idx} className="bg-slate-50 rounded-xl border border-slate-200 p-5 relative group space-y-4">
+                                <button 
+                                  onClick={() => handleRemoveItem('networkInterfaces', idx)} 
+                                  className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"
+                                  title="Remover Interface"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                                
                                 <div className="grid grid-cols-2 gap-4">
                                    <div>
-                                      <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">Device</label>
-                                      <input value={iface.name} onChange={(e) => updateInterface(idx, { name: e.target.value })} className={inputClasses} />
+                                      <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">
+                                        Interface Device
+                                        <Tooltip title="Nome do Dispositivo">
+                                          Geralmente <code>eth0</code>, <code>eth1</code>, etc. Este nome deve coincidir com os dispositivos detectados pelo kernel.
+                                        </Tooltip>
+                                      </label>
+                                      <input value={iface.name} onChange={(e) => updateInterface(idx, { name: e.target.value })} className={inputClasses} placeholder="eth0" />
                                    </div>
                                    <div className="flex items-end pb-2">
-                                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold">
-                                         <input type="checkbox" checked={iface.dhcp} onChange={(e) => updateInterface(idx, { dhcp: e.target.checked })} /> DHCP
+                                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
+                                         <input 
+                                            type="checkbox" 
+                                            checked={iface.dhcp} 
+                                            onChange={(e) => updateInterface(idx, { dhcp: e.target.checked })}
+                                            className="rounded border-gray-300 text-suse-base focus:ring-suse-base"
+                                          /> 
+                                          Enable DHCP v4
+                                          <Tooltip title="Dynamic Host Configuration Protocol">
+                                            Se ativado, a interface solicitará um endereço IP automaticamente de um servidor DHCP na rede.
+                                          </Tooltip>
                                       </label>
                                    </div>
                                 </div>
+
+                                {!iface.dhcp && (
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-200 mt-2 animate-fade-in">
+                                     <div className="col-span-1">
+                                        <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">
+                                          IPv4 Address / CIDR
+                                          <Tooltip title="Endereço IP Estático">
+                                            Especifique o endereço IP seguido da máscara em formato CIDR. Exemplo: <code>192.168.1.10/24</code>.
+                                          </Tooltip>
+                                        </label>
+                                        <input 
+                                          value={iface.ip} 
+                                          onChange={(e) => updateInterface(idx, { ip: e.target.value })} 
+                                          className={inputClasses} 
+                                          placeholder="192.168.1.10/24" 
+                                        />
+                                     </div>
+                                     <div className="col-span-1">
+                                        <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">
+                                          Gateway
+                                          <Tooltip title="Default Gateway">
+                                            O endereço IP do roteador para saída de tráfego desta interface.
+                                          </Tooltip>
+                                        </label>
+                                        <input 
+                                          value={iface.gateway} 
+                                          onChange={(e) => updateInterface(idx, { gateway: e.target.value })} 
+                                          className={inputClasses} 
+                                          placeholder="192.168.1.1" 
+                                        />
+                                     </div>
+                                     <div className="col-span-full">
+                                        <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">
+                                          DNS Nameservers (Comma separated)
+                                          <Tooltip title="Servidores DNS">
+                                            Servidores para resolução de nomes. Especifique um ou mais separados por vírgula. Exemplo: <code>8.8.8.8, 1.1.1.1</code>.
+                                          </Tooltip>
+                                        </label>
+                                        <input 
+                                          value={iface.nameservers} 
+                                          onChange={(e) => updateInterface(idx, { nameservers: e.target.value })} 
+                                          className={inputClasses} 
+                                          placeholder="8.8.8.8, 1.1.1.1" 
+                                        />
+                                     </div>
+                                  </div>
+                                )}
                              </div>
                            ))}
                         </div>
@@ -365,7 +520,12 @@ spec:
                ) : (
                  <div className="space-y-6 animate-fade-in">
                     <div className="bg-slate-900 rounded-3xl p-8 text-white space-y-6 shadow-2xl">
-                        <h3 className="text-lg font-bold flex items-center gap-3"><Box className="w-6 h-6 text-suse-base" /> Resource Manifests</h3>
+                        <h3 className="text-lg font-bold flex items-center gap-3">
+                          <Box className="w-6 h-6 text-suse-base" /> Resource Manifests
+                          <Tooltip title="Custom Resource Definitions">
+                            Manifestos baseados em CRDs do Harvester. Permitem o provisionamento declarativo via Kubernetes, facilitando fluxos de infraestrutura como código (IaC).
+                          </Tooltip>
+                        </h3>
                         <p className="text-xs text-slate-400 leading-relaxed">Selecione o tipo de recurso Harvester para gerar o manifesto YAML compatível com GitOps e <code>kubectl apply</code>.</p>
                         
                         <div className="grid grid-cols-1 gap-3">
@@ -411,19 +571,19 @@ spec:
             </div>
 
             {/* YAML Preview Pane */}
-            <div className="bg-gray-900 rounded-xl flex flex-col h-[600px] shadow-2xl overflow-hidden border border-gray-800">
-               <div className="px-4 py-3 bg-gray-800 border-b border-gray-700 flex justify-between items-center">
+            <div className="bg-slate-900 rounded-xl flex flex-col h-[600px] shadow-2xl overflow-hidden border border-slate-800">
+               <div className="px-4 py-3 bg-slate-800 border-b border-slate-700 flex justify-between items-center">
                   <div className="flex items-center gap-2">
                      <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
                      <div className="w-3 h-3 rounded-full bg-amber-500/50"></div>
                      <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
-                     <span className="text-gray-400 text-[10px] font-bold ml-2 uppercase tracking-widest">
+                     <span className="text-slate-400 text-[10px] font-bold ml-2 uppercase tracking-widest">
                         {activeMainTab === 'cloud-init' ? 'user-data.yaml' : `${activeCrdType}.yaml`}
                      </span>
                   </div>
                   <button 
                     onClick={handleCopy}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded text-[10px] font-bold transition-all ${copied ? 'bg-green-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}`}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded text-[10px] font-bold transition-all ${copied ? 'bg-green-500 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'}`}
                   >
                     {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                     {copied ? 'Copiado!' : 'Copiar YAML'}
@@ -432,8 +592,8 @@ spec:
                <div className="flex-1 overflow-auto bg-[#0d1117] p-4 custom-scrollbar">
                   <YamlPreview code={activeMainTab === 'cloud-init' ? generateCloudInitYaml() : generateCrdYaml()} />
                </div>
-               <div className="bg-gray-800 px-4 py-2 border-t border-gray-700">
-                  <p className="text-[9px] text-gray-500 italic">Manifestos prontos para importação via Dashboard ou CLI.</p>
+               <div className="bg-slate-800 px-4 py-2 border-t border-slate-700">
+                  <p className="text-[9px] text-slate-500 italic">Manifestos prontos para importação via Dashboard ou CLI.</p>
                </div>
             </div>
           </div>

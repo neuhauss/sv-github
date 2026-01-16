@@ -1,4 +1,6 @@
 
+export type Language = 'en' | 'pt' | 'es';
+
 export enum POCStep {
   DASHBOARD = -1,
   POC_DETAILS = 0,
