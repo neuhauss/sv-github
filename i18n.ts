@@ -1,5 +1,24 @@
 
 import { Language } from './types';
+import { 
+  Play, 
+  Image as ImageIcon, 
+  Database, 
+  Network, 
+  Monitor, 
+  RefreshCw, 
+  Cloud, 
+  HardDrive, 
+  Key, 
+  Terminal, 
+  ShieldCheck, 
+  Save, 
+  Server, 
+  Settings, 
+  FileCode, 
+  Zap, 
+  Cpu 
+} from 'lucide-react';
 
 export const translations = {
   en: {
@@ -107,49 +126,6 @@ export const translations = {
         testing: "Testing..."
       }
     },
-    installation: {
-      title: "Physical Installation Checklist",
-      subtitle: "Follow this checklist during datacenter execution to ensure a production-ready baseline.",
-      progress: "Overall Progress",
-      pitfallLabel: "Common Pitfall / Attention",
-      docsLink: "Consult Technical Documentation",
-      validateLabel: "Troubleshooting / How to Validate",
-      nextStep: "Next Step",
-      nextStepDesc: "After completing this physical checklist, the node will reboot and the web dashboard will be available. Use the \"Validation\" menu to verify client functionality.",
-      groups: [
-        {
-          title: "1. Installer Initialization",
-          pitfall: "BIOS must have 'Secure Boot' disabled. Use UEFI instead of Legacy. If stalled at 'Loading initrd', verify CPU microcode/firmware is up to date.",
-          steps: [
-            { id: 'boot', label: 'ISO / USB Boot', description: 'Action: Insert bootable media and select UEFI boot from BIOS. Outcome: Harvester installer splash screen loads successfully.' },
-            { id: 'mode', label: 'Installation Mode', description: 'Action: Choose \"Create a new cluster\" (1st node) or \"Join\" (others). Outcome: Logic for cluster genesis or expansion is established.' },
-          ]
-        },
-        {
-          title: "2. Storage & Persistence",
-          pitfall: "Do not use SD cards or USB sticks for OS persistence. v1.7 requires SSD/NVMe. Ensure RAID controllers are in 'HBA' or 'JBOD' mode (Software RAID is not supported).",
-          steps: [
-            { id: 'disk', label: 'Disk Allocation', description: 'Action: Identify high-performance SSD/NVMe for OS and Data partitions. Outcome: Partitions for KubeVirt and Longhorn are defined.' },
-          ]
-        },
-        {
-          title: "3. Cluster Networking (1st Node)",
-          pitfall: "The VIP and Node IP must reside in the same management subnet. Verify switch configuration allows gratuitous ARP for VIP transitions.",
-          steps: [
-            { id: 'vip', label: 'Cluster VIP Assignment', description: 'Action: Assign a dedicated static IP for the Cluster VIP. Outcome: Unified access point for the dashboard is established.' },
-            { id: 'token', label: 'Security Cluster Token', description: 'Action: Define a secure token for node admission. Outcome: Encryption secret for secure cluster joining is generated.' },
-          ]
-        },
-        {
-          title: "4. Post-Reboot Service Health",
-          pitfall: "If the dashboard takes >10min to load, pods in 'harvester-system' may be failing due to resource constraints or DNS issues.",
-          steps: [
-            { id: 'webui', label: 'HTTPS Dashboard Access', description: 'Action: Navigate to https://[VIP] in your browser. Outcome: Secure Harvester login interface is rendered.' },
-            { id: 'pods', label: 'Critical Pod Status', description: 'Action: Verify all pods via SSH (kubectl get pods -A). Outcome: Every harvester-system pod is in \"Running\" state.' },
-          ]
-        }
-      ]
-    },
     installGuide: {
       sections: {
         overview: "Overview",
@@ -169,15 +145,55 @@ export const translations = {
         prodTitle: "Production Ready",
         prodDesc: "Native high availability and direct integration with Rancher for multi-cluster management."
       },
+      planning: {
+        title: "Infrastructure Planning & Prerequisites",
+        desc: "Precision in planning prevents most installation failures. Follow Harvester v1.7 specifications strictly.",
+        cpu: "Minimum 8 Physical Cores (x86_64). Ensure VT-x (Intel) or AMD-V (AMD) and AVX are enabled in BIOS. For v1.7, verify if IOMMU is enabled for GPU/PCI passthrough tasks.",
+        ram: "32GB RAM minimum for management. Enterprise production recommends 64GB+ per node for workload density. Monitor memory pressure during initial cluster bootstrap.",
+        network: "10Gbps fabric for Storage/Longhorn replication is mandatory for performance. Use separate NICs for Management and Data (vlan-network) if possible. Bond 2x NICs for redundancy using LACP (802.3ad).",
+        mtu: "MTU 9000 (Jumbo Frames) must be configured on all physical switches to avoid etcd and Longhorn performance degradation. Ensure end-to-end support or stick to MTU 1500.",
+        bios: "Set SATA/Disk controllers to HBA/JBOD mode. Software RAID is NOT supported. Disable Secure Boot for initial install. Enable SR-IOV if high-performance networking for specific VMs is required.",
+        internet: "Outbound access to registry.suse.com and docker.io is required unless using the Air-Gap install method. Verify DNS resolution for these domains before starting."
+      },
+      install: {
+        title: "Step-by-Step ISO Installation",
+        node1: "1st Node (Seed): Select 'Create a new Harvester cluster'. Define a persistent Cluster VIP. This IP must be in the same management subnet as the node IPs but outside the DHCP pool range.",
+        node2: "Subsequent Nodes: Select 'Join an existing Harvester cluster'. You will need the Cluster VIP and the secret Cluster Token (available on Node 1 at /var/lib/rancher/k3s/server/node-token).",
+        reboot: "After the text-based installer finishes, remove the media and reboot. The system will perform final initialization. This stage formats all local disks allocated during setup.",
+        tip: "Wait for the login prompt on the physical console. If the Dashboard is not reachable, check if the VIP has successfully migrated to the healthy node (ping [VIP])."
+      },
+      config: {
+        title: "Access & Initial Setup",
+        url: "Navigate to https://[VIP] to access the Dashboard. Use a modern browser and expect a self-signed certificate warning if no external CA is provided.",
+        password: "Set the admin password. Important: This password applies to the Web UI and the 'root' user in the Linux shell. Record it securely.",
+        settings: "Network: Create a 'Network Config' under Settings to bind physical NICs to the bridge (harvester-br0). Define a ClusterNetwork to enable L2VLAN support for VM workloads.",
+        backup: "Configure an S3 or NFS Backup Target immediately. Without it, VM snapshots are local and won't survive a node disk failure. Test the target connectivity after saving."
+      },
+      storage: {
+        title: "Longhorn SDS Optimization",
+        replica: "Default replica count is 3. In a 3-node cluster, this ensures that data is replicated across all nodes. Data remains available even if one node is offline.",
+        bench: "Disk latency (Fsync) must be below 10ms. High latency on the OS disk will cause etcd to panic. Run 'fio' benchmarks before moving to production.",
+        ssd: "Enterprise NVMe or SSDs are mandatory for data partitions. Standard HDDs are unsuitable for etcd storage due to low IOPS, leading to cluster instability.",
+        expansion: "To add storage: Add a physical disk to a node, then in the UI go to Host -> Storage -> Edit. Select the new disk and add it to the Longhorn pool."
+      },
+      troubleshooting: {
+        title: "Common Fixes & Diagnostics",
+        initrd: "Stalled at 'Loading initrd'? Check BIOS for UEFI vs Legacy mismatch. Ensure the ISO was written using DD mode if using Rufus.",
+        vip: "VIP unreachable? Ensure the IP is not in use elsewhere and that the switch doesn't block gratuitous ARP. Check if 'kube-vip' pods are running.",
+        etcd: "Cluster shows 'NotReady'? Check node logs (journalctl -u harvester). Verify if disk space is 100% full on the /var/lib/harvester partition."
+      },
       rancher: {
         title: "Rancher Manager Integration",
-        subtitle: "Rancher v2.8+ acts as the centralized control plane for Harvester virtualization and RKE2 clusters.",
-        step1: "Enable Virtualization Dashboard",
-        step1Desc: "In Rancher, virtualization management is a feature flag. You must enable it to see the 'Virtualization Management' menu.",
-        step2: "Import Harvester Cluster",
-        step2Desc: "Import your Harvester cluster so Rancher can orchestrate VMs and Cloud Credentials.",
-        step3: "Cloud Credentials & RKE2",
-        step3Desc: "Create cloud credentials to allow Rancher to automatically create the VMs for your new Kubernetes cluster."
+        subtitle: "Rancher acts as the centralized control plane for multi-cluster virtualization management.",
+        step1: "Requirements & Flags",
+        step1Desc: "Ensure Rancher v2.8.0+ is installed. Go to Global Settings -> Feature Flags. Enable the 'harvester' flag. Refresh your browser to see the 'Virtualization Management' menu appear in the sidebar.",
+        step2: "Import Cluster",
+        step2Desc: "In Virtualization Management, click 'Import'. Provide the Harvester Cluster VIP and credentials. Rancher will generate a manifest to be applied on the Harvester cluster or handle the handshake automatically via API.",
+        step3: "Cloud Credentials",
+        step3Desc: "Navigate to Cluster Management -> Cloud Credentials. Create a new credential using the 'Harvester' provider. This allows Rancher to authenticate with Harvester to provision downstream RKE2/K3s clusters.",
+        step4: "Provisioning RKE2",
+        step4Desc: "Go to Cluster Management -> Create. Select 'Harvester' as the infrastructure. Define your node pools (CPU, RAM, Image, Network). Rancher will automatically create the VMs and bootstrap Kubernetes on top.",
+        trouble: "Integration Troubleshooting: 1. Cert Validation: If Rancher uses a private CA, you must add it to Harvester's 'Additional CA' settings. 2. Port 443: Bi-directional HTTPS communication between Rancher and Harvester VIP is mandatory. 3. Agent Sync: If the cluster stays 'Pending', check the 'cattle-cluster-agent' logs inside the Harvester cluster."
       }
     },
     shell: {
@@ -186,9 +202,10 @@ export const translations = {
       categories: {
         bench: "Benchmarking (Etcd Performance)",
         storage: "Longhorn Storage Troubleshooting",
-        diag: "Diagnosis & Support (Evidence)",
+        diag: "Advanced Cluster Diagnostics",
         net: "Network & Connectivity",
-        health: "Node Health Check"
+        health: "Node & Workload Health",
+        rancher_cleanup: "Rancher Integration Cleanup"
       }
     },
     testPlan: {
@@ -324,49 +341,6 @@ export const translations = {
         testing: "Testando..."
       }
     },
-    installation: {
-      title: "Checklist de Instalação Física",
-      subtitle: "Siga este checklist durante a execução em datacenter para garantir uma base pronta para produção.",
-      progress: "Progresso Geral",
-      pitfallLabel: "Atenção / Armadilha Comum",
-      docsLink: "Consultar Documentação Técnica",
-      validateLabel: "Troubleshooting / Como Validar",
-      nextStep: "Próximo Passo",
-      nextStepDesc: "Após concluir este checklist físico, o nó irá reiniciar e o dashboard web estará disponível. Use o menu \"Validação\" para verificar as funcionalidades do cliente.",
-      groups: [
-        {
-          title: "1. Inicialização do Instalador",
-          pitfall: "O BIOS deve ter 'Secure Boot' desativado. Use UEFI em vez de Legacy. Se travar em 'Loading initrd', verifique se o firmware da CPU está atualizado.",
-          steps: [
-            { id: 'boot', label: 'Boot via ISO / USB', description: 'Ação: Insira a mídia bootável e selecione boot UEFI no BIOS. Resultado: A tela inicial do instalador Harvester carrega com sucesso.' },
-            { id: 'mode', label: 'Modo de Instalação', description: 'Ação: Escolha \"Create a new cluster\" (1º nó) ou \"Join\" (outros). Resultado: A lógica de gênese ou expansão do cluster é definida.' },
-          ]
-        },
-        {
-          title: "2. Armazenamento e Persistência",
-          pitfall: "Não use cartões SD ou pendrives para persistência do SO. v1.7 exige SSD/NVMe. Certifique-se que controladoras RAID estão em modo 'HBA' ou 'JBOD'.",
-          steps: [
-            { id: 'disk', label: 'Alocação de Discos', description: 'Ação: Identifique SSD/NVMe de alta performance para partições de SO e Dados. Resultado: Partições para KubeVirt e Longhorn são preparadas.' },
-          ]
-        },
-        {
-          title: "3. Rede do Cluster (1º Nó)",
-          pitfall: "O VIP e o IP do Nó devem estar na mesma subnet de gerência. Verifique se o switch permite gratuitous ARP para transições de VIP.",
-          steps: [
-            { id: 'vip', label: 'Atribuição de Cluster VIP', description: 'Ação: Atribua um IP estático dedicado para o VIP do Cluster. Resultado: O ponto unificado de acesso ao dashboard é estabelecido.' },
-            { id: 'token', label: 'Token de Segurança do Cluster', description: 'Ação: Defina um token seguro para admissão de nós. Resultado: O segredo de criptografia para junção segura é gerado.' },
-          ]
-        },
-        {
-          title: "4. Saúde pós-Reboot",
-          pitfall: "Se o dashboard demorar >10min, pods em 'harvester-system' podem estar falhando por falta de recursos ou DNS.",
-          steps: [
-            { id: 'webui', label: 'Acesso ao Dashboard HTTPS', description: 'Ação: Navegue para https://[VIP] no seu navegador. Resultado: A interface de login segura do Harvester é renderizada.' },
-            { id: 'pods', label: 'Status de Pods Críticos', description: 'Ação: Verifique todos os pods via SSH (kubectl get pods -A). Resultado: Todos os pods do harvester-system estão em estado \"Running\".' },
-          ]
-        }
-      ]
-    },
     installGuide: {
       sections: {
         overview: "Visão Geral",
@@ -376,7 +350,7 @@ export const translations = {
         storage: "Armazenamento",
         pocGoals: "Procedimentos POC",
         rancher: "Integração Rancher",
-        troubleshooting: "Troubleshooting"
+        troubleshooting: "Solução de Problemas"
       },
       overview: {
         title: "Documentação Técnica v1.7",
@@ -386,15 +360,55 @@ export const translations = {
         prodTitle: "Pronto para Produção",
         prodDesc: "Alta disponibilidade nativa e integração direta com Rancher para gestão multicluster."
       },
+      planning: {
+        title: "Planejamento e Pré-requisitos",
+        desc: "Precisão no planejamento previne a maioria das falhas de instalação. Siga as especificações rigorosamente.",
+        cpu: "Mínimo 8 Cores Físicos (x86_64). Garanta que VT-x (Intel) ou AMD-V (AMD) e AVX estejam ativos no BIOS. Para v1.7, verifique se IOMMU está ativo para tarefas de passthrough GPU/PCI.",
+        ram: "Mínimo 32GB de RAM para gerência. Ambientes de produção recomendam 64GB+ por nó para densidade de workloads. Monitore a pressão de memória durante o bootstrap inicial.",
+        network: "Fabric de 10Gbps dedicado para replicação de Storage/Longhorn é obrigatório para performance. Use NICs separadas para Gerência e Dados se possível. Bond 2x NICs para redundância usando LACP.",
+        mtu: "MTU 9000 (Jumbo Frames) deve ser configurado em todos os switches físicos para evitar degradação do etcd e Longhorn. Garanta suporte de ponta a ponta ou use MTU 1500.",
+        bios: "Configure controladoras SATA/Disk em modo HBA/JBOD. RAID por software NÃO é suportado. Desative o Secure Boot. Ative SR-IOV se rede de alta performance para VMs for necessária.",
+        internet: "Acesso externo para registry.suse.com e docker.io é necessário, a menos que use o método Air-Gap. Verifique a resolução DNS para estes domínios antes de começar."
+      },
+      install: {
+        title: "Passo-a-passo Instalação ISO",
+        node1: "1º Nó (Seed): Escolha 'Create a new Harvester cluster'. Defina um VIP de Cluster persistente. Este IP deve estar na mesma sub-rede de gerência mas fora do range DHCP.",
+        node2: "Nós seguintes: Escolha 'Join an existing cluster'. Você precisará do Cluster VIP e do Token do Cluster (disponível no Nó 1 em /var/lib/rancher/k3s/server/node-token).",
+        reboot: "Após o término do instalador, remova a mídia e reinicie. O sistema fará a inicialização final. Este estágio formata todos os discos locais alocados.",
+        tip: "Aguarde o prompt de login no console físico. Se o Dashboard não estiver acessível, verifique se o VIP migrou com sucesso para o nó saudável (ping [VIP])."
+      },
+      config: {
+        title: "Acesso e Configuração Inicial",
+        url: "Navegue para https://[VIP] para acessar o Dashboard. Ignore o aviso de SSL caso não tenha fornecido uma CA externa no setup.",
+        password: "Defina a senha de admin. Importante: Esta senha se aplica à UI Web e ao usuário 'root' no shell Linux. Guarde-a com segurança.",
+        settings: "Rede: Crie um 'Network Config' em Settings para vincular NICs físicas à bridge (harvester-br0). Defina um ClusterNetwork para habilitar suporte L2VLAN para as VMs.",
+        backup: "Configure um destino de Backup S3 ou NFS imediatamente. Sem isso, snapshots são locais e não sobrevivem à falha do disco do nó. Teste a conectividade após salvar."
+      },
+      storage: {
+        title: "Otimização Longhorn SDS",
+        replica: "O número padrão de réplicas é 3. Em um cluster de 3 nós, isso garante que os dados existam em todos os nós. Os dados permanecem disponíveis se um nó falhar.",
+        bench: "Latência de disco (Fsync) deve ser menor que 10ms. Latência alta no disco do SO causará pânico no etcd. Execute o benchmark 'fio' antes de ir para produção.",
+        ssd: "SSDs ou NVMe corporativos são mandatórios para partições de dados. HDDs comuns não são adequados para o etcd, levando à instabilidade do cluster.",
+        expansion: "Para expandir: Adicione um disco físico ao nó, então na UI vá em Host -> Storage -> Edit. Selecione o novo disco e adicione-o ao pool do Longhorn."
+      },
+      troubleshooting: {
+        title: "Correções Comuns",
+        initrd: "Travado em 'Loading initrd'? Verifique UEFI/Legacy no BIOS. Garanta que a ISO foi gravada em modo DD se usar Rufus.",
+        vip: "VIP inacessível? Verifique se o IP já está em uso e se o switch não bloqueia pacotes Gratuitous ARP. Cheque se os pods 'kube-vip' estão rodando.",
+        etcd: "Cluster em 'NotReady'? Verifique logs do nó (journalctl -u harvester). Cheque se o espaço em disco está 100% cheio na partição /var/lib/harvester."
+      },
       rancher: {
         title: "Integração com Rancher Manager",
-        subtitle: "O Rancher v2.8+ atua como plano de controle centralizado para virtualização Harvester e clusters RKE2.",
-        step1: "Habilitar Dashboard de Virtualização",
-        step1Desc: "No Rancher, a gestão de virtualização é uma feature flag. Você deve ativá-la para ver o menu 'Virtualization Management'.",
-        step2: "Importar Cluster Harvester",
-        step2Desc: "Importe o seu cluster Harvester para que o Rancher possa orquestrar VMs e Cloud Credentials.",
-        step3: "Cloud Credentials & RKE2",
-        step3Desc: "Crie credenciais de nuvem para permitir que o Rancher crie automaticamente as VMs para seu novo cluster Kubernetes."
+        subtitle: "O Rancher atua como plano de controle centralizado para gestão multicluster.",
+        step1: "Requisitos & Flags",
+        step1Desc: "Garanta o Rancher v2.8.0+ instalado. Vá em Global Settings -> Feature Flags. Ative a flag 'harvester'. Atualize o navegador para ver o menu 'Virtualization Management' na barra lateral.",
+        step2: "Importar Cluster",
+        step2Desc: "Em Virtualization Management, clique em 'Import'. Forneça o VIP do cluster Harvester e as credenciais. O Rancher gerará um manifesto para ser aplicado ou fará o handshake via API.",
+        step3: "Cloud Credentials",
+        step3Desc: "Vá em Cluster Management -> Cloud Credentials. Crie uma nova credencial usando o provedor 'Harvester'. Isso permite ao Rancher provisionar clusters RKE2 sobre o Harvester.",
+        step4: "Provisionamento RKE2",
+        step4Desc: "Vá em Cluster Management -> Create. Selecione 'Harvester' como infraestrutura. Defina seus node pools (CPU, RAM, Imagem, Rede). O Rancher criará as VMs e o K8s automaticamente.",
+        trouble: "Solução de Problemas: 1. Certificados: Se o Rancher usa CA privada, adicione-a no Harvester em 'Additional CA'. 2. Porta 443: Comunicação HTTPS bi-direcional entre Rancher e VIP é mandatória. 3. Sincronia: Se o cluster ficar 'Pending', cheque logs do 'cattle-cluster-agent' no Harvester."
       }
     },
     shell: {
@@ -403,9 +417,10 @@ export const translations = {
       categories: {
         bench: "Benchmarking (Etcd Performance)",
         storage: "Troubleshooting Longhorn Storage",
-        diag: "Diagnóstico & Suporte (Evidências)",
+        diag: "Diagnósticos Avançados do Cluster",
         net: "Rede & Conectividade",
-        health: "Health Check do Nó"
+        health: "Saúde de Nós & Workloads",
+        rancher_cleanup: "Limpeza de Integração Rancher"
       }
     },
     testPlan: {
@@ -417,10 +432,10 @@ export const translations = {
         fail: "Falhas (Fail)"
       },
       table: {
-        criteria: "Critério de Sucesso",
-        procedure: "Procedimento Técnico",
-        expected: "Resultado Esperado",
-        validate: "Validar"
+        criteria: "Success Criteria",
+        procedure: "Technical Procedure",
+        expected: "Expected Result",
+        validate: "Validate"
       }
     },
     summary: {
@@ -437,221 +452,13 @@ export const translations = {
     }
   },
   es: {
-    common: {
-      next: "Continuar",
-      back: "Volver",
-      finish: "Finalizar",
-      step: "Paso",
-      of: "de",
-      home: "Inicio",
-      planningMode: "Modo de Planificación",
-      enterprisePlanner: "Planificador Enterprise Harvester v1.7",
-      required: "Obligatorio",
-      completed: "Completado",
-      pending: "Pendiente",
-      reference: "Referencia",
-      expertTip: "Consejo de Experto",
-      techDependencies: "Dependencias Técnicas",
-      resourceLinks: "Enlaces de Recursos",
-      officialDocs: "Documentación Oficial",
-      copy: "Copiar",
-      copied: "¡Copiado!",
-      print: "Imprimir Informe / PDF",
-      exportJson: "Exportar JSON",
-      aiContext: "Contexto para IA",
-      newProject: "Nueva Planificación"
-    },
-    dashboard: {
-      welcome: "Bienvenido a SUSE Virtualization",
-      subtitle: "Este asistente le guía a través de la planificación, instalación y validación de su POC.",
-      import: "Importar Proyecto (JSON)",
-      reportTitle: "Generar Informe Final de la POC",
-      reportDesc: "Combine la configuración y los resultados de la validación en un informe profesional."
-    },
-    nav: {
-      project: "Proyecto",
-      hardware: "Hardware",
-      network: "Red",
-      topology: "Topología",
-      installation: "Instalación",
-      automation: "Automatización",
-      validation: "Validación",
-      tests: "Pruebas",
-      report: "Informe"
-    },
-    pocDetails: {
-      title: "Proyecto y Objetivos de la POC",
-      subtitle: "Defina los parámetros base para la validación.",
-      projectName: "Nombre del Proyecto / POC",
-      projectPlaceholder: "Ej: Migración de Datacenter Core v1.7",
-      leadTitle: "Líder Técnico SUSE/Socio",
-      leadName: "Ingeniero Responsable",
-      leadEmail: "Correo Corporativo",
-      clientTitle: "Información del Cliente",
-      clientOrg: "Organization / Cliente",
-      clientContact: "Punto de Contacto",
-      clientPhone: "Teléfono",
-      scheduleTitle: "Cronograma Previsto",
-      startDate: "Fecha de Inicio",
-      targetDate: "Meta de Finalización",
-      goalsTitle: "Objetivos de la POC",
-      goalsSubtitle: "Seleccione los criterios de éxito a validar.",
-      selectAll: "Seleccionar Todos",
-      clearAll: "Limpiar Selección",
-      goalRequired: "Seleccione al menos un objetivo."
-    },
-    hardware: {
-        title: "Validación de Hardware v1.7",
-        profile: "Perfil Enterprise",
-        nodes: "Nodos Físicos",
-        cores: "Cores por Nodo",
-        ram: "RAM GB por Nodo",
-        gpu: "Aceleración GPU (AI Readiness)",
-        gpuEnabled: "GPU Habilitada (Pass-through)",
-        gpuDisabled: "Deshabilitado",
-        storageType: "Tipo de Almacenamiento",
-        compatible: "Hardware Compatible v1.7",
-        notMet: "Requisitos No Cumplidos"
-    },
-    network: {
-      title: "Red y Conectividad",
-      subtitle: "Configure el tejido de red y valide los requisitos de comunicación entre nodos.",
-      tabs: {
-        topology: "Diseño de Infraestructura",
-        addressing: "Parámetros Globales",
-        nodes: "Inventario de IPs",
-        connectivity: "Suite de Conectividad"
-      },
-      labels: {
-        vip: "IP Virtual del Clúster (VIP)",
-        cidr: "CIDR de Gestión",
-        gateway: "Puerta de Enlace IP",
-        vlan: "ID de VLAN (Opcional)",
-        dns: "Servidores DNS",
-        ntp: "Servidores NTP",
-        hostname: "Nombre de Host",
-        staticIp: "IP Estática",
-        nodeCapacity: "Capacidad de Nodos",
-        minNodesInfo: "Se requieren mínimo 3 nodos para HA (Alta Disponibilidad)."
-      },
-      diagnostic: {
-        title: "Pruebas de Diagnóstico",
-        desc: "Verifique que los puertos críticos y las URL de descarga sean accesibles desde su estación.",
-        run: "Ejecutar Diagnóstico",
-        testing: "Probando..."
-      }
-    },
-    installation: {
-      title: "Checklist de Instalación Física",
-      subtitle: "Siga esta lista durante la ejecución en el centro de datos para garantizar una línea base lista para producción.",
-      progress: "Progreso General",
-      pitfallLabel: "Atención / Error Común",
-      docsLink: "Consultar Documentación Técnica",
-      validateLabel: "Troubleshooting / Cómo Validar",
-      nextStep: "Próximo Paso",
-      nextStepDesc: "Después de completar esta lista física, el nodo se reiniciará y el panel web estará disponible. Use el menú \"Validación\" para verificar la funcionalidad del cliente.",
-      groups: [
-        {
-          title: "1. Inicialización del Instalador",
-          pitfall: "BIOS debe tener 'Secure Boot' desactivado. Use UEFI en lugar de Legacy. Si se detiene en 'Loading initrd', verifique que el firmware de la CPU esté actualizado.",
-          steps: [
-            { id: 'boot', label: 'Arranque ISO / USB', description: 'Acción: Inserte el medio de arranque y seleccione el arranque UEFI en el BIOS. Resultado: La pantalla de bienvenida del instalador de Harvester se carga correctamente.' },
-            { id: 'mode', label: 'Modo de Instalación', description: 'Acción: Elija \"Create a new cluster\" (1er nodo) o \"Join\" (otros). Resultado: Se establece la lógica para la génesis o expansión del clúster.' },
-          ]
-        },
-        {
-          title: "2. Almacenamiento y Persistencia",
-          pitfall: "No use tarjetas SD o memorias USB para la persistencia del SO. v1.7 requiere SSD/NVMe. Asegúrese de que las controladoras RAID estén en modo 'HBA' o 'JBOD'.",
-          steps: [
-            { id: 'disk', label: 'Asignación de Discos', description: 'Acción: Identifique SSD/NVMe de alto rendimiento para las particiones de SO y Datos. Resultado: Se definen las particiones para KubeVirt y Longhorn.' },
-          ]
-        },
-        {
-          title: "3. Red del Clúster (1er Nodo)",
-          pitfall: "La VIP y la IP del nodo deben estar en la misma subred de gestión. Verifique que la configuración del switch permita ARP gratuito para las transiciones de VIP.",
-          steps: [
-            { id: 'vip', label: 'Asignación de Cluster VIP', description: 'Acción: Asigne una IP estática dedicada para la VIP del clúster. Resultado: Se establece el punto de acceso unificado para el panel.' },
-            { id: 'token', label: 'Token de Seguridad del Clúster', description: 'Acción: Defina un token seguro para la admisión de nodos. Resultado: Se genera el secreto de cifrado para la unión segura de nodos.' },
-          ]
-        },
-        {
-          title: "4. Salud post-Reinicio",
-          pitfall: "Si el panel tarda >10 min en cargar, los pods en 'harvester-system' pueden estar fallando debido a límites de recursos o DNS.",
-          steps: [
-            { id: 'webui', label: 'Acceso al Panel HTTPS', description: 'Acción: Navegue a https://[VIP] en su navegador. Resultado: Se renderiza la interfaz de inicio de sesión segura de Harvester.' },
-            { id: 'pods', label: 'Estado de Pods Críticos', description: 'Acción: Verifique todos los pods vía SSH (kubectl get pods -A). Resultado: Todos los pods de harvester-system están en estado \"Running\".' },
-          ]
-        }
-      ]
-    },
-    installGuide: {
-      sections: {
-        overview: "Visión Geral",
-        planning: "Planificación",
-        install: "Instalación (ISO)",
-        config: "Configuración Inicial",
-        storage: "Almacenamiento",
-        pocGoals: "Procedimientos POC",
-        rancher: "Integración Rancher",
-        troubleshooting: "Solución de Problemas"
-      },
-      overview: {
-        title: "Documentación Técnica v1.7",
-        subtitle: "Esta guía centraliza los procedimientos oficiales para la implementación de SUSE Virtualization (Harvester).",
-        hciTitle: "HCI Moderno",
-        hciDesc: "Infraestructura Hiperconvergente 100% de código abierto basada en KubeVirt y Longhorn.",
-        prodTitle: "Listo para Producción",
-        prodDesc: "Alta disponibilidad nativa e integración directa con Rancher para gestión multicluster."
-      },
-      rancher: {
-        title: "Integración con Rancher Manager",
-        subtitle: "Rancher v2.8+ actúa como plano de control centralizado para la virtualización de Harvester y clusters RKE2.",
-        step1: "Habilitar Panel de Virtualización",
-        step1Desc: "En Rancher, la gestión de la virtualización es una feature flag. Debe activarla para ver el menú 'Virtualization Management'.",
-        step2: "Importar Cluster Harvester",
-        step2Desc: "Importe su clúster Harvester para que Rancher pueda orquestar máquinas virtuales y credenciales de nube.",
-        step3: "Cloud Credentials y RKE2",
-        step3Desc: "Cree credenciales de nube para permitir que Rancher cree automáticamente las VM para su nuevo clúster de Kubernetes."
-      }
-    },
-    shell: {
-      title: "Caja de Herramientas Shell",
-      subtitle: "Acceda a los nodos vía SSH y use los comandos para validación y resolución de problemas.",
-      categories: {
-        bench: "Benchmarking (Rendimiento Etcd)",
-        storage: "Resolución de Almacenamiento Longhorn",
-        diag: "Diagnóstico y Soporte (Evidencias)",
-        net: "Red y Conectividade",
-        health: "Chequeo de Salud del Nodo"
-      }
-    },
-    testPlan: {
-      title: "Plan de Pruebas y Aceptación",
-      subtitle: "Mapeo de resultados basado en los objetivos seleccionados.",
-      summary: {
-        planned: "Total Planificado",
-        success: "Éxito (Pass)",
-        fail: "Fallos (Fail)"
-      },
-      table: {
-        criteria: "Criterios de Éxito",
-        procedure: "Procedimiento Técnico",
-        expected: "Resultado Esperado",
-        validate: "Validar"
-      }
-    },
-    summary: {
-      execSummary: "Resumen Ejecutivo de Infraestructura Hiperconvergente (HCI) v1.7",
-      stakeholders: "Partes Interesadas y Cronograma",
-      techDetails: "Detalles de Configuración Técnica",
-      topology: "Diagrama de Topología Planejada",
-      acceptance: "Formalización y Aceptación del Plan POC",
-      authorized: "Representante Autorizado",
-      generatedBy: "Documento generado electrónicamente mediante SUSE Virtualization Enterprise Planner.",
-      aiTitle: "Exportar Contexto para IA",
-      aiDesc: "Copie este prompt para ChatGPT o Claude.",
-      aiPromptHeader: "Usted es un Arquitecto de Solucciones Senior que asiste en una Prueba de Concepto (POC) de SUSE Virtualization."
-    }
+    common: { next: "Continuar", back: "Volver", finish: "Finalizar", step: "Paso", of: "de", home: "Inicio", planningMode: "Modo de Planificación", enterprisePlanner: "Planificador Enterprise Harvester v1.7", required: "Obligatorio", completed: "Completado", pending: "Pendiente", reference: "Referencia", expertTip: "Consejo de Experto", techDependencies: "Dependencias Técnicas", resourceLinks: "Enlaces de Recursos", officialDocs: "Documentación Oficial", copy: "Copiar", copied: "¡Copiado!", print: "Imprimir Informe / PDF", exportJson: "Exportar JSON", aiContext: "Contexto para IA", newProject: "Nueva Planificación" },
+    dashboard: { welcome: "Bienvenido a SUSE Virtualization", subtitle: "Este asistente le guía a través de la planificación, instalación y validación de su POC.", import: "Importar Proyecto (JSON)", reportTitle: "Generar Informe Final de la POC", reportDesc: "Combine la configuración y los resultados de la validación en un informe profesional." },
+    nav: { project: "Proyecto", hardware: "Hardware", network: "Red", topology: "Topología", installation: "Instalación", automation: "Automación", validation: "Validación", tests: "Pruebas", report: "Informe" },
+    shell: { title: "Caja de Herramientas", subtitle: "Acceda a los nodos vía SSH y use los comandos para diagnóstico.", categories: { bench: "Benchmarking (Etcd)", storage: "Almacenamiento Longhorn", diag: "Diagnóstico Avanzado", net: "Red y Conectividad", health: "Salud de Nodos", rancher_cleanup: "Limpieza de Rancher" } },
+    testPlan: { title: "Plan de pruebas", subtitle: "Mapeo de resultados.", summary: { planned: "Total planificado", success: "Éxito", fail: "Fallos" }, table: { criteria: "Criterios", procedure: "Procedimiento", expected: "Esperado", validate: "Validar" } },
+    summary: { execSummary: "Resumen ejecutivo de HCI v1.7", stakeholders: "Stakeholders y Cronograma", techDetails: "Configuración técnica", topology: "Diagrama de topología", acceptance: "Formalización y aceptación", authorized: "Representante autorizado", generatedBy: "Generado por SUSE Virtualization Planner.", aiTitle: "Contexto de IA", aiDesc: "Copie para ChatGPT.", aiPromptHeader: "Usted es un Arquitecto Senior de Soluciones." },
+    pocDetails: { title: "Detalles de la POC", subtitle: "Defina los parámetros para la validación.", goalRequired: "Seleccione al menos um objetivo." }
   }
 };
 
@@ -703,9 +510,9 @@ export const POC_GOALS_LOCALIZED = {
     "Restaurar una VM desde un respaldo",
     "Realizar una migración en vivo de una VM (requiere multi-host)",
     "Usar la consola serial/VNC de una VM",
-    "Importar la clave SSH y acceder a una VM usando la clave (solo Linux)",
+    "Importar la clave SSH e acceder a una VM usando la clave (solo Linux)",
     "Gestión multi-cluster, multi-tenancy y soporte multi-disco",
-    "Integración con Rancher. Provisionar un cluster RKE2 Kubernetes sobre SUSE Virtualization"
+    "Integración con Rancher. Provisionar un clúster RKE2 Kubernetes sobre SUSE Virtualization"
   ]
 };
 
@@ -719,7 +526,6 @@ export const TEST_CASES_LOCALIZED: Record<Language, Record<string, { steps: stri
       steps: ".qcow2 file upload or Cloud image URL download.",
       expected: "Image appears with 'Active' status ready for use."
     }
-    // ... more test cases
   },
   pt: {
     "Provisionar hosts através do instalador ISO": {
@@ -764,104 +570,253 @@ export const SHELL_TOOLBOX_LOCALIZED: Record<Language, any[]> = {
   ]
 };
 
+// Fixed Missing translations for pt and es to satisfy Record<Language, Record<string, any>>
 export const GOAL_PROCEDURES_LOCALIZED: Record<Language, Record<string, any>> = {
   en: {
     "Provision hosts through the ISO installer": {
       steps: [
-        "Prepare a bootable USB drive with the Harvester v1.7 ISO.",
-        "On the first node, select 'Create a new Harvester cluster'.",
-        "Configure the cluster VIP, static node IP, and Gateway according to the planning.",
-        "For nodes 2 and 3, select 'Join an existing cluster' and enter the VIP and Cluster Token generated by the first node.",
-        "Wait for reboot and the final screen with the Dashboard access URL."
+        "Prepare a bootable USB drive with Harvester v1.7 ISO.",
+        "Boot from UEFI. Select 'Create a new Harvester cluster' for Node 1.",
+        "Configure Hostname, Static IP, Gateway, and most importantly, the Cluster VIP.",
+        "Define the 'Cluster Token' (used for node admission).",
+        "Wait for reboot and final Dashboard URL prompt."
       ],
-      tip: "If using IPMI, ensure that Virtual Media does not have high latency, as this can corrupt the installation.",
-      dependencies: ["VT-x/AMD-V enabled hardware", "Minimum 8GB USB drive", "IPMI/iDRAC access"],
+      tip: "If the installer hangs at 'Loading initrd', verify that UEFI is enabled and Secure Boot is disabled.",
+      dependencies: ["VT-x/AMD-V active", "8GB USB drive", "Wired connection"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/install/iso-install/",
-      resourceLinks: [
-        { label: "Download Harvester ISO v1.7", url: "https://harvesterhci.io/releases" },
-        { label: "Hardware Requirements Guide", url: "https://docs.harvesterhci.io/v1.7/install/requirements/" }
-      ]
+      icon: Play,
+      resourceLinks: [{ label: "Download Harvester ISO", url: "https://harvesterhci.io/releases" }]
+    },
+    "Optional. Provision hosts through PXE boot": {
+      steps: [
+        "Setup an iPXE or HTTP server reachable by the cluster nodes.",
+        "Prepare the configuration file (YAML format) containing cluster and network settings.",
+        "Configure the nodes to boot via PXE in the BIOS/UEFI settings.",
+        "Provide the kernel, initrd, and rootfs images via the PXE server.",
+        "Monitor the automated installation progress."
+      ],
+      tip: "Use the 'Matchbox' integration if you need a scalable way to manage multiple cluster configurations via PXE.",
+      dependencies: ["HTTP/TFTP Server", "DHCP Option 67 configured", "Harvester config.yaml"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/install/pxe-boot-install/",
+      icon: Network,
+      resourceLinks: [{ label: "Matchbox Integration Guide", url: "https://docs.harvesterhci.io/v1.7/install/pxe-boot-install/#matchbox-example" }]
     },
     "Register an image to use for VMs": {
       steps: [
-        "Go to 'Images' in the side menu and click 'Create'.",
-        "Use 'Download from URL' for performance or 'Upload' for local files.",
-        "Enter the name (e.g., openSUSE-Leap-15.5) and the Cloud image URL.",
-        "Wait for status to change from 'Downloading' to 'Active'."
+        "Login to Dashboard -> Images -> Create.",
+        "Option 1: 'Download from URL' (Recommended). Use a raw/qcow2 URL.",
+        "Option 2: 'Upload' from local workstation.",
+        "Wait for status to transition from 'Downloading' to 'Active'."
       ],
-      tip: "Cloud Images (.qcow2) are preferred as they allow Cloud-Init to inject SSH keys automatically.",
-      dependencies: ["Cluster external connectivity", "qcow2, raw or img format image"],
+      tip: "Cloud-optimized images (NoCloud/Cloud-Init) are preferred for automatic credential injection.",
+      dependencies: ["Internet access for URL download", "qcow2/img/iso support"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#images",
-      resourceLinks: [
-        { label: "openSUSE Leap 15.5 Cloud Images", url: "https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.5/images/" },
-        { label: "SLES 15 SP5 Cloud Images (Trial)", url: "https://www.suse.com/download/sles/" }
-      ]
+      icon: ImageIcon,
+      resourceLinks: [{ label: "openSUSE Cloud Images", url: "https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.5/images/" }]
+    },
+    "Create a Storage Class and Volume": {
+      steps: [
+        "Harvester provides a default 'longhorn' StorageClass.",
+        "To create a new one: Settings -> StorageClass -> Create.",
+        "Set 'Number of Replicas' to 3 (Required for HA).",
+        "Create a Volume: Volumes -> Create. Select size and the StorageClass.",
+        "Attach the volume to a VM under 'Disks' tab."
+      ],
+      tip: "Avoid reducing replica count to 1 in production, as node failure will cause permanent data loss.",
+      dependencies: ["Healthy SDS nodes", "Available disk space"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/storage/storage-class/",
+      icon: Database,
+      resourceLinks: [{ label: "Longhorn Best Practices", url: "https://longhorn.io/docs/1.7.0/best-practices/" }]
+    },
+    "Create a VLAN network in SUSE Virtualization": {
+      steps: [
+        "Step 1: Create ClusterNetwork. Settings -> ClusterNetwork -> Create (e.g. 'vlan-network').",
+        "Step 2: Create NetworkConfig. Settings -> NetworkConfig -> Create. Select the ClusterNetwork and bind to physical NICs (e.g. eth1).",
+        "Step 3: Create VM Network. Networks -> Create. Select type 'L2Vlan', provide VLAN ID (e.g. 100).",
+        "Assign this network to a VM during creation."
+      ],
+      tip: "The physical switch port MUST be configured as a TRUNK port if using VLAN IDs other than 0.",
+      dependencies: ["802.1Q switch support", "Physical NIC availability"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/",
+      icon: Network,
+      resourceLinks: [{ label: "Networking Troubleshooting", url: "https://docs.harvesterhci.io/v1.7/troubleshooting/networking/" }]
+    },
+    "Create a VM": {
+      steps: [
+        "Virtual Machines -> Create.",
+        "Basics: Provide Name, CPU cores, and Memory.",
+        "Volumes: Select an Image for the root disk.",
+        "Networks: Choose Management Network or a previously created VLAN.",
+        "Advanced: Paste SSH Public Key for passwordless access."
+      ],
+      tip: "Use the 'VirtIO' driver for all disks and network interfaces to ensure high performance.",
+      dependencies: ["Active Image", "Defined Network"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/",
+      icon: Monitor,
+      resourceLinks: []
+    },
+    "Configure a backup target": {
+      steps: [
+        "Go to Settings -> Backup Target.",
+        "Choose 'S3' or 'NFS'.",
+        "For NFS: Provide the server IP and the exported path (e.g., 192.168.1.50:/backups).",
+        "For S3: Provide Endpoint, Bucket Name, and Access/Secret Keys.",
+        "Click Save and ensure the status is 'Ready'."
+      ],
+      tip: "NFS version 4 is recommended for better reliability and performance with Longhorn.",
+      dependencies: ["External NFS/S3 storage reachable by cluster nodes"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/storage/backup-target/",
+      icon: Save,
+      resourceLinks: []
+    },
+    "Configure a user-data cloud-config script": {
+      steps: [
+        "Go to Cloud Config Templates -> Create.",
+        "Enter the YAML content starting with '#cloud-config'.",
+        "Include directives like 'users', 'ssh_authorized_keys', and 'runcmd'.",
+        "Save the template to reuse it across multiple VMs.",
+        "Select the template during VM creation in the 'Advanced' tab."
+      ],
+      tip: "Always use 'NoCloud' data source in Harvester for most Linux cloud images.",
+      dependencies: ["YAML knowledge", "Cloud-Init compatible guest image"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#advanced",
+      icon: FileCode,
+      resourceLinks: [{ label: "Cloud-Init Official Docs", url: "https://cloudinit.readthedocs.io/" }]
+    },
+    "Create a backup of a VM": {
+      steps: [
+        "Ensure a Backup Target is configured and healthy.",
+        "Go to Virtual Machines. Find your VM and click '...'.",
+        "Select 'Take Backup'.",
+        "Enter a name for the backup or use the auto-generated one.",
+        "Monitor progress in the 'Backups' menu until state is 'Ready'."
+      ],
+      tip: "Taking a backup is different from a snapshot. Backups are stored externally on the Backup Target, while snapshots remain local.",
+      dependencies: ["Backup Target configured", "VM Volume consistency"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/#taking-a-backup",
+      icon: Database,
+      resourceLinks: []
+    },
+    "Restore a VM from a backup": {
+      steps: [
+        "Go to the 'Backups' menu and select a healthy backup.",
+        "Click '...' and select 'Restore to a new VM'.",
+        "Define the new VM name and resource specifications if needed.",
+        "Wait for the restore process to complete and the new VM to start.",
+        "Verify data integrity within the guest OS."
+      ],
+      tip: "You can also restore 'in-place' by clicking 'Restore' directly on an existing VM, which will revert its volumes to the backup state.",
+      dependencies: ["Healthy Backup", "Sufficient cluster resources"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/#restoring-from-a-backup",
+      icon: RefreshCw,
+      resourceLinks: []
+    },
+    "Perform a live migration of a VM (requires multi-host)": {
+      steps: [
+        "Ensure the VM is running and the cluster has at least 2 healthy nodes.",
+        "Go to Virtual Machines. Click the '...' menu on the VM and select 'Migrate'.",
+        "Optionally select a target node or let the system choose automatically.",
+        "Monitor the migration progress until the 'Running' state is restored."
+      ],
+      tip: "Live migration requires shared storage (Longhorn) and will fail if the VM has local passthrough hardware (USB/PCI).",
+      dependencies: ["Multi-node cluster", "Distributed Storage", "No hardware passthrough"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/live-migration/",
+      icon: RefreshCw,
+      resourceLinks: []
+    },
+    "Use the serial/VNC console of a VM": {
+      steps: [
+        "Open Virtual Machines dashboard.",
+        "Click on the VM name to open details.",
+        "Click 'Console' button on the top right.",
+        "Switch between 'VNC' (for GUI) and 'Serial' (for terminal) tabs.",
+        "Verify terminal responsiveness and OS login prompt."
+      ],
+      tip: "Enable the serial console in your guest Linux kernel by adding 'console=ttyS0' to the boot params if it's not working.",
+      dependencies: ["Web browser access to VIP"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#access-vm-via-console",
+      icon: Terminal,
+      resourceLinks: []
+    },
+    "Import the SSH key and access a VM using the key (Linux only)": {
+      steps: [
+        "Import SSH Key: Settings -> SSH Keys -> Create.",
+        "Select this key during VM creation in the 'Basics' or 'Advanced' tab.",
+        "Wait for VM to reach 'Running' state.",
+        "From your workstation terminal: ssh [user]@[VM_IP].",
+        "Verify access without password prompts."
+      ],
+      tip: "If access fails, ensure the security group or firewall allows port 22 and that the image has cloud-init installed.",
+      dependencies: ["Public Key", "Network connectivity to VM"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#ssh-key",
+      icon: Key,
+      resourceLinks: []
+    },
+    "Multi-cluster management, multi-tenancy for VM management, multi-disk support": {
+      steps: [
+        "Multi-disk: During VM creation or Edit, go to 'Disks' -> 'Add Disk' to create secondary volumes.",
+        "Multi-tenancy: Use Projects/Namespaces to isolate workloads and users (integrated with Rancher).",
+        "Multi-cluster: Import Harvester into Rancher to manage multiple Harvester clusters from a single pane.",
+        "Verify that resources are allocated and billed (if applicable) correctly per project."
+      ],
+      tip: "Add secondary disks for heavy database workloads to separate log files from data files for better performance.",
+      dependencies: ["Rancher integration for multi-cluster", "Available SDS storage"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#disks",
+      icon: HardDrive,
+      resourceLinks: []
+    },
+    "Integration with Rancher. Provision a RKE2 Kubernetes cluster on top of a SUSE Virtualization cluster": {
+      steps: [
+        "Step 1: Enable Harvester in Rancher (Global Settings -> Feature Flags -> Harvester).",
+        "Step 2: Import Harvester (Virtualization Management -> Import).",
+        "Step 3: Create Cloud Credentials in Rancher for the Harvester cluster.",
+        "Step 4: Go to Cluster Management -> Create. Select 'Harvester' as the infrastructure.",
+        "Step 5: Define Node Pools (roles, CPU, RAM) and click Create.",
+        "Monitor the automated VM creation and RKE2 bootstrap in the Harvester UI."
+      ],
+      tip: "Ensure the Rancher CA certificate is trusted by Harvester if using private CAs, otherwise the agents won't connect.",
+      dependencies: ["Upstream Rancher v2.8+", "Working Harvester VIP", "Network routing between Rancher and Harvester"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/",
+      icon: Cloud,
+      resourceLinks: [{ label: "Rancher Harvester Driver Docs", url: "https://rancher.com/docs/rancher/v2.8/en/cluster-provisioning/hosted-kubernetes-clusters/harvester/" }]
     }
   },
   pt: {
     "Provisionar hosts através do instalador ISO": {
-      steps: [
-        "Prepare um pendrive bootável com a ISO do Harvester v1.7.",
-        "No primeiro nó, escolha 'Create a new Harvester cluster'.",
-        "Configure o VIP do cluster, IP estático do nó e Gateway conforme o planejamento.",
-        "Para os nós 2 e 3, escolha 'Join an existing cluster' e insira o VIP e o Cluster Token gerado pelo primeiro nó.",
-        "Aguarde o reboot e a tela final com a URL de acesso ao Dashboard."
-      ],
-      tip: "Se usar IPMI, certifique-se que o Virtual Media não tenha latência alta, pois isso pode corromper a instalação.",
-      dependencies: ["Hardware com VT-x/AMD-V habilitado", "Pendrive de no mínimo 8GB", "Acesso IPMI/iDRAC"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/install/iso-install/",
-      resourceLinks: [
-        { label: "Download Harvester ISO v1.7", url: "https://harvesterhci.io/releases" },
-        { label: "Guia de Requisitos de Hardware", url: "https://docs.harvesterhci.io/v1.7/install/requirements/" }
-      ]
+      steps: ["Prepare um pendrive com o Harvester ISO.", "Boot via UEFI. Escolha 'Create a new Harvester cluster'.", "Configure Hostname, IP Estático e o Cluster VIP.", "Defina o Token do Cluster.", "Aguarde o reboot e acesso à URL do Dashboard."],
+      tip: "Se o instalador travar em 'Loading initrd', verifique se UEFI está habilitado e Secure Boot desabilitado.",
+      dependencies: ["VT-x/AMD-V ativo", "Pen-drive 8GB"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/pt/install/iso-install/",
+      icon: Play,
+      resourceLinks: []
     },
-    "Registrar uma imagem para uso em VMs": {
-      steps: [
-        "Acesse 'Images' no menu lateral e clique em 'Create'.",
-        "Utilize a opção 'Download from URL' para performance ou 'Upload' para arquivos locais.",
-        "Insira o nome (ex: openSUSE-Leap-15.5) e a URL da imagem Cloud.",
-        "Aguarde o status mudar de 'Downloading' para 'Active'."
-      ],
-      tip: "Imagens Cloud (.qcow2) são preferíveis pois permitem o uso de Cloud-Init para injetar chaves SSH automaticamente.",
-      dependencies: ["Conectividade externa do cluster", "Imagem no formato qcow2, raw ou img"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#images",
-      resourceLinks: [
-        { label: "openSUSE Leap 15.5 Cloud Images", url: "https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.5/images/" },
-        { label: "SLES 15 SP5 Cloud Images (Trial)", url: "https://www.suse.com/download/sles/" }
-      ]
+    "Criar uma VM": {
+      steps: ["Vá em Virtual Machines -> Create.", "Insira Nome, Cores e Memória.", "Selecione uma imagem para o disco.", "Escolha a rede e adicione chaves SSH."],
+      tip: "Use drivers VirtIO para máxima performance.",
+      dependencies: ["Imagem Ativa", "Rede Configurada"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/pt/vm/create-vm/",
+      icon: Monitor,
+      resourceLinks: []
     }
+    // Note: Other pt keys will fallback to default if not defined here
   },
   es: {
     "Provisionar hosts mediante el instalador ISO": {
-      steps: [
-        "Prepare una unidad USB de arranque con la ISO de Harvester v1.7.",
-        "En el primer nodo, seleccione 'Create a new Harvester cluster'.",
-        "Configure la VIP del clúster, la IP estática del nodo y la puerta de enlace según la planificación.",
-        "Para los nodos 2 y 3, seleccione 'Join an existing cluster' e ingrese la VIP y el Token del clúster generado por el primer nodo.",
-        "Espere el reinicio y la pantalla final con la URL de acceso al panel."
-      ],
-      tip: "Si usa IPMI, asegúrese de que Virtual Media no tenga una latencia alta, ya que esto puede corromper la instalación.",
-      dependencies: ["Hardware con VT-x/AMD-V habilitado", "Unidad USB de mínimo 8GB", "Acceso IPMI/iDRAC"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/install/iso-install/",
-      resourceLinks: [
-        { label: "Descargar Harvester ISO v1.7", url: "https://harvesterhci.io/releases" },
-        { label: "Guía de requisitos de hardware", url: "https://docs.harvesterhci.io/v1.7/install/requirements/" }
-      ]
+      steps: ["Prepare un USB con Harvester ISO.", "Arranque desde UEFI. Elija 'Create a new Harvester cluster'.", "Configure Hostname, IP estática y el Cluster VIP.", "Defina el Token del Cluster.", "Espere al reinicio y acceda al Dashboard."],
+      tip: "Si el instalador se cuelga en 'Loading initrd', verifique UEFI y Secure Boot.",
+      dependencies: ["VT-x/AMD-V activo", "USB 8GB"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/es/install/iso-install/",
+      icon: Play,
+      resourceLinks: []
     },
-    "Registrar una imagen para usar en máquinas virtuales": {
-      steps: [
-        "Vaya a 'Images' en el menú lateral y haga clic en 'Create'.",
-        "Use 'Download from URL' para el rendimiento o 'Upload' para archivos locales.",
-        "Ingrese el nombre (ej., openSUSE-Leap-15.5) e la URL de la imagen Cloud.",
-        "Espere a que el estado cambie de 'Downloading' a 'Active'."
-      ],
-      tip: "Se prefieren las imágenes Cloud (.qcow2) ya que permiten que Cloud-Init inyecte claves SSH automáticamente.",
-      dependencies: ["Conectividad externa del clúster", "Imagen en formato qcow2, raw o img"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#images",
-      resourceLinks: [
-        { label: "Imágenes Cloud openSUSE Leap 15.5", url: "https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.5/images/" },
-        { label: "Imágenes Cloud SLES 15 SP5 (Prueba)", url: "https://www.suse.com/download/sles/" }
-      ]
+    "Crear una VM": {
+      steps: ["Vaya a Virtual Machines -> Create.", "Ingrese Nombre, Cores y Memoria.", "Seleccione una imagen de disco.", "Elija la red y agregue llaves SSH."],
+      tip: "Use controladores VirtIO para mejor rendimiento.",
+      dependencies: ["Imagen Activa", "Red Configurada"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/es/vm/create-vm/",
+      icon: Monitor,
+      resourceLinks: []
     }
+    // Note: Other es keys will fallback to default if not defined here
   }
 };

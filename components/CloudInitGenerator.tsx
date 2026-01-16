@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { CloudInitConfig, MountPoint, NetworkInterface, HardwareSpecs, NetworkSpecs } from '../types';
-import { FileCode, Plus, Trash2, Save, Copy, Globe, Network, Info, AlertCircle, Settings, Check, Upload, Layers, Box, Database, Image as ImageIcon, HelpCircle } from 'lucide-react';
+import { FileCode, Plus, Trash2, Save, Copy, Network, Info, Settings, Check, Upload, Layers, Box, Database, Image as ImageIcon, HelpCircle, HardDrive, Package } from 'lucide-react';
 
 interface Props {
   config: CloudInitConfig;
@@ -13,23 +13,19 @@ interface Props {
 
 const YamlPreview: React.FC<{ code: string }> = ({ code }) => {
   const highlightLine = (line: string) => {
-    // Check for comments
     const trimmed = line.trim();
     if (trimmed.startsWith('#')) {
       return <span className="text-slate-500 italic">{line}</span>;
     }
 
-    // Check for YAML keys and values
     const colonIndex = line.indexOf(':');
     if (colonIndex !== -1) {
       const keyPart = line.substring(0, colonIndex + 1);
       const valuePart = line.substring(colonIndex + 1);
 
-      // Determine if it's a primary CRD/Cloud-Init directive
-      const isPrimaryDirective = /^(apiVersion|kind|metadata|spec|status|hostname|users|network|packages|timezone|locale):/.test(trimmed);
+      const isPrimaryDirective = /^(apiVersion|kind|metadata|spec|status|hostname|users|network|packages|timezone|locale|mounts):/.test(trimmed);
       const keyColor = isPrimaryDirective ? 'text-amber-400' : 'text-sky-400';
 
-      // Highlight strings or boolean values
       const isBool = /^\s*(true|false)\s*$/.test(valuePart);
       const valueColor = isBool ? 'text-purple-400 font-bold' : 'text-emerald-400';
 
@@ -41,7 +37,6 @@ const YamlPreview: React.FC<{ code: string }> = ({ code }) => {
       );
     }
 
-    // List items or generic text
     if (trimmed.startsWith('-')) {
       return <span className="text-emerald-300 font-medium">{line}</span>;
     }
@@ -79,13 +74,13 @@ const Tooltip: React.FC<{ title: string; children: React.ReactNode }> = ({ title
   </div>
 );
 
-const isValidHostname = (h: string) => /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/.test(h.replace(/{.*}/g, 'node'));
-
 export const CloudInitGenerator: React.FC<Props> = ({ config, updateConfig, onComplete, hwSpecs, netSpecs }) => {
   const [activeMainTab, setActiveMainTab] = useState<'cloud-init' | 'harvester-crd'>('cloud-init');
-  const [activeTab, setActiveTab] = useState<'users' | 'system' | 'network' | 'storage' | 'files'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'system' | 'network' | 'storage' | 'packages'>('users');
   const [activeCrdType, setActiveCrdType] = useState<'vm' | 'network' | 'image'>('vm');
   const [newSshKey, setNewSshKey] = useState('');
+  const [newPackage, setNewPackage] = useState('');
+  const [newMount, setNewMount] = useState<MountPoint>({ device: '', mountPath: '', fsType: 'ext4' });
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -117,21 +112,6 @@ export const CloudInitGenerator: React.FC<Props> = ({ config, updateConfig, onCo
     });
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      if (content) {
-        handleAddItem('sshKeys', content.trim());
-      }
-    };
-    reader.readAsText(file);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
   const generateCloudInitYaml = () => {
     let yaml = `#cloud-config\n`;
     yaml += `hostname: ${config.hostnamePattern}\n`;
@@ -146,6 +126,13 @@ export const CloudInitGenerator: React.FC<Props> = ({ config, updateConfig, onCo
       yaml += `    ssh_authorized_keys:\n`;
       config.sshKeys.forEach(k => {
         yaml += `      - ${k}\n`;
+      });
+    }
+
+    if (config.mounts.length > 0) {
+      yaml += `mounts:\n`;
+      config.mounts.forEach(m => {
+        yaml += `  - [ "${m.device}", "${m.mountPath}", "${m.fsType}", "defaults", "0", "2" ]\n`;
       });
     }
 
@@ -288,7 +275,6 @@ spec:
             </div>
           </div>
 
-          {/* Main Module Tabs */}
           <div className="flex gap-4 mb-8">
               <button 
                 onClick={() => setActiveMainTab('cloud-init')}
@@ -314,7 +300,7 @@ spec:
                         { id: 'system', label: 'System' },
                         { id: 'network', label: 'Network' },
                         { id: 'storage', label: 'Storage' },
-                        { id: 'files', label: 'Files' }
+                        { id: 'packages', label: 'Packages' }
                       ].map((tab) => (
                         <button 
                           key={tab.id} 
@@ -364,13 +350,14 @@ spec:
                                >
                                   <Plus className="w-3.5 h-3.5" /> Adicionar Key
                                </button>
-                               <button 
-                                  onClick={() => fileInputRef.current?.click()} 
-                                  className="text-xs font-bold bg-suse-dark text-white border border-transparent px-4 py-1.5 rounded-md hover:bg-emerald-900 transition-colors flex items-center gap-2 shadow-sm"
-                               >
-                                  <Upload className="w-3.5 h-3.5" /> Upload Key
-                               </button>
-                               <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} accept=".pub,.key,.txt" />
+                               <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (ev) => handleAddItem('sshKeys', ev.target?.result as string);
+                                    reader.readAsText(file);
+                                  }
+                               }} />
                              </div>
                              
                              <div className="mt-4 space-y-2">
@@ -381,7 +368,7 @@ spec:
                                    </div>
                                 ))}
                              </div>
-                           </div>
+                        </div>
                         </div>
                       )}
                       
@@ -399,7 +386,15 @@ spec:
                                onChange={(e) => updateConfig({...config, hostnamePattern: e.target.value.toLowerCase().replace(/[^a-z0-9-{}]/g, '')})}
                                className={inputClasses}
                              />
-                             <p className="text-[10px] text-gray-400 mt-2">Use <code>{'{dsp}'}</code> para índice do cluster.</p>
+                           </div>
+                           <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                             <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Timezone</label>
+                             <input 
+                               value={config.timezone} 
+                               onChange={(e) => updateConfig({...config, timezone: e.target.value})}
+                               className={inputClasses}
+                               placeholder="e.g. UTC"
+                             />
                            </div>
                         </div>
                       )}
@@ -409,9 +404,6 @@ spec:
                            <div className="flex items-center justify-between mb-2">
                               <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
                                 Interfaces de Rede
-                                <Tooltip title="Configuração de Interfaces">
-                                  Configure múltiplas interfaces virtuais. Você pode alternar entre DHCP para automação ou IPs estáticos para serviços fixos.
-                                </Tooltip>
                               </h4>
                               <button onClick={addInterface} className="py-1.5 px-4 bg-blue-50 text-blue-600 rounded-lg border border-blue-200 text-[10px] font-bold flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors">
                                 <Plus className="w-3.5 h-3.5" /> Nova Interface
@@ -420,26 +412,20 @@ spec:
                            
                            {config.networkInterfaces.length === 0 ? (
                              <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl">
-                               <p className="text-xs text-slate-400">Nenhuma interface configurada. O padrão do Harvester será utilizado.</p>
+                               <p className="text-xs text-slate-400">Nenhuma interface configurada.</p>
                              </div>
                            ) : config.networkInterfaces.map((iface, idx) => (
                              <div key={idx} className="bg-slate-50 rounded-xl border border-slate-200 p-5 relative group space-y-4">
                                 <button 
                                   onClick={() => handleRemoveItem('networkInterfaces', idx)} 
                                   className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"
-                                  title="Remover Interface"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
                                 
                                 <div className="grid grid-cols-2 gap-4">
                                    <div>
-                                      <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">
-                                        Interface Device
-                                        <Tooltip title="Nome do Dispositivo">
-                                          Geralmente <code>eth0</code>, <code>eth1</code>, etc. Este nome deve coincidir com os dispositivos detectados pelo kernel.
-                                        </Tooltip>
-                                      </label>
+                                      <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">Interface Device</label>
                                       <input value={iface.name} onChange={(e) => updateInterface(idx, { name: e.target.value })} className={inputClasses} placeholder="eth0" />
                                    </div>
                                    <div className="flex items-end pb-2">
@@ -451,9 +437,6 @@ spec:
                                             className="rounded border-gray-300 text-suse-base focus:ring-suse-base"
                                           /> 
                                           Enable DHCP v4
-                                          <Tooltip title="Dynamic Host Configuration Protocol">
-                                            Se ativado, a interface solicitará um endereço IP automaticamente de um servidor DHCP na rede.
-                                          </Tooltip>
                                       </label>
                                    </div>
                                 </div>
@@ -461,12 +444,7 @@ spec:
                                 {!iface.dhcp && (
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-200 mt-2 animate-fade-in">
                                      <div className="col-span-1">
-                                        <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">
-                                          IPv4 Address / CIDR
-                                          <Tooltip title="Endereço IP Estático">
-                                            Especifique o endereço IP seguido da máscara em formato CIDR. Exemplo: <code>192.168.1.10/24</code>.
-                                          </Tooltip>
-                                        </label>
+                                        <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">IPv4 Address / CIDR</label>
                                         <input 
                                           value={iface.ip} 
                                           onChange={(e) => updateInterface(idx, { ip: e.target.value })} 
@@ -475,31 +453,12 @@ spec:
                                         />
                                      </div>
                                      <div className="col-span-1">
-                                        <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">
-                                          Gateway
-                                          <Tooltip title="Default Gateway">
-                                            O endereço IP do roteador para saída de tráfego desta interface.
-                                          </Tooltip>
-                                        </label>
+                                        <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">Gateway</label>
                                         <input 
                                           value={iface.gateway} 
                                           onChange={(e) => updateInterface(idx, { gateway: e.target.value })} 
                                           className={inputClasses} 
                                           placeholder="192.168.1.1" 
-                                        />
-                                     </div>
-                                     <div className="col-span-full">
-                                        <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">
-                                          DNS Nameservers (Comma separated)
-                                          <Tooltip title="Servidores DNS">
-                                            Servidores para resolução de nomes. Especifique um ou mais separados por vírgula. Exemplo: <code>8.8.8.8, 1.1.1.1</code>.
-                                          </Tooltip>
-                                        </label>
-                                        <input 
-                                          value={iface.nameservers} 
-                                          onChange={(e) => updateInterface(idx, { nameservers: e.target.value })} 
-                                          className={inputClasses} 
-                                          placeholder="8.8.8.8, 1.1.1.1" 
                                         />
                                      </div>
                                   </div>
@@ -509,10 +468,89 @@ spec:
                         </div>
                       )}
                       
-                      {(activeTab === 'storage' || activeTab === 'files') && (
-                        <div className="py-20 text-center opacity-30">
-                           <Settings className="w-12 h-12 mx-auto mb-2" />
-                           <p className="text-xs">Módulos avançados em otimização.</p>
+                      {activeTab === 'storage' && (
+                        <div className="space-y-6 animate-fade-in">
+                           <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4">
+                              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                                <HardDrive className="w-4 h-4 text-suse-base" /> Adicionar Ponto de Montagem
+                              </h4>
+                              <div className="grid grid-cols-3 gap-3">
+                                 <div>
+                                    <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">Device</label>
+                                    <input value={newMount.device} onChange={(e) => setNewMount({...newMount, device: e.target.value})} className={inputClasses} placeholder="/dev/vdb1" />
+                                 </div>
+                                 <div>
+                                    <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">Mount Path</label>
+                                    <input value={newMount.mountPath} onChange={(e) => setNewMount({...newMount, mountPath: e.target.value})} className={inputClasses} placeholder="/data" />
+                                 </div>
+                                 <div>
+                                    <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">FS Type</label>
+                                    <select value={newMount.fsType} onChange={(e) => setNewMount({...newMount, fsType: e.target.value})} className={inputClasses}>
+                                       <option value="ext4">ext4</option>
+                                       <option value="xfs">xfs</option>
+                                       <option value="btrfs">btrfs</option>
+                                    </select>
+                                 </div>
+                              </div>
+                              <button 
+                                onClick={() => { handleAddItem('mounts', newMount); setNewMount({ device: '', mountPath: '', fsType: 'ext4' }); }} 
+                                className="w-full py-2 bg-suse-dark text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-black transition-colors"
+                              >
+                                Adicionar Mount
+                              </button>
+                           </div>
+
+                           <div className="space-y-2">
+                              {config.mounts.map((m, idx) => (
+                                <div key={idx} className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
+                                   <div className="flex gap-4">
+                                      <div className="text-[10px]"><span className="font-bold text-gray-400 mr-2">DEVICE:</span> {m.device}</div>
+                                      <div className="text-[10px]"><span className="font-bold text-gray-400 mr-2">PATH:</span> {m.mountPath}</div>
+                                      <div className="text-[10px]"><span className="font-bold text-gray-400 mr-2">TYPE:</span> {m.fsType}</div>
+                                   </div>
+                                   <button onClick={() => handleRemoveItem('mounts', idx)} className="text-gray-400 hover:text-red-500 transition-colors">
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                   </button>
+                                </div>
+                              ))}
+                           </div>
+                        </div>
+                      )}
+
+                      {activeTab === 'packages' && (
+                        <div className="space-y-6 animate-fade-in">
+                           <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4">
+                              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                                <Package className="w-4 h-4 text-suse-base" /> Adicionar Pacotes OS
+                              </h4>
+                              <div className="flex gap-2">
+                                 <input 
+                                   value={newPackage} 
+                                   onChange={(e) => setNewPackage(e.target.value)} 
+                                   onKeyDown={(e) => e.key === 'Enter' && (handleAddItem('packages', newPackage), setNewPackage(''))}
+                                   className={inputClasses} 
+                                   placeholder="e.g. nginx, docker, git" 
+                                 />
+                                 <button 
+                                   onClick={() => { handleAddItem('packages', newPackage); setNewPackage(''); }} 
+                                   className="px-4 bg-suse-dark text-white rounded-lg text-xs font-bold"
+                                 >
+                                   Adicionar
+                                 </button>
+                              </div>
+                              <p className="text-[9px] text-gray-400">Estes pacotes serão instalados automaticamente via <code>zypper</code> ou <code>apt</code> durante o primeiro boot.</p>
+                           </div>
+
+                           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              {config.packages.map((pkg, idx) => (
+                                <div key={idx} className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-gray-100 shadow-sm group">
+                                   <span className="text-[10px] font-bold text-slate-700">{pkg}</span>
+                                   <button onClick={() => handleRemoveItem('packages', idx)} className="text-gray-300 group-hover:text-red-500 transition-colors">
+                                      <Trash2 className="w-3 h-3" />
+                                   </button>
+                                </div>
+                              ))}
+                           </div>
                         </div>
                       )}
                    </div>
@@ -522,9 +560,6 @@ spec:
                     <div className="bg-slate-900 rounded-3xl p-8 text-white space-y-6 shadow-2xl">
                         <h3 className="text-lg font-bold flex items-center gap-3">
                           <Box className="w-6 h-6 text-suse-base" /> Resource Manifests
-                          <Tooltip title="Custom Resource Definitions">
-                            Manifestos baseados em CRDs do Harvester. Permitem o provisionamento declarativo via Kubernetes, facilitando fluxos de infraestrutura como código (IaC).
-                          </Tooltip>
                         </h3>
                         <p className="text-xs text-slate-400 leading-relaxed">Selecione o tipo de recurso Harvester para gerar o manifesto YAML compatível com GitOps e <code>kubectl apply</code>.</p>
                         
@@ -560,17 +595,11 @@ spec:
                                 </div>
                             </button>
                         </div>
-
-                        <div className="p-4 bg-white/5 border border-white/10 rounded-2xl flex items-start gap-3">
-                            <Info className="w-5 h-5 text-suse-base shrink-0 mt-0.5" />
-                            <p className="text-[10px] text-gray-400 leading-relaxed">Estes manifestos utilizam os dados de CPU ({hwSpecs?.cpuCores} cores), RAM ({hwSpecs?.ramGb}GB) e VLAN ({netSpecs?.vlanId || 'N/A'}) já configurados.</p>
-                        </div>
                     </div>
                  </div>
                )}
             </div>
 
-            {/* YAML Preview Pane */}
             <div className="bg-slate-900 rounded-xl flex flex-col h-[600px] shadow-2xl overflow-hidden border border-slate-800">
                <div className="px-4 py-3 bg-slate-800 border-b border-slate-700 flex justify-between items-center">
                   <div className="flex items-center gap-2">
