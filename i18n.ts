@@ -44,7 +44,8 @@ export const translations = {
       print: "Print Report / PDF",
       exportJson: "Export JSON",
       aiContext: "AI Context",
-      newProject: "New Planning"
+      newProject: "New Planning",
+      notSpecified: "Not Specified"
     },
     dashboard: {
       welcome: "Welcome to SUSE Virtualization",
@@ -259,7 +260,8 @@ export const translations = {
       print: "Imprimir Relatório / PDF",
       exportJson: "Exportar JSON",
       aiContext: "Contexto para IA",
-      newProject: "Novo Planejamento"
+      newProject: "Novo Planejamento",
+      notSpecified: "Não Especificado"
     },
     dashboard: {
       welcome: "Bem-vindo ao SUSE Virtualization",
@@ -452,7 +454,7 @@ export const translations = {
     }
   },
   es: {
-    common: { next: "Continuar", back: "Volver", finish: "Finalizar", step: "Paso", of: "de", home: "Inicio", planningMode: "Modo de Planificación", enterprisePlanner: "Planificador Enterprise Harvester v1.7", required: "Obligatorio", completed: "Completado", pending: "Pendiente", reference: "Referencia", expertTip: "Consejo de Experto", techDependencies: "Dependencias Técnicas", resourceLinks: "Enlaces de Recursos", officialDocs: "Documentación Oficial", copy: "Copiar", copied: "¡Copiado!", print: "Imprimir Informe / PDF", exportJson: "Exportar JSON", aiContext: "Contexto para IA", newProject: "Nueva Planificación" },
+    common: { next: "Continuar", back: "Volver", finish: "Finalizar", step: "Paso", of: "de", home: "Inicio", planningMode: "Modo de Planificación", enterprisePlanner: "Planificador Enterprise Harvester v1.7", required: "Obligatorio", completed: "Completado", pending: "Pendiente", reference: "Referencia", expertTip: "Consejo de Experto", techDependencies: "Dependencias Técnicas", resourceLinks: "Enlaces de Recursos", officialDocs: "Documentación Oficial", copy: "Copiar", copied: "¡Copiado!", print: "Imprimir Informe / PDF", exportJson: "Exportar JSON", aiContext: "Contexto para IA", newProject: "Nueva Planificación", notSpecified: "No Especificado" },
     dashboard: { welcome: "Bienvenido a SUSE Virtualization", subtitle: "Este asistente le guía a través de la planificación, instalación y validación de su POC.", import: "Importar Proyecto (JSON)", reportTitle: "Generar Informe Final de la POC", reportDesc: "Combine la configuración y los resultados de la validación en un informe profesional." },
     nav: { project: "Proyecto", hardware: "Hardware", network: "Red", topology: "Topología", installation: "Instalación", automation: "Automación", validation: "Validación", tests: "Pruebas", report: "Informe" },
     shell: { title: "Caja de Herramientas", subtitle: "Acceda a los nodos vía SSH y use los comandos para diagnóstico.", categories: { bench: "Benchmarking (Etcd)", storage: "Almacenamiento Longhorn", diag: "Diagnóstico Avanzado", net: "Red y Conectividad", health: "Salud de Nodos", rancher_cleanup: "Limpieza de Rancher" } },
@@ -570,7 +572,6 @@ export const SHELL_TOOLBOX_LOCALIZED: Record<Language, any[]> = {
   ]
 };
 
-// Fixed Missing translations for pt and es to satisfy Record<Language, Record<string, any>>
 export const GOAL_PROCEDURES_LOCALIZED: Record<Language, Record<string, any>> = {
   en: {
     "Provision hosts through the ISO installer": {
@@ -798,7 +799,6 @@ export const GOAL_PROCEDURES_LOCALIZED: Record<Language, Record<string, any>> = 
       icon: Monitor,
       resourceLinks: []
     }
-    // Note: Other pt keys will fallback to default if not defined here
   },
   es: {
     "Provisionar hosts mediante el instalador ISO": {
@@ -812,11 +812,10 @@ export const GOAL_PROCEDURES_LOCALIZED: Record<Language, Record<string, any>> = 
     "Crear una VM": {
       steps: ["Vaya a Virtual Machines -> Create.", "Ingrese Nombre, Cores y Memoria.", "Seleccione una imagen de disco.", "Elija la red y agregue llaves SSH."],
       tip: "Use controladores VirtIO para mejor rendimiento.",
-      dependencies: ["Imagen Activa", "Red Configurada"],
+      dependencies: ["Imagen Activa", "Redificada"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/es/vm/create-vm/",
       icon: Monitor,
       resourceLinks: []
     }
-    // Note: Other es keys will fallback to default if not defined here
   }
 };

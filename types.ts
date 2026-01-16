@@ -98,6 +98,7 @@ export interface CloudInitConfig {
   sshKeys: string[];
   packages: string[];
   runCmds: string[];
+  bootCmds: string[];
   writeFiles: { path: string; content: string; permissions: string }[];
   timezone: string;
   hostnamePattern: string;

@@ -94,6 +94,7 @@ const App: React.FC = () => {
     sshKeys: [],
     packages: ['curl', 'wget', 'vim'],
     runCmds: [],
+    bootCmds: [],
     writeFiles: [],
     timezone: 'UTC',
     hostnamePattern: 'node-{dsp}',

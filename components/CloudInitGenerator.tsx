@@ -1,9 +1,10 @@
 
 import React, { useState, useRef } from 'react';
 import { CloudInitConfig, MountPoint, NetworkInterface, HardwareSpecs, NetworkSpecs } from '../types';
-import { FileCode, Plus, Trash2, Save, Copy, Network, Info, Settings, Check, Upload, Layers, Box, Database, Image as ImageIcon, HelpCircle, HardDrive, Package } from 'lucide-react';
+import { FileCode, Plus, Trash2, Save, Copy, Network, Info, Settings, Check, Upload, Layers, Box, Database, Image as ImageIcon, HelpCircle, HardDrive, Package, Terminal } from 'lucide-react';
 
 interface Props {
+  lang?: string;
   config: CloudInitConfig;
   updateConfig: (config: CloudInitConfig) => void;
   onComplete: () => void;
@@ -23,7 +24,7 @@ const YamlPreview: React.FC<{ code: string }> = ({ code }) => {
       const keyPart = line.substring(0, colonIndex + 1);
       const valuePart = line.substring(colonIndex + 1);
 
-      const isPrimaryDirective = /^(apiVersion|kind|metadata|spec|status|hostname|users|network|packages|timezone|locale|mounts):/.test(trimmed);
+      const isPrimaryDirective = /^(apiVersion|kind|metadata|spec|status|hostname|users|network|packages|timezone|locale|mounts|runcmd|bootcmd):/.test(trimmed);
       const keyColor = isPrimaryDirective ? 'text-amber-400' : 'text-sky-400';
 
       const isBool = /^\s*(true|false)\s*$/.test(valuePart);
@@ -76,10 +77,12 @@ const Tooltip: React.FC<{ title: string; children: React.ReactNode }> = ({ title
 
 export const CloudInitGenerator: React.FC<Props> = ({ config, updateConfig, onComplete, hwSpecs, netSpecs }) => {
   const [activeMainTab, setActiveMainTab] = useState<'cloud-init' | 'harvester-crd'>('cloud-init');
-  const [activeTab, setActiveTab] = useState<'users' | 'system' | 'network' | 'storage' | 'packages'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'system' | 'network' | 'storage' | 'packages' | 'commands'>('users');
   const [activeCrdType, setActiveCrdType] = useState<'vm' | 'network' | 'image'>('vm');
   const [newSshKey, setNewSshKey] = useState('');
   const [newPackage, setNewPackage] = useState('');
+  const [newBootCmd, setNewBootCmd] = useState('');
+  const [newRunCmd, setNewRunCmd] = useState('');
   const [newMount, setNewMount] = useState<MountPoint>({ device: '', mountPath: '', fsType: 'ext4' });
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -129,6 +132,13 @@ export const CloudInitGenerator: React.FC<Props> = ({ config, updateConfig, onCo
       });
     }
 
+    if (config.bootCmds && config.bootCmds.length > 0) {
+      yaml += `bootcmd:\n`;
+      config.bootCmds.forEach(cmd => {
+        yaml += `  - ${cmd}\n`;
+      });
+    }
+
     if (config.mounts.length > 0) {
       yaml += `mounts:\n`;
       config.mounts.forEach(m => {
@@ -168,6 +178,13 @@ export const CloudInitGenerator: React.FC<Props> = ({ config, updateConfig, onCo
       yaml += `packages:\n`;
       config.packages.forEach(p => {
         yaml += `  - ${p}\n`;
+      });
+    }
+
+    if (config.runCmds && config.runCmds.length > 0) {
+      yaml += `runcmd:\n`;
+      config.runCmds.forEach(cmd => {
+        yaml += `  - ${cmd}\n`;
       });
     }
 
@@ -300,7 +317,8 @@ spec:
                         { id: 'system', label: 'System' },
                         { id: 'network', label: 'Network' },
                         { id: 'storage', label: 'Storage' },
-                        { id: 'packages', label: 'Packages' }
+                        { id: 'packages', label: 'Packages' },
+                        { id: 'commands', label: 'Run Commands' }
                       ].map((tab) => (
                         <button 
                           key={tab.id} 
@@ -550,6 +568,72 @@ spec:
                                    </button>
                                 </div>
                               ))}
+                           </div>
+                        </div>
+                      )}
+
+                      {activeTab === 'commands' && (
+                        <div className="space-y-6 animate-fade-in">
+                           <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-6">
+                              <div>
+                                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 mb-2">
+                                  <Terminal className="w-4 h-4 text-amber-500" /> Early Commands (Pre-Network)
+                                  <Tooltip title="bootcmd">Executados muito cedo no processo de boot, antes da configuração de rede ser aplicada.</Tooltip>
+                                </h4>
+                                <div className="flex gap-2">
+                                   <input 
+                                     value={newBootCmd} 
+                                     onChange={(e) => setNewBootCmd(e.target.value)} 
+                                     onKeyDown={(e) => e.key === 'Enter' && (handleAddItem('bootCmds', newBootCmd), setNewBootCmd(''))}
+                                     className={inputClasses} 
+                                     placeholder="e.g. modprobe br_netfilter" 
+                                   />
+                                   <button 
+                                     onClick={() => { handleAddItem('bootCmds', newBootCmd); setNewBootCmd(''); }} 
+                                     className="px-4 bg-slate-700 text-white rounded-lg text-xs font-bold"
+                                   >
+                                     Add
+                                   </button>
+                                </div>
+                                <div className="mt-3 space-y-1">
+                                   {config.bootCmds?.map((cmd, idx) => (
+                                     <div key={idx} className="flex items-center justify-between bg-white px-3 py-1.5 rounded-lg border border-gray-100 text-[10px] font-mono group">
+                                        <span>{cmd}</span>
+                                        <button onClick={() => handleRemoveItem('bootCmds', idx)} className="text-gray-300 group-hover:text-red-500"><Trash2 className="w-3 h-3" /></button>
+                                     </div>
+                                   ))}
+                                </div>
+                              </div>
+
+                              <div className="pt-4 border-t border-slate-200">
+                                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 mb-2">
+                                  <Terminal className="w-4 h-4 text-emerald-500" /> Late Commands (Post-Network)
+                                  <Tooltip title="runcmd">Executados após a rede estar configurada. Ideal para finalização de setup e deploy de aplicações.</Tooltip>
+                                </h4>
+                                <div className="flex gap-2">
+                                   <input 
+                                     value={newRunCmd} 
+                                     onChange={(e) => setNewRunCmd(e.target.value)} 
+                                     onKeyDown={(e) => e.key === 'Enter' && (handleAddItem('runCmds', newRunCmd), setNewRunCmd(''))}
+                                     className={inputClasses} 
+                                     placeholder="e.g. systemctl restart nginx" 
+                                   />
+                                   <button 
+                                     onClick={() => { handleAddItem('runCmds', newRunCmd); setNewRunCmd(''); }} 
+                                     className="px-4 bg-suse-dark text-white rounded-lg text-xs font-bold"
+                                   >
+                                     Add
+                                   </button>
+                                </div>
+                                <div className="mt-3 space-y-1">
+                                   {config.runCmds?.map((cmd, idx) => (
+                                     <div key={idx} className="flex items-center justify-between bg-white px-3 py-1.5 rounded-lg border border-gray-100 text-[10px] font-mono group">
+                                        <span>{cmd}</span>
+                                        <button onClick={() => handleRemoveItem('runCmds', idx)} className="text-gray-300 group-hover:text-red-500"><Trash2 className="w-3 h-3" /></button>
+                                     </div>
+                                   ))}
+                                </div>
+                              </div>
                            </div>
                         </div>
                       )}
