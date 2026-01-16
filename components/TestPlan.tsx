@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { CheckCircle2, XCircle, CheckSquare, Printer, AlertTriangle } from 'lucide-react';
 import { Language } from '../types';
 import { translations, TEST_CASES_LOCALIZED } from '../i18n';
@@ -7,10 +7,11 @@ import { translations, TEST_CASES_LOCALIZED } from '../i18n';
 interface Props {
   lang: Language;
   goals: string[];
+  results: Record<string, 'pass' | 'fail' | 'pending'>;
+  setResults: React.Dispatch<React.SetStateAction<Record<string, 'pass' | 'fail' | 'pending'>>>;
 }
 
-export const TestPlan: React.FC<Props> = ({ lang, goals }) => {
-  const [results, setResults] = useState<Record<string, 'pass' | 'fail' | 'pending'>>({});
+export const TestPlan: React.FC<Props> = ({ lang, goals, results, setResults }) => {
   const t = translations[lang];
   const testCases = TEST_CASES_LOCALIZED[lang];
 

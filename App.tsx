@@ -32,7 +32,6 @@ import {
   CheckCircle2,
   ChevronLeft,
   Settings,
-  HelpCircle,
   Activity,
   Zap,
   Eye,
@@ -42,6 +41,7 @@ import {
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('en');
   const [currentStep, setCurrentStep] = useState<POCStep>(POCStep.DASHBOARD);
+  const [testResults, setTestResults] = useState<Record<string, 'pass' | 'fail' | 'pending'>>({});
   
   const t = useMemo(() => translations[lang], [lang]);
 
@@ -142,6 +142,25 @@ const App: React.FC = () => {
     }
   };
 
+  const handleImport = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const json = JSON.parse(e.target?.result as string);
+        if (json.pocData) setPocData(json.pocData);
+        if (json.hwSpecs) setHwSpecs(json.hwSpecs);
+        if (json.netSpecs) setNetSpecs(json.netSpecs);
+        if (json.cloudInitConfig) setCloudInitConfig(json.cloudInitConfig);
+        if (json.testResults) setTestResults(json.testResults);
+        if (json.status) setStatus(json.status);
+        alert(lang === 'pt' ? 'Projeto importado com sucesso!' : 'Project imported successfully!');
+      } catch (err) {
+        alert('Invalid JSON file.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const navigationItems = [
     { step: POCStep.POC_DETAILS, label: t.nav.project, icon: <ClipboardList className="w-4 h-4" />, statusKey: 'details' },
     { step: POCStep.HARDWARE_VALIDATION, label: t.nav.hardware, icon: <Server className="w-4 h-4" />, statusKey: 'hardware' },
@@ -157,7 +176,7 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (currentStep) {
         case POCStep.DASHBOARD:
-            return <DashboardMenu lang={lang} onSelectStep={setCurrentStep} onImport={() => {}} status={status} />;
+            return <DashboardMenu lang={lang} onSelectStep={setCurrentStep} onImport={handleImport} status={status} />;
         case POCStep.POC_DETAILS:
             return <PocDetailsForm lang={lang} data={pocData} updateData={(d) => setPocData({...pocData, ...d})} onValidationChange={(v) => setStatus({...status, details: v})} />;
         case POCStep.HARDWARE_VALIDATION:
@@ -180,13 +199,13 @@ const App: React.FC = () => {
         case POCStep.CLOUD_INIT_CRD:
             return <CloudInitGenerator lang={lang} config={cloudInitConfig} updateConfig={setCloudInitConfig} onComplete={handleNext} hwSpecs={hwSpecs} netSpecs={netSpecs} />;
         case POCStep.TEST_PLAN:
-            return <TestPlan lang={lang} goals={pocData.goals} />;
+            return <TestPlan lang={lang} goals={pocData.goals} results={testResults} setResults={setTestResults} />;
         case POCStep.SHELL_TOOLBOX:
             return <ShellToolbox lang={lang} />;
         case POCStep.INSTALL_GUIDE:
             return <InstallGuide lang={lang} netSpecs={netSpecs} goals={pocData.goals} />;
         case POCStep.COMPLETED:
-            return <Summary lang={lang} pocData={pocData} specs={hwSpecs} netSpecs={netSpecs} cloudInitConfig={cloudInitConfig} onReset={goHome} />;
+            return <Summary lang={lang} pocData={pocData} specs={hwSpecs} netSpecs={netSpecs} cloudInitConfig={cloudInitConfig} testResults={testResults} status={status} onReset={goHome} />;
         default:
             return null;
     }
@@ -199,7 +218,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900 pb-20 flex flex-col selection:bg-suse-base selection:text-white">
-      {/* Header */}
       <header className="bg-suse-dark text-white shadow-xl sticky top-0 z-[100] backdrop-blur-md bg-opacity-95">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4 cursor-pointer group" onClick={goHome}>
@@ -215,7 +233,6 @@ const App: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-4">
-             {/* Language Switcher */}
              <div className="flex bg-white/5 p-1 rounded-full border border-white/10 mr-4">
                 {[
                   { code: 'en', label: '🇺🇸 EN' },
@@ -245,10 +262,7 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Layout */}
       <div className="flex-1 flex flex-col w-full max-w-7xl mx-auto px-6 mt-8">
-        
-        {/* Progress Rail */}
         {!isDashboard && currentStep !== POCStep.COMPLETED && (
           <div className="mb-12 no-print overflow-x-auto no-scrollbar">
             <div className="flex items-center justify-between min-w-[900px] px-4">
@@ -286,12 +300,10 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Content Area */}
         <div className={`flex-1 relative pb-24 ${isDashboard ? 'animate-fade-in' : ''}`}>
           {renderContent()}
         </div>
 
-        {/* Wizard Footer */}
         {!isDashboard && currentStep !== POCStep.COMPLETED && (
           <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-full max-w-4xl px-6 z-50 no-print">
             <div className="bg-white/80 backdrop-blur-xl border border-gray-100 rounded-3xl p-4 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] flex items-center justify-between gap-4">

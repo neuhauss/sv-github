@@ -1,14 +1,14 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { POCStep, Language } from '../types';
 import { translations } from '../i18n';
-import { ClipboardList, Server, Network, LayoutTemplate, PlayCircle, FileText, CheckCircle2, Circle, ArrowRight, FileCode, Target, BookOpen, Clock, Upload, Terminal, CheckSquare, Layers } from 'lucide-react';
+import { ClipboardList, Server, Network, LayoutTemplate, FileText, CheckCircle2, Clock, ArrowRight, FileCode, Target, BookOpen, Upload, Terminal, CheckSquare, Layers } from 'lucide-react';
 import { Button } from './ui/Button';
 
 interface Props {
   lang: Language;
   onSelectStep: (step: POCStep) => void;
-  onImport: () => void;
+  onImport: (file: File) => void;
   status: {
     details: boolean;
     hardware: boolean;
@@ -20,6 +20,7 @@ interface Props {
 
 export const DashboardMenu: React.FC<Props> = ({ lang, onSelectStep, onImport, status }) => {
   const t = translations[lang];
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const menuItems = [
     {
@@ -111,8 +112,21 @@ export const DashboardMenu: React.FC<Props> = ({ lang, onSelectStep, onImport, s
      );
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) onImport(file);
+  };
+
   return (
     <div className="animate-fade-in pb-12">
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileChange} 
+        accept=".json" 
+        className="hidden" 
+      />
+      
       <div className="mb-10 text-center max-w-2xl mx-auto">
         <h2 className="text-3xl font-bold text-suse-dark">{t.dashboard.welcome}</h2>
         <p className="text-gray-600 mt-3 text-lg">
@@ -120,7 +134,7 @@ export const DashboardMenu: React.FC<Props> = ({ lang, onSelectStep, onImport, s
         </p>
         
         <div className="mt-6 flex justify-center gap-3">
-            <Button variant="outline" onClick={onImport} className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50">
+            <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50">
                 <Upload className="w-4 h-4" /> {t.dashboard.import}
             </Button>
         </div>
