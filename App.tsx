@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { POCStep, POCData, HardwareSpecs, NetworkSpecs, CloudInitConfig, Language } from './types';
+import { POCStep, POCData, DiscoveryData, HardwareSpecs, NetworkSpecs, CloudInitConfig, Language } from './types';
 import { PocDetailsForm } from './components/PocDetailsForm';
 import { HardwareValidation } from './components/HardwareValidation';
 import { NetworkValidation } from './components/NetworkValidation';
@@ -58,6 +58,16 @@ const App: React.FC = () => {
     startDate: new Date().toISOString().split('T')[0],
     targetDate: '',
     goals: []
+  });
+
+  const [discoveryData, setDiscoveryData] = useState<DiscoveryData>({
+    general: { subscription: '', vcfRunning: '', deployedByVcf: '', vcfVersion: '', vvfStorage: '', vsanOption: '', stretchedCluster: '', tanzuUsed: '', workloads: [] },
+    human: { operatorsCount: '', responsibilities: [], kubernetesSkills: '' },
+    compute: { vendors: [], generation: '', cpuArch: '', gpuModels: '', localStorage: '', vcenterIntegrations: [], criticalWorkloads: '', overcommitRatio: '' },
+    storage: { transports: [], platforms: [], provisioningMethod: '', automationTools: [], managementLocation: '', performanceTiers: '' },
+    network: { vendors: [], functionsRequired: [], nsxUsage: '', policyManagement: '', isolation: '', speeds: [] },
+    backup: { solution: '', coverage: '', vcenterIntegration: '', protectKubernetes: '' },
+    dr: { concept: '', haArchitecture: '', drSolution: '', testedRegularly: '', rpoRtoDefined: '' }
   });
 
   const [hwSpecs, setHwSpecs] = useState<HardwareSpecs>({
@@ -149,6 +159,7 @@ const App: React.FC = () => {
       try {
         const json = JSON.parse(e.target?.result as string);
         if (json.pocData) setPocData(json.pocData);
+        if (json.discoveryData) setDiscoveryData(json.discoveryData);
         if (json.hwSpecs) setHwSpecs(json.hwSpecs);
         if (json.netSpecs) setNetSpecs(json.netSpecs);
         if (json.cloudInitConfig) setCloudInitConfig(json.cloudInitConfig);
@@ -179,7 +190,14 @@ const App: React.FC = () => {
         case POCStep.DASHBOARD:
             return <DashboardMenu lang={lang} onSelectStep={setCurrentStep} onImport={handleImport} status={status} />;
         case POCStep.POC_DETAILS:
-            return <PocDetailsForm lang={lang} data={pocData} updateData={(d) => setPocData({...pocData, ...d})} onValidationChange={(v) => setStatus({...status, details: v})} />;
+            return <PocDetailsForm 
+                      lang={lang} 
+                      data={pocData} 
+                      discoveryData={discoveryData}
+                      updateData={(d) => setPocData({...pocData, ...d})} 
+                      updateDiscovery={(d) => setDiscoveryData({...discoveryData, ...d})}
+                      onValidationChange={(v) => setStatus({...status, details: v})} 
+                    />;
         case POCStep.HARDWARE_VALIDATION:
             return <HardwareValidation lang={lang} specs={hwSpecs} updateSpecs={(d) => setHwSpecs({...hwSpecs, ...d})} onValidationChange={(s) => setStatus({...status, hardware: s.isValid})} />;
         case POCStep.NETWORK_CONFIG:
@@ -206,7 +224,17 @@ const App: React.FC = () => {
         case POCStep.INSTALL_GUIDE:
             return <InstallGuide lang={lang} netSpecs={netSpecs} goals={pocData.goals} />;
         case POCStep.COMPLETED:
-            return <Summary lang={lang} pocData={pocData} specs={hwSpecs} netSpecs={netSpecs} cloudInitConfig={cloudInitConfig} testResults={testResults} status={status} onReset={goHome} />;
+            return <Summary 
+                      lang={lang} 
+                      pocData={pocData} 
+                      discoveryData={discoveryData}
+                      specs={hwSpecs} 
+                      netSpecs={netSpecs} 
+                      cloudInitConfig={cloudInitConfig} 
+                      testResults={testResults} 
+                      status={status} 
+                      onReset={goHome} 
+                    />;
         default:
             return null;
     }

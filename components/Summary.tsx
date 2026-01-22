@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { POCData, HardwareSpecs, NetworkSpecs, CloudInitConfig, Language } from '../types';
+import { POCData, DiscoveryData, HardwareSpecs, NetworkSpecs, CloudInitConfig, Language } from '../types';
 import { 
   Download, 
   RotateCcw, 
@@ -25,7 +25,11 @@ import {
   HardDrive, 
   Globe, 
   Layers, 
-  Lock 
+  Lock,
+  Search,
+  Check,
+  // Fix: Added missing Cpu icon import
+  Cpu
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { InfraDiagram } from './InfraDiagram';
@@ -34,6 +38,7 @@ import { translations } from '../i18n';
 interface Props {
   lang: Language;
   pocData: POCData;
+  discoveryData: DiscoveryData;
   specs: HardwareSpecs;
   netSpecs: NetworkSpecs;
   cloudInitConfig: CloudInitConfig;
@@ -42,7 +47,7 @@ interface Props {
   onReset: () => void;
 }
 
-export const Summary: React.FC<Props> = ({ lang, pocData, specs, netSpecs, cloudInitConfig, testResults, status, onReset }) => {
+export const Summary: React.FC<Props> = ({ lang, pocData, discoveryData, specs, netSpecs, cloudInitConfig, testResults, status, onReset }) => {
   const [showPromptModal, setShowPromptModal] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const t = translations[lang];
@@ -51,6 +56,7 @@ export const Summary: React.FC<Props> = ({ lang, pocData, specs, netSpecs, cloud
     if (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) {
       return <span className="text-gray-400 italic">{t.common.notSpecified}</span>;
     }
+    if (Array.isArray(value)) return value.join(', ');
     return value;
   };
 
@@ -59,6 +65,7 @@ export const Summary: React.FC<Props> = ({ lang, pocData, specs, netSpecs, cloud
   const handleExportJson = () => {
     const fullState = {
       pocData,
+      discoveryData,
       specs,
       netSpecs,
       cloudInitConfig,
@@ -83,19 +90,22 @@ Name: ${pocData.projectName || 'N/A'}
 Organization: ${pocData.clientOrganization || 'N/A'}
 Lead: ${pocData.leadEngineer}
 
+--- ${lang === 'en' ? "DISCOVERY HIGHLIGHTS" : "Destaques do Discovery"} ---
+VMware Stack: ${discoveryData.general.subscription || 'N/A'}
+Version: ${discoveryData.general.vcfVersion || 'N/A'}
+Storage: ${discoveryData.storage.transports.join(', ') || 'N/A'}
+
 --- ${lang === 'en' ? "TECH SPECS" : "ESPECIFICAÇÕES"} ---
 Nodes: ${specs.nodeCount} | CPU: ${specs.cpuCores} | RAM: ${specs.ramGb}GB
 VIP: ${netSpecs.clusterVip} | CIDR: ${netSpecs.managementCidr}
 
 --- ${lang === 'en' ? "REQUEST" : "SOLICITAÇÃO"} ---
-Based on this HCI architecture, please help me with...`;
+Based on this HCI architecture and the VMware discovery assessment, please help me with...`;
   };
 
   const passCount = Object.values(testResults).filter(v => v === 'pass').length;
   const totalTests = pocData.goals.length;
 
-  // Fix: Made children optional in the type definition to resolve "missing children" TS errors.
-  // This is a common workaround for locally defined components where TS JSX parser doesn't correctly map nested children to required props.
   const ReportSection = ({ title, icon: Icon, children }: { title: string, icon: any, children?: React.ReactNode }) => (
     <div className="mb-12 break-inside-avoid">
        <h3 className="font-bold text-sm uppercase tracking-[0.2em] text-suse-dark border-b-2 border-suse-base/20 pb-2 mb-6 flex items-center gap-3">
@@ -186,20 +196,73 @@ Based on this HCI architecture, please help me with...`;
                   ]} />
                </div>
             </div>
-            <div className="mt-12 pt-8 border-t border-slate-200">
-                <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-2 mb-6">
-                    <Calendar className="w-3 h-3" /> Execution Timeline
-                </h4>
-                <DataGrid items={[
-                  { label: t.pocDetails.startDate, value: pocData.startDate },
-                  { label: t.pocDetails.targetDate, value: pocData.targetDate }
-                ]} />
-            </div>
          </div>
       </ReportSection>
 
-      {/* 2. Infrastructure Inventory */}
-      <ReportSection title="Detailed Technical Inventory" icon={Server}>
+      {/* 2. Discovery Assessment Section */}
+      <ReportSection title={t.summary.discoverySection} icon={Search}>
+          <div className="bg-emerald-50/30 p-8 rounded-3xl border border-emerald-100 space-y-10">
+              {/* Stack Discovery */}
+              <div>
+                  <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-6 flex items-center gap-2">
+                      <Layers className="w-3 h-3" /> VMware Stack & Workloads
+                  </h4>
+                  <DataGrid items={[
+                      { label: "Subscription Type", value: discoveryData.general.subscription },
+                      { label: "VCF Version", value: discoveryData.general.vcfVersion },
+                      { label: "Stretched Cluster", value: discoveryData.general.stretchedCluster },
+                      { label: "Tanzu K8s Used", value: discoveryData.general.tanzuUsed },
+                      { label: "Primary Workloads", value: discoveryData.general.workloads }
+                  ]} />
+              </div>
+
+              {/* Infrastructure Details */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 pt-10 border-t border-emerald-100">
+                  <div className="space-y-6">
+                      <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+                          <Cpu className="w-3 h-3" /> Compute & Human Resources
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="bg-white/60 p-4 rounded-xl">
+                              <div className="text-[8px] font-bold text-gray-400 uppercase">Operators</div>
+                              <div className="text-xs font-bold">{val(discoveryData.human.operatorsCount)}</div>
+                          </div>
+                          <div className="bg-white/60 p-4 rounded-xl">
+                              <div className="text-[8px] font-bold text-gray-400 uppercase">K8s Skills</div>
+                              <div className="text-xs font-bold">{val(discoveryData.human.kubernetesSkills)}</div>
+                          </div>
+                      </div>
+                      <div className="bg-white/60 p-4 rounded-xl">
+                          <div className="text-[8px] font-bold text-gray-400 uppercase">Server Vendors</div>
+                          <div className="text-xs font-bold">{val(discoveryData.compute.vendors)}</div>
+                      </div>
+                  </div>
+
+                  <div className="space-y-6">
+                      <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+                          <ShieldCheck className="w-3 h-3" /> Storage & Protection
+                      </h4>
+                      <div className="bg-white/60 p-4 rounded-xl">
+                          <div className="text-[8px] font-bold text-gray-400 uppercase">Storage Transports</div>
+                          <div className="text-xs font-bold">{val(discoveryData.storage.transports)}</div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="bg-white/60 p-4 rounded-xl">
+                              <div className="text-[8px] font-bold text-gray-400 uppercase">Backup Solution</div>
+                              <div className="text-xs font-bold">{val(discoveryData.backup.solution)}</div>
+                          </div>
+                          <div className="bg-white/60 p-4 rounded-xl">
+                              <div className="text-[8px] font-bold text-gray-400 uppercase">DR Strategy</div>
+                              <div className="text-xs font-bold">{val(discoveryData.dr.concept)}</div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </ReportSection>
+
+      {/* 3. Infrastructure Inventory */}
+      <ReportSection title="Planned SUSE HCI Configuration" icon={Server}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
              {/* Hardware Specs */}
              <div className="bg-white p-6 rounded-3xl border-2 border-gray-100 space-y-6">
@@ -231,9 +294,7 @@ Based on this HCI architecture, please help me with...`;
                    { label: "Gateway", value: netSpecs.gatewayIp },
                    { label: "VLAN ID", value: netSpecs.vlanId },
                    { label: "DNS Servers", value: netSpecs.dnsServers },
-                   { label: "NTP Servers", value: netSpecs.ntpServers },
-                   { label: "HTTP Proxy", value: netSpecs.httpProxy },
-                   { label: "No Proxy", value: netSpecs.noProxy }
+                   { label: "NTP Servers", value: netSpecs.ntpServers }
                 ]} />
              </div>
           </div>
@@ -263,7 +324,7 @@ Based on this HCI architecture, please help me with...`;
           </div>
       </ReportSection>
 
-      {/* 3. Topology Diagram */}
+      {/* 4. Topology Diagram */}
       <ReportSection title={t.summary.topology} icon={Network}>
           <div className="bg-slate-50 rounded-[3rem] p-10 border border-gray-100 flex justify-center shadow-inner relative overflow-hidden group">
               <div className="absolute top-6 left-6 opacity-40">
@@ -277,10 +338,8 @@ Based on this HCI architecture, please help me with...`;
           </div>
       </ReportSection>
 
-      {/* 4. Automation & Automation Results */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-        {/* Test Result Detail */}
-        <ReportSection title="POC Validation Results" icon={CheckSquare}>
+      {/* 5. POC Validation Results */}
+      <ReportSection title="POC Validation Status" icon={CheckSquare}>
           <div className="bg-white p-8 rounded-3xl border-2 border-gray-100 space-y-6">
              <div className="flex items-center gap-8 mb-4">
                 <div className={`w-24 h-24 rounded-full border-[10px] flex items-center justify-center font-black text-2xl transition-all duration-1000 ${passCount === totalTests ? 'border-suse-base text-suse-base' : 'border-amber-400 text-amber-600'}`}>
@@ -302,38 +361,9 @@ Based on this HCI architecture, please help me with...`;
                 ))}
              </div>
           </div>
-        </ReportSection>
+      </ReportSection>
 
-        {/* Automation Summary */}
-        <ReportSection title="Automation Blueprint" icon={FileCode}>
-            <div className="bg-slate-900 text-white p-8 rounded-3xl shadow-xl space-y-6 relative overflow-hidden">
-                <div className="absolute -bottom-10 -right-10 opacity-5">
-                   <Terminal className="w-48 h-48" />
-                </div>
-                <div className="space-y-6 relative z-10">
-                   <DataGrid items={[
-                      { label: "Default User", value: cloudInitConfig.user },
-                      { label: "SSH Keys Integrated", value: cloudInitConfig.sshKeys.length > 0 ? `${cloudInitConfig.sshKeys.length} Keys` : "None" },
-                      { label: "Timezone", value: cloudInitConfig.timezone },
-                      { label: "Locale", value: cloudInitConfig.locale },
-                      { label: "Package Modules", value: cloudInitConfig.packages.length > 0 ? `${cloudInitConfig.packages.length} Packages` : "Core Standard" },
-                      { label: "Custom Scripts", value: `${(cloudInitConfig.runCmds?.length || 0) + (cloudInitConfig.bootCmds?.length || 0)} Cmds` }
-                   ]} />
-                   
-                   <div className="pt-6 border-t border-white/10 space-y-3">
-                       <h5 className="text-[9px] font-black uppercase text-suse-base tracking-widest">Automation Modules</h5>
-                       <div className="flex flex-wrap gap-2">
-                          {['Cloud-Init Generator', 'Harvester CRD v1.7', 'KubeVirt Manifests', 'NetworkMultus'].map(tag => (
-                             <span key={tag} className="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-[8px] font-bold text-white/40">{tag}</span>
-                          ))}
-                       </div>
-                   </div>
-                </div>
-            </div>
-        </ReportSection>
-      </div>
-
-      {/* 5. Signature Section */}
+      {/* 6. Signature Section */}
       <ReportSection title="Formalization & Acceptance" icon={Lock}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-10">
              <div className="space-y-12">
@@ -356,11 +386,6 @@ Based on this HCI architecture, please help me with...`;
       {/* Print Footer */}
       <div className="mt-20 pt-10 text-center space-y-4 border-t-2 border-slate-100">
          <p className="text-[10px] text-gray-300 font-bold uppercase tracking-[0.4em]">{t.summary.generatedBy}</p>
-         <div className="flex justify-center gap-12 opacity-30">
-            <ShieldCheck className="w-8 h-8 text-slate-400" />
-            <Package className="w-8 h-8 text-slate-400" />
-            <HardDrive className="w-8 h-8 text-slate-400" />
-         </div>
       </div>
 
       <div className="flex flex-wrap justify-center gap-4 no-print mt-12 pt-8 border-t">

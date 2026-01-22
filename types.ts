@@ -32,6 +32,64 @@ export interface POCData {
   goals: string[];
 }
 
+export interface DiscoveryData {
+  general: {
+    subscription: string;
+    vcfRunning: string;
+    deployedByVcf: string;
+    vcfVersion: string;
+    vvfStorage: string;
+    vsanOption: string;
+    stretchedCluster: string;
+    tanzuUsed: string;
+    workloads: string[];
+  };
+  human: {
+    operatorsCount: string;
+    responsibilities: string[];
+    kubernetesSkills: string;
+  };
+  compute: {
+    vendors: string[];
+    generation: string;
+    cpuArch: string;
+    gpuModels: string;
+    localStorage: string;
+    vcenterIntegrations: string[];
+    criticalWorkloads: string;
+    overcommitRatio: string;
+  };
+  storage: {
+    transports: string[];
+    platforms: string[];
+    provisioningMethod: string;
+    automationTools: string[];
+    managementLocation: string;
+    performanceTiers: string;
+  };
+  network: {
+    vendors: string[];
+    functionsRequired: string[];
+    nsxUsage: string;
+    policyManagement: string;
+    isolation: string;
+    speeds: string[];
+  };
+  backup: {
+    solution: string;
+    coverage: string;
+    vcenterIntegration: string;
+    protectKubernetes: string;
+  };
+  dr: {
+    concept: string;
+    haArchitecture: string;
+    drSolution: string;
+    testedRegularly: string;
+    rpoRtoDefined: string;
+  };
+}
+
 export interface HardwareSpecs {
   cpuCores: number;
   ramGb: number;
@@ -124,8 +182,7 @@ export interface ArchitectureExtras {
   hasFirewall: boolean;
   hasProxy: boolean;
   hasAirGap: boolean;
-  hasRancher: boolean;
   hasExternalStorage: boolean;
-  hasBastion: boolean;
-  hasNTP: boolean;
+  hasRancher: boolean;
+  hasLoadBalancer: boolean;
 }
