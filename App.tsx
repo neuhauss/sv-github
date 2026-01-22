@@ -67,7 +67,9 @@ const App: React.FC = () => {
     storage: { transports: [], platforms: [], provisioningMethod: '', automationTools: [], managementLocation: '', performanceTiers: '' },
     network: { vendors: [], functionsRequired: [], nsxUsage: '', policyManagement: '', isolation: '', speeds: [] },
     backup: { solution: '', coverage: '', vcenterIntegration: '', protectKubernetes: '' },
-    dr: { concept: '', haArchitecture: '', drSolution: '', testedRegularly: '', rpoRtoDefined: '' }
+    dr: { concept: '', haArchitecture: '', drSolution: '', testedRegularly: '', rpoRtoDefined: '' },
+    automation: { provisioningMethod: [], toolsUsed: [], traceableChanges: '' },
+    observability: { monitoringTools: [], loggingTools: [], strategy: '' }
   });
 
   const [hwSpecs, setHwSpecs] = useState<HardwareSpecs>({

@@ -28,7 +28,6 @@ import {
   Lock,
   Search,
   Check,
-  // Fix: Added missing Cpu icon import
   Cpu
 } from 'lucide-react';
 import { Button } from './ui/Button';
@@ -94,6 +93,7 @@ Lead: ${pocData.leadEngineer}
 VMware Stack: ${discoveryData.general.subscription || 'N/A'}
 Version: ${discoveryData.general.vcfVersion || 'N/A'}
 Storage: ${discoveryData.storage.transports.join(', ') || 'N/A'}
+Automation: ${discoveryData.automation.toolsUsed.join(', ') || 'N/A'}
 
 --- ${lang === 'en' ? "TECH SPECS" : "ESPECIFICAÇÕES"} ---
 Nodes: ${specs.nodeCount} | CPU: ${specs.cpuCores} | RAM: ${specs.ramGb}GB
@@ -256,6 +256,31 @@ Based on this HCI architecture and the VMware discovery assessment, please help 
                               <div className="text-xs font-bold">{val(discoveryData.dr.concept)}</div>
                           </div>
                       </div>
+                  </div>
+              </div>
+
+              {/* Automation & Observability Details */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 pt-10 border-t border-emerald-100">
+                  <div className="space-y-6">
+                      <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+                          <FileCode className="w-3 h-3" /> Automation & Ops
+                      </h4>
+                      <DataGrid items={[
+                          { label: "Provisioning", value: discoveryData.automation.provisioningMethod },
+                          { label: "Tools Used", value: discoveryData.automation.toolsUsed },
+                          { label: "Traceability", value: discoveryData.automation.traceableChanges }
+                      ]} />
+                  </div>
+
+                  <div className="space-y-6">
+                      <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+                          <Activity className="w-3 h-3" /> Observability
+                      </h4>
+                      <DataGrid items={[
+                          { label: "Monitoring", value: discoveryData.observability.monitoringTools },
+                          { label: "Logging", value: discoveryData.observability.loggingTools },
+                          { label: "Strategy", value: discoveryData.observability.strategy }
+                      ]} />
                   </div>
               </div>
           </div>

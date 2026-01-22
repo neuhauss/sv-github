@@ -146,11 +146,18 @@ export const translations = {
         drSolution: "DR Solution",
         drTested: "DR tested regularly?",
         drApproach: "DR primary approach",
-        drRpo: "RPO/RTO defined?"
+        drRpo: "RPO/RTO defined?",
+        provMethod: "Provisioning method",
+        autoTools: "Automation tools",
+        traceable: "Traceable Changes?",
+        monTools: "Monitoring tools",
+        logTools: "Logging tools",
+        obsStrategy: "Observability strategy"
       },
       options: {
         yes: "Yes",
         no: "No",
+        partially: "Partially",
         none: "None / Not specified",
         vcf: "VCF (Cloud Foundation)",
         vvf: "VVF (vSphere Foundation)",
@@ -449,7 +456,7 @@ export const translations = {
         skills: "Conhecimento Kubernetes",
         serverVendors: "Fabricantes de servidor",
         generation: "Geração dos servidores",
-        cpuArch: "Arquitetura de CPU",
+        cpuArch: "Arquitectura de CPU",
         gpu: "Possui GPU?",
         localStorage: "Possui storage local?",
         vcenterIntegrations: "Integrações vCenter",
@@ -474,11 +481,18 @@ export const translations = {
         drSolution: "Solução de DR",
         drTested: "DR testado regularmente?",
         drApproach: "Abordagem primária de DR",
-        drRpo: "RPO/RTO definidos?"
+        drRpo: "RPO/RTO definidos?",
+        provMethod: "Método de provisionamento",
+        autoTools: "Ferramentas de automação",
+        traceable: "Mudanças rastreáveis?",
+        monTools: "Ferramentas de monitoramento",
+        logTools: "Ferramentas de logging",
+        obsStrategy: "Estratégia de observabilidade"
       },
       options: {
         yes: "Sim",
         no: "Não",
+        partially: "Parcialmente",
         none: "Nenhum / Não especificado",
         vcf: "VCF (Cloud Foundation)",
         vvf: "VVF (vSphere Foundation)",
@@ -802,11 +816,18 @@ export const translations = {
         drSolution: "Solución de DR",
         drTested: "¿DR probado regularmente?",
         drApproach: "Enfoque primario de DR",
-        drRpo: "¿RPO/RTO definidos?"
+        drRpo: "¿RPO/RTO definidos?",
+        provMethod: "Método de provisión",
+        autoTools: "Herramientas de automatización",
+        traceable: "¿Cambios rastreables?",
+        monTools: "Herramientas de monitoreo",
+        logTools: "Herramientas de logging",
+        obsStrategy: "Estrategia de observabilidad"
       },
       options: {
         yes: "Sí",
         no: "No",
+        partially: "Parcialmente",
         none: "Ninguno / No especificado",
         vcf: "VCF (Cloud Foundation)",
         vvf: "VVF (vSphere Foundation)",
@@ -814,12 +835,12 @@ export const translations = {
         vcf_standalone: "Componentes independientes",
         vsan: "vSAN",
         external: "Almacenamiento Externo",
-        legacy: "Legado (5+ años)",
+        legacy: "Legado (5+ anos)",
         mixed: "Generaciones mixtas",
-        recent: "Reciente / Homogéneo",
+        recent: "Reciente / Homogêneo",
         manual: "Manual (LUNs, zoning)",
         semi: "Semi-automatizado (Scripts)",
-        policy: "Basado en políticas",
+        policy: "Basado em políticas",
         iac: "IaC (Terraform/Ansible)",
         centralized: "Equipo de infra centralizado",
         split: "Dividido (Infra/Red/Seg)",
@@ -890,7 +911,7 @@ export const translations = {
           title: "Despliegue de ISO",
           pitfall: "Utilice el modo DD si graba la ISO en una unidad USB con Rufus.",
           steps: [
-            { id: 'boot-iso', label: "Arrancar desde ISO", description: "Seleccione el primer nodo para 'Crear un nuevo clúster'." },
+            { id: 'boot-iso', label: "Arrancar desde ISO", description: "Seleccione the first node to 'Create a new cluster'." },
             { id: 'vip-config', label: "Configurar VIP", description: "Asigne la IP Virtual estática del clúster." }
           ]
         }
@@ -911,7 +932,7 @@ export const translations = {
         title: "Documentación Técnica v1.7",
         subtitle: "Esta guía centraliza los procedimientos oficiales para la implementación de SUSE Virtualization (Harvester).",
         hciTitle: "HCI Moderno",
-        hciDesc: "Infraestructura hiperconvergente 100% de código abierto basada en KubeVirt y Longhorn.",
+        hciDesc: "Infraestructura hiperconvergente 100% de código abierto basada en KubeVirt e Longhorn.",
         prodTitle: "Listo para Producción",
         prodDesc: "Alta disponibilidad nativa e integración directa con Rancher para gestión multi-clúster."
       },
@@ -973,7 +994,7 @@ export const translations = {
         bench: "Benchmarking (Rendimiento de Etcd)",
         storage: "Almacenamiento Longhorn",
         diag: "Diagnóstico Avanzado",
-        net: "Red y Conectividad",
+        net: "Red e Conectividad",
         health: "Salud de Nodos",
         rancher_cleanup: "Limpieza de Rancher"
       }
@@ -997,7 +1018,7 @@ export const translations = {
       execSummary: "Resumen ejecutivo de HCI v1.7",
       stakeholders: "Stakeholders y Cronograma",
       techDetails: "Configuración técnica",
-      topology: "Diagrama de topología",
+      topology: "Diagrama de topologia",
       acceptance: "Formalización y aceptación",
       discoverySection: "Evaluación del Discovery Técnico",
       authorized: "Representante autorizado",
@@ -1628,7 +1649,7 @@ export const GOAL_PROCEDURES_LOCALIZED: Record<Language, Record<string, any>> = 
     },
     "Crear un respaldo de una VM": {
       steps: [
-        "Asegure que el Backup Target esté activo.",
+        "Asegure que the Backup Target esté activo.",
         "VM Menu -> Take Backup.",
         "Verifique en el menú 'Backups'."
       ],
@@ -1703,7 +1724,7 @@ export const GOAL_PROCEDURES_LOCALIZED: Record<Language, Record<string, any>> = 
         "Importe el clúster en Virtualization Management.",
         "Cree Cloud Credentials y provisione el clúster RKE2."
       ],
-      tip: "Verifique la confianza de certificados entre Rancher y Harvester.",
+      tip: "Verifique la confianza de certificados entre Rancher e Harvester.",
       dependencies: ["Rancher v2.8+", "VIP de Harvester funcional"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/",
       icon: Cloud,

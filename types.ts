@@ -88,6 +88,16 @@ export interface DiscoveryData {
     testedRegularly: string;
     rpoRtoDefined: string;
   };
+  automation: {
+    provisioningMethod: string[];
+    toolsUsed: string[];
+    traceableChanges: string;
+  };
+  observability: {
+    monitoringTools: string[];
+    loggingTools: string[];
+    strategy: string;
+  };
 }
 
 export interface HardwareSpecs {
