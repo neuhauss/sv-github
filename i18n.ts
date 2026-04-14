@@ -2,22 +2,32 @@
 import { Language } from './types';
 import { 
   Play, 
+  Plus,
+  Shuffle,
   Image as ImageIcon, 
   Database, 
   Network, 
+  Globe,
+  Activity,
   Monitor, 
   RefreshCw, 
   Cloud, 
   HardDrive, 
+  Cpu,
+  Target,
+  Layers,
+  Lock,
+  Settings,
+  Wifi,
+  Zap,
+  Search,
+  ShieldAlert,
   Key, 
   Terminal, 
   ShieldCheck, 
   Save, 
   Server, 
-  Settings, 
   FileCode, 
-  Zap, 
-  Cpu,
   CheckCircle2,
   Bug
 } from 'lucide-react';
@@ -606,7 +616,7 @@ export const translations = {
         desc: "Precisão no planejamento previne a maioria das falhas de instalação. Siga as especificações rigorosamente.",
         cpu: "Mínimo 8 Cores Físicos (x86_64). Garanta que VT-x (Intel) ou AMD-V (AMD) e AVX estejam ativos no BIOS.",
         ram: "Mínimo 32GB de RAM para gerência. Ambientes de produção recomendam 64GB+ por nó.",
-        network: "Fabric de 10Gbps dedicado para replicação de Storage/Longhorn é obrigatório.",
+        network: "Fabric de 10Gbps dedicado para replicação de Storage/Longhorn em rede dedicada é obrigatório.",
         mtu: "MTU 9000 (Jumbo Frames) deve ser configurado em todos os switches físicos.",
         bios: "Configure controladoras SATA/Disk em modo HBA/JBOD. RAID por software NÃO é suportado.",
         internet: "Acesso externo para registry.suse.com e docker.io é necessário, exceto em Air-Gap."
@@ -616,7 +626,7 @@ export const translations = {
         node1: "1º Nó (Seed): Escolha 'Create a new Harvester cluster'. Defina um VIP de Cluster persistente.",
         node2: "Nós seguintes: Escolha 'Join an existing cluster'. Você precisará do VIP e do Token.",
         reboot: "Após o término do instalador, remova a mídia e reinicie.",
-        tip: "Aguarde o prompt de login no console físico. Use the VIP to access the Web UI."
+        tip: "Aguarde o prompt de login no console físico. Use o VIP para acessar a interface Web."
       },
       config: {
         title: "Acesso e Configuração Inicial",
@@ -822,7 +832,7 @@ export const translations = {
         traceable: "¿Cambios rastreables?",
         monTools: "Herramientas de monitoreo",
         logTools: "Herramientas de logging",
-        obsStrategy: "Estrategia de observabilidad"
+        obsStrategy: "Estratégia de observabilidade"
       },
       options: {
         yes: "Sí",
@@ -961,7 +971,7 @@ export const translations = {
         backup: "Configure un destino de Backup S3 or NFS inmediatamente."
       },
       storage: {
-        title: "Optimización Longhorn SDS",
+        title: "Optimização Longhorn SDS",
         replica: "Réplicas por defecto: 3. Garantiza disponibilidad si falla un nodo.",
         bench: "Latência de disco (Fsync) inferior a 10ms para evitar pânico no etcd.",
         ssd: "SSDs o NVMe empresariales obligatorios para datos.",
@@ -1032,88 +1042,169 @@ export const translations = {
 
 export const POC_GOALS_LOCALIZED = {
   en: [
-    "Provision hosts through the ISO installer",
-    "Optional. Provision hosts through PXE boot",
-    "Register an image to use for VMs",
-    "Create a Storage Class and Volume",
-    "Create a VLAN network in SUSE Virtualization",
-    "Create a VM",
-    "Configure a backup target",
-    "Configure a user-data cloud-config script",
-    "Create a backup of a VM",
-    "Restore a VM from a backup",
-    "Perform a live migration of a VM (requires multi-host)",
-    "Use the serial/VNC console of a VM",
-    "Import the SSH key and access a VM using the key (Linux only)",
-    "Multi-cluster management, multi-tenancy for VM management, multi-disk support",
-    "Integration with Rancher. Provision a RKE2 Kubernetes cluster on top of a SUSE Virtualization cluster"
+    "Installing Harvester from ISO",
+    "Adding additional Nodes",
+    "Configuring HTTP Proxy",
+    "Network card interface binding for mgmt.",
+    "Allocate a dedicated storage network",
+    "Create a VLAN network for the VM",
+    "Verify VLAN configuration across nodes",
+    "VM Resource Extensions (CPU, memory, disk)",
+    "VM Storage Extensions (Add/Remove/Enlarge)",
+    "Testing FIO Longhorn disk performance",
+    "VM Resource Quota (CPU Pinning)",
+    "VM Live Migration",
+    "VM Backup to S3 Minio",
+    "Restoring a VM from an S3 backup",
+    "Support Container workload",
+    "Deploy Rancher Manager",
+    "Account Passwords and Lockout Policy",
+    "Managing Harvester clusters with Rancher",
+    "Define VM behavior during node maintenance",
+    "Perform network addition, removal, and failover",
+    "Shut down the node to trigger VM failover",
+    "Power on the Harvester node and monitor rebuild",
+    "Execute node failover with failback",
+    "Perform network packet and session analysis",
+    "Test VM failover during network failure"
   ],
   pt: [
-    "Provisionar hosts através do instalador ISO",
-    "Opcional. Provisionar hosts através do boot PXE",
-    "Registrar uma imagem para uso em VMs",
-    "Criar uma Storage Class e Volume",
-    "Criar uma rede VLAN no SUSE Virtualization",
-    "Criar uma VM",
-    "Configurar um destino de backup",
-    "Configurar um script cloud-config de dados do usuário",
-    "Criar um backup de uma VM",
-    "Restaurar uma VM de um backup",
-    "Realizar migração ao vivo de uma VM (requer multi-host)",
-    "Usar o console serial/VNC de uma VM",
-    "Importar a chave SSH e acessar uma VM usando a chave (apenas Linux)",
-    "Gerenciamento multi-cluster, multi-tenancy e suporte multi-disco",
-    "Integração com Rancher. Provisionar um cluster RKE2 Kubernetes sobre o SUSE Virtualization"
+    "Instalando Harvester via ISO",
+    "Adicionando Nós Adicionais",
+    "Configurando Proxy HTTP",
+    "Vinculação de interface de rede para gerência",
+    "Alocar uma rede de armazenamento dedicada",
+    "Criar uma rede VLAN para a VM",
+    "Verificar configuração de VLAN entre nós",
+    "Extensões de recursos de VM (CPU, memória, disco)",
+    "Extensões de armazenamento de VM (Adicionar/Remover/Ampliar)",
+    "Testando performance de disco FIO Longhorn",
+    "Cota de recursos de VM (CPU Pinning)",
+    "Migração ao vivo de VM",
+    "Backup de VM para S3 Minio",
+    "Restaurando uma VM de um backup S3",
+    "Suporte a carga de trabalho de contêiner",
+    "Implantar Rancher Manager",
+    "Senhas de conta e política de bloqueio",
+    "Gerenciando clusters Harvester com Rancher",
+    "Definir comportamento da VM durante manutenção do nó",
+    "Realizar adição, remoção e failover de rede",
+    "Desligar o nó para disparar failover da VM",
+    "Ligar o nó Harvester e monitorar reconstrução",
+    "Executar failover de nó com failback",
+    "Realizar análise de pacotes e sessão de rede",
+    "Testar failover de VM durante falha de rede"
   ],
   es: [
-    "Provisionar hosts mediante el instalador ISO",
-    "Opcional. Provisionar hosts mediante arranque PXE",
-    "Registrar una imagen para usar en máquinas virtuales",
-    "Crear una Storage Class y un volumen",
-    "Crear una red VLAN en SUSE Virtualization",
-    "Crear una VM",
-    "Configurar un destino de respaldo",
-    "Configurar un script cloud-config de datos de usuario",
-    "Crear un respaldo de una VM",
-    "Restaurar una VM desde un respaldo",
-    "Realizar una migración en vivo de una VM (requiere multi-host)",
-    "Usar la consola serial/VNC de una VM",
-    "Importar la clave SSH e acceder a una VM usando la clave (solo Linux)",
-    "Gestión multi-cluster, multi-tenancy y soporte multi-disco",
-    "Integración con Rancher. Provisionar un clúster RKE2 Kubernetes sobre SUSE Virtualization"
+    "Instalación de Harvester desde ISO",
+    "Agregar nodos adicionales",
+    "Configuración de proxy HTTP",
+    "Vinculación de interfaz de red para administración",
+    "Asignar una red de almacenamiento dedicada",
+    "Crear una red VLAN para la VM",
+    "Verificar la configuración de VLAN entre nodos",
+    "Extensiones de recursos de VM (CPU, memoria, disco)",
+    "Extensiones de almacenamiento de VM (Agregar/Eliminar/Ampliar)",
+    "Prueba de rendimiento de disco FIO Longhorn",
+    "Cuota de recursos de VM (CPU Pinning)",
+    "Migración en vivo de VM",
+    "Respaldo de VM a S3 Minio",
+    "Restaurar una VM desde un respaldo S3",
+    "Soporte para carga de trabajo de contenedores",
+    "Implementar Rancher Manager",
+    "Contraseñas de cuenta y política de bloqueo",
+    "Gestión de clústeres Harvester con Rancher",
+    "Definir el comportamiento de la VM durante el mantenimiento del nodo",
+    "Realizar adición, eliminación y failover de red",
+    "Apagar el nodo para activar el failover de la VM",
+    "Encender el nodo Harvester y monitorear la reconstrucción",
+    "Ejecutar failover de nodo con failback",
+    "Realizar análisis de paquetes y sesiones de red",
+    "Probar el failover de la VM durante una falla de red"
   ]
 };
 
 export const TEST_CASES_LOCALIZED: Record<Language, Record<string, { steps: string, expected: string }>> = {
   en: {
-    "Provision hosts through the ISO installer": {
-      steps: "Boot via ISO, static network config, hostname and VIP.",
-      expected: "Node accessible via local console and Web HTTPS interface after reboot."
-    },
-    "Register an image to use for VMs": {
-      steps: ".qcow2 file upload or Cloud image URL download.",
-      expected: "Image appears with 'Active' status ready for use."
-    }
+    "Installing Harvester from ISO": { steps: "Boot from ISO media on a bare-metal server.", expected: "Harvester console displays management URL and status." },
+    "Adding additional Nodes": { steps: "Join subsequent nodes to the cluster using VIP and token.", expected: "Nodes appear as 'Ready' in the dashboard." },
+    "Configuring HTTP Proxy": { steps: "Set proxy in Advanced Settings or during installation.", expected: "External images can be downloaded via proxy." },
+    "Network card interface binding for mgmt.": { steps: "Configure mgmt-bo bond with specific NICs.", expected: "Management traffic flows through selected interfaces." },
+    "Allocate a dedicated storage network": { steps: "Create a separate network config for storage traffic.", expected: "Storage replication is isolated from management traffic." },
+    "Create a VLAN network for the VM": { steps: "Create a new L2VlanNetwork in the Networks tab.", expected: "VMs can communicate over the specified VLAN." },
+    "Verify VLAN configuration across nodes": { steps: "Test connectivity between VMs on different nodes using the same VLAN.", expected: "Ping/Traffic successful between nodes." },
+    "VM Resource Extensions (CPU, memory, disk)": { steps: "Hot-plug or restart VM after increasing CPU/RAM.", expected: "OS recognizes new resources correctly." },
+    "VM Storage Extensions (Add/Remove/Enlarge)": { steps: "Modify VM volumes in the Volumes tab.", expected: "Storage changes are reflected in the guest OS." },
+    "Testing FIO Longhorn disk performance": { steps: "Run FIO benchmark inside a VM.", expected: "Performance meets the 5000+ IOPS requirement." },
+    "VM Resource Quota (CPU Pinning)": { steps: "Configure CPU pinning in VM advanced settings.", expected: "VM processes are locked to specific physical cores." },
+    "VM Live Migration": { steps: "Migrate a running VM to another node.", expected: "Zero downtime migration completed successfully." },
+    "VM Backup to S3 Minio": { steps: "Configure S3 backup target and trigger backup.", expected: "Backup archive appears in the S3 bucket." },
+    "Restoring a VM from an S3 backup": { steps: "Restore a deleted VM from the S3 backup target.", expected: "VM is restored with all data and config intact." },
+    "Support Container workload": { steps: "Deploy a containerized app using Harvester's internal K8s.", expected: "Pods are running and accessible." },
+    "Deploy Rancher Manager": { steps: "Install Rancher on top of Harvester or as a separate VM.", expected: "Rancher UI is accessible." },
+    "Account Passwords and Lockout Policy": { steps: "Configure AD integration and test lockout.", expected: "Users are locked out after failed attempts." },
+    "Managing Harvester clusters with Rancher": { steps: "Import Harvester into Rancher Virtualization Management.", expected: "Harvester resources visible in Rancher." },
+    "Define VM behavior during node maintenance": { steps: "Put a node in maintenance mode.", expected: "VMs are automatically migrated to other nodes." },
+    "Perform network addition, removal, and failover": { steps: "Simulate NIC failure on a bonded interface.", expected: "Network connectivity remains stable." },
+    "Shut down the node to trigger VM failover": { steps: "Power off a management or worker node.", expected: "VMs restart on healthy nodes (HA)." },
+    "Power on the Harvester node and monitor rebuild": { steps: "Power on a previously failed node.", expected: "Longhorn replicas rebuild automatically." },
+    "Execute node failover with failback": { steps: "Test full failover and subsequent recovery.", expected: "Services return to original state after failback." },
+    "Perform network packet and session analysis": { steps: "Use tcpdump or Wireshark to analyze VM traffic.", expected: "Traffic follows expected network paths." },
+    "Test VM failover during network failure": { steps: "Disconnect network cables from a node.", expected: "HA triggers and moves workloads." }
   },
   pt: {
-    "Provisionar hosts através do instalador ISO": {
-      steps: "Boot via ISO, configuração de rede estática, hostname e VIP.",
-      expected: "Nó acessível via console local e interface Web HTTPS após reboot."
-    },
-    "Registrar uma imagem para uso em VMs": {
-      steps: "Upload de arquivo .qcow2 ou download via URL de imagem Cloud.",
-      expected: "Imagem aparece com status 'Active' pronta para uso."
-    }
+    "Instalando Harvester via ISO": { steps: "Boot via mídia ISO em um servidor bare-metal.", expected: "Console do Harvester exibe URL de gerência e status." },
+    "Adicionando Nós Adicionais": { steps: "Junte nós subsequentes ao cluster usando VIP e token.", expected: "Nós aparecem como 'Ready' no dashboard." },
+    "Configurando Proxy HTTP": { steps: "Configure o proxy em Advanced Settings ou durante a instalação.", expected: "Imagens externas podem ser baixadas via proxy." },
+    "Vinculação de interface de rede para gerência": { steps: "Configure o bond mgmt-bo com NICs específicas.", expected: "Tráfego de gerência flui pelas interfaces selecionadas." },
+    "Alocar uma rede de armazenamento dedicada": { steps: "Crie um network config separado para tráfego de storage.", expected: "Replicação de storage isolada do tráfego de gerência." },
+    "Criar uma rede VLAN para a VM": { steps: "Crie uma nova L2VlanNetwork na aba Networks.", expected: "VMs conseguem se comunicar pela VLAN especificada." },
+    "Verificar configuração de VLAN entre nós": { steps: "Teste conectividade entre VMs em nós diferentes usando a mesma VLAN.", expected: "Ping/Tráfego com sucesso entre nós." },
+    "Extensões de recursos de VM (CPU, memória, disco)": { steps: "Aumente CPU/RAM e verifique no SO convidado.", expected: "SO reconhece novos recursos corretamente." },
+    "Extensões de armazenamento de VM (Adicionar/Remover/Ampliar)": { steps: "Modifique volumes da VM na aba Volumes.", expected: "Mudanças de storage refletidas no SO convidado." },
+    "Testando performance de disco FIO Longhorn": { steps: "Rode benchmark FIO dentro de uma VM.", expected: "Performance atende ao requisito de 5000+ IOPS." },
+    "Cota de recursos de VM (CPU Pinning)": { steps: "Configure CPU pinning nas configurações avançadas da VM.", expected: "Processos da VM travados em cores físicos específicos." },
+    "Migração ao vivo de VM": { steps: "Migre uma VM ligada para outro nó.", expected: "Migração concluída com sucesso sem downtime." },
+    "Backup de VM para S3 Minio": { steps: "Configure destino S3 e dispare o backup.", expected: "Arquivo de backup aparece no bucket S3." },
+    "Restaurando uma VM de um backup S3": { steps: "Restaure uma VM deletada a partir do backup S3.", expected: "VM restaurada com todos os dados e config." },
+    "Suporte a carga de trabalho de contêiner": { steps: "Implante app conteinerizado usando o K8s interno do Harvester.", expected: "Pods rodando e acessíveis." },
+    "Implantar Rancher Manager": { steps: "Instale o Rancher sobre o Harvester ou como VM separada.", expected: "Interface do Rancher acessível." },
+    "Senhas de conta e política de bloqueio": { steps: "Configure integração AD e teste bloqueio.", expected: "Usuários bloqueados após tentativas falhas." },
+    "Gerenciando clusters Harvester com Rancher": { steps: "Importe o Harvester no Virtualization Management do Rancher.", expected: "Recursos do Harvester visíveis no Rancher." },
+    "Definir comportamento da VM durante manutenção do nó": { steps: "Coloque um nó em modo de manutenção.", expected: "VMs são migradas automaticamente para outros nós." },
+    "Realizar adição, remoção e failover de rede": { steps: "Simule falha de NIC em uma interface em bond.", expected: "Conectividade de rede permanece estável." },
+    "Desligar o nó para disparar failover da VM": { steps: "Desligue um nó de gerência ou worker.", expected: "VMs reiniciam em nós saudáveis (HA)." },
+    "Ligar o nó Harvester e monitorar reconstrução": { steps: "Ligue um nó que falhou anteriormente.", expected: "Réplicas do Longhorn reconstroem automaticamente." },
+    "Executar failover de nó com failback": { steps: "Teste failover total e recuperação subsequente.", expected: "Serviços retornam ao estado original após failback." },
+    "Realizar análise de pacotes e sessão de rede": { steps: "Use tcpdump ou Wireshark para analisar tráfego da VM.", expected: "Tráfego segue os caminhos de rede esperados." },
+    "Testar failover de VM durante falha de rede": { steps: "Desconecte cabos de rede de um nó.", expected: "HA dispara e move os workloads." }
   },
   es: {
-    "Provisionar hosts mediante el instalador ISO": {
-      steps: "Arranque vía ISO, configuración de red estática, nombre de host y VIP.",
-      expected: "Nodo accesible vía consola local e interfaz Web HTTPS tras el reinicio."
-    },
-    "Registrar una imagen para usar en máquinas virtuales": {
-      steps: "Carga de archivo .qcow2 o descarga de URL de imagen Cloud.",
-      expected: "La imagen aparece con estado 'Active' lista para su uso."
-    }
+    "Instalación de Harvester desde ISO": { steps: "Arranque desde el medio ISO en un servidor bare-metal.", expected: "La consola de Harvester muestra la URL de administración y el estado." },
+    "Agregar nodos adicionales": { steps: "Una los nodos subsiguientes al clúster usando VIP y token.", expected: "Los nodos aparecen como 'Ready' en el tablero." },
+    "Configuración de proxy HTTP": { steps: "Establezca el proxy en Configuración avanzada o durante la instalación.", expected: "Las imágenes externas se pueden descargar a través del proxy." },
+    "Vinculación de interfaz de red para administración": { steps: "Configure el enlace mgmt-bo con NIC específicas.", expected: "El tráfico de administración fluye a través de las interfaces seleccionadas." },
+    "Asignar una red de almacenamiento dedicada": { steps: "Cree una configuración de red separada para el tráfico de almacenamiento.", expected: "La replicación de almacenamiento está aislada del tráfico de administración." },
+    "Crear una red VLAN para la VM": { steps: "Cree una nueva L2VlanNetwork en la pestaña Redes.", expected: "Las VM pueden comunicarse a través de la VLAN especificada." },
+    "Verificar la configuración de VLAN entre nodos": { steps: "Pruebe la conectividad entre VM en diferentes nodos usando la misma VLAN.", expected: "Ping/Tráfico exitoso entre nodos." },
+    "Extensiones de recursos de VM (CPU, memoria, disco)": { steps: "Conexión en caliente o reinicio de la VM después de aumentar la CPU/RAM.", expected: "El sistema operativo reconoce los nuevos recursos correctamente." },
+    "Extensiones de almacenamiento de VM (Agregar/Eliminar/Ampliar)": { steps: "Modifique los volúmenes de la VM en la pestaña Volúmenes.", expected: "Los cambios de almacenamiento se reflejan en el sistema operativo invitado." },
+    "Prueba de rendimiento de disco FIO Longhorn": { steps: "Ejecute el benchmark FIO dentro de una VM.", expected: "El rendimiento cumple con el requisito de 5000+ IOPS." },
+    "Cuota de recursos de VM (CPU Pinning)": { steps: "Configure el anclaje de CPU en la configuración avanzada de la VM.", expected: "Los procesos de la VM están bloqueados en núcleos físicos específicos." },
+    "Migración en vivo de VM": { steps: "Migre una VM en ejecución a otro nodo.", expected: "Migración sin tiempo de inactividad completada con éxito." },
+    "Respaldo de VM a S3 Minio": { steps: "Configure el destino de respaldo S3 y active el respaldo.", expected: "El archivo de respaldo aparece en el bucket S3." },
+    "Restaurar una VM desde un respaldo S3": { steps: "Restaure una VM eliminada desde el destino de respaldo S3.", expected: "La VM se restaura con todos los datos y la configuración intactos." },
+    "Soporte para carga de trabajo de contenedores": { steps: "Implemente una aplicación en contenedores utilizando el K8s interno de Harvester.", expected: "Los pods están funcionando y son accesibles." },
+    "Implementar Rancher Manager": { steps: "Instale Rancher sobre Harvester o como una VM separada.", expected: "La interfaz de usuario de Rancher es accesible." },
+    "Contraseñas de cuenta y política de bloqueo": { steps: "Configure la integración de AD y pruebe el bloqueo.", expected: "Los usuarios se bloquean después de intentos fallidos." },
+    "Gestión de clústeres Harvester con Rancher": { steps: "Importe Harvester en la Gestión de Virtualización de Rancher.", expected: "Recursos de Harvester visibles en Rancher." },
+    "Definir el comportamiento de la VM durante el mantenimiento del nodo": { steps: "Ponga un nodo en modo de mantenimiento.", expected: "Las VM se migran automáticamente a otros nodos." },
+    "Realizar adición, eliminación y failover de red": { steps: "Simule una falla de NIC en una interfaz vinculada.", expected: "La conectividad de red permanece estable." },
+    "Apagar el nodo para activar el failover de la VM": { steps: "Apague un nodo de administración o de trabajo.", expected: "Las VM se reinician en nodos sanos (HA)." },
+    "Encender el nodo Harvester y monitorear la reconstrucción": { steps: "Encienda un nodo que falló anteriormente.", expected: "Las réplicas de Longhorn se reconstruyen automáticamente." },
+    "Ejecutar failover de nodo con failback": { steps: "Pruebe el failover completo y la recuperación posterior.", expected: "Los servicios vuelven al estado original después del failback." },
+    "Realizar análisis de paquetes y sesiones de red": { steps: "Use tcpdump o Wireshark para analizar el tráfico de la VM.", expected: "El tráfico sigue las rutas de red esperadas." },
+    "Probar el failover de la VM durante una falla de red": { steps: "Desconecte los cables de red de un nodo.", expected: "HA se activa y mueve las cargas de trabajo." }
   }
 };
 
@@ -1138,596 +1229,942 @@ export const SHELL_TOOLBOX_LOCALIZED: Record<Language, any[]> = {
   ]
 };
 
+// Fix the Record<Language, Record<string, any>> error by adding the 'es' key
 export const GOAL_PROCEDURES_LOCALIZED: Record<Language, Record<string, any>> = {
   en: {
-    "Provision hosts through the ISO installer": {
+    "Installing Harvester from ISO": {
       steps: [
-        "Prepare a bootable USB drive with Harvester v1.7 ISO.",
-        "Boot from UEFI. Select 'Create a new Harvester cluster' for Node 1.",
-        "Configure Hostname, Static IP, Gateway, and most importantly, the Cluster VIP.",
-        "Define the 'Cluster Token' (used for node admission).",
-        "Wait for reboot and final Dashboard URL prompt."
+        "Download the official Harvester v1.7.0 ISO.",
+        "Prepare a bootable USB drive (minimum 8GB) using Rufus (DD Mode) or Etcher.",
+        "Insert media into physical server, enable Virtualization (VT-x/AMD-V) in BIOS.",
+        "Boot from USB and select 'Create a new Harvester cluster'.",
+        "Configure Management NIC, Hostname, and Static IP.",
+        "Define Cluster VIP and shared Cluster Token.",
+        "Complete install and wait for the Management URL on console."
       ],
-      tip: "If the installer hangs at 'Loading initrd', verify that UEFI is enabled and Secure Boot is disabled.",
-      dependencies: ["VT-x/AMD-V active", "8GB USB drive", "Wired connection"],
+      tip: "Ensure Secure Boot is disabled in BIOS to avoid boot hangs.",
+      dependencies: ["Physical Server", "8GB USB", "Static IP"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/install/iso-install/",
       icon: Play,
-      resourceLinks: [{ label: "Download Harvester ISO", url: "https://harvesterhci.io/releases" }]
+      imageSrc: "https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/install/iso/install-harvester-1.png",
+      resourceLinks: [{ label: "Download ISO", url: "https://harvesterhci.io/releases" }]
     },
-    "Optional. Provision hosts through PXE boot": {
+    "Adding additional Nodes": {
       steps: [
-        "Setup an iPXE or HTTP server reachable by the cluster nodes.",
-        "Prepare the configuration file (YAML format) containing cluster and network settings.",
-        "Configure the nodes to boot via PXE in the BIOS/UEFI settings.",
-        "Provide the kernel, initrd, and rootfs images via the PXE server.",
-        "Monitor the automated installation progress."
+        "Boot the second/third node from the Harvester ISO.",
+        "Select 'Join an existing Harvester cluster'.",
+        "Enter the Cluster VIP and the Cluster Token created on the first node.",
+        "Configure the local node network and hostname.",
+        "Wait for the node to appear as 'Ready' in the dashboard."
       ],
-      tip: "Use the 'Matchbox' integration if you need a scalable way to manage multiple cluster configurations via PXE.",
-      dependencies: ["HTTP/TFTP Server", "DHCP Option 67 configured", "Harvester config.yaml"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/install/pxe-boot-install/",
-      icon: Network,
-      resourceLinks: [{ label: "Matchbox Integration Guide", url: "https://docs.harvesterhci.io/v1.7/install/pxe-boot-install/#matchbox-example" }]
+      tip: "For a highly available cluster, you need at least 3 nodes.",
+      dependencies: ["Active Harvester Cluster", "Cluster Token"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/install/iso-install/#join-an-existing-cluster",
+      icon: Plus,
+      resourceLinks: []
     },
-    "Register an image to use for VMs": {
+    "Configuring HTTP Proxy": {
       steps: [
-        "Login to Dashboard -> Images -> Create.",
-        "Option 1: 'Download from URL' (Recommended). Use a raw/qcow2 URL.",
-        "Option 2: 'Upload' from local workstation.",
-        "Wait for status to transition from 'Downloading' to 'Active'."
+        "Go to 'Settings' -> 'Advanced Settings'.",
+        "Find 'http-proxy' and click 'Edit Setting'.",
+        "Enter the HTTP and HTTPS proxy URLs.",
+        "Add internal domains to 'no-proxy' to avoid routing local traffic through the proxy."
       ],
-      tip: "Cloud-optimized images (NoCloud/Cloud-Init) are preferred for automatic credential injection.",
-      dependencies: ["Internet access for URL download", "qcow2/img/iso support"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#images",
-      icon: ImageIcon,
-      resourceLinks: [{ label: "openSUSE Cloud Images", url: "https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.5/images/" }]
+      tip: "Proxy settings are essential for air-gapped environments with limited internet access.",
+      dependencies: ["Proxy Server details"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/install/settings/#http-proxy",
+      icon: Shuffle,
+      resourceLinks: []
     },
-    "Create a Storage Class and Volume": {
+    "Network card interface binding for mgmt.": {
       steps: [
-        "Harvester provides a default 'longhorn' StorageClass.",
-        "To create a new one: Settings -> StorageClass -> Create.",
-        "Set 'Number of Replicas' to 3 (Required for HA).",
-        "Create a Volume: Volumes -> Create. Select size and the StorageClass.",
-        "Attach the volume to a VM under 'Disks' tab."
+        "Go to 'Settings' -> 'Management Network'.",
+        "Select the bond mode (e.g., Active-Backup or LACP).",
+        "Select the physical NICs to include in the management bond.",
+        "Save and wait for the network to reconfigure (may cause brief disconnect)."
       ],
-      tip: "Avoid reducing replica count to 1 in production, as node failure will cause permanent data loss.",
-      dependencies: ["Healthy SDS nodes", "Available disk space"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/storage/storage-class/",
-      icon: Database,
-      resourceLinks: [{ label: "Longhorn Best Practices", url: "https://longhorn.io/docs/1.7.0/best-practices/" }]
-    },
-    "Create a VLAN network in SUSE Virtualization": {
-      steps: [
-        "Step 1: Create ClusterNetwork. Settings -> ClusterNetwork -> Create (e.g. 'vlan-network').",
-        "Step 2: Create NetworkConfig. Settings -> NetworkConfig -> Create. Select the ClusterNetwork and bind to physical NICs (e.g. eth1).",
-        "Step 3: Create VM Network. Networks -> Create. Select type 'L2Vlan', provide VLAN ID (e.g. 100).",
-        "Assign this network to a VM during creation."
-      ],
-      tip: "The physical switch port MUST be configured as a TRUNK port if using VLAN IDs other than 0.",
-      dependencies: ["802.1Q switch support", "Physical NIC availability"],
+      tip: "LACP requires configuration on the physical switch side as well.",
+      dependencies: ["Multiple NICs", "Switch Config"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/",
       icon: Network,
-      resourceLinks: [{ label: "Networking Troubleshooting", url: "https://docs.harvesterhci.io/v1.7/troubleshooting/networking/" }]
-    },
-    "Create a VM": {
-      steps: [
-        "Virtual Machines -> Create.",
-        "Basics: Provide Name, CPU cores, and Memory.",
-        "Volumes: Select an Image for the root disk.",
-        "Networks: Choose Management Network or a previously created VLAN.",
-        "Advanced: Paste SSH Public Key for passwordless access."
-      ],
-      tip: "Use the 'VirtIO' driver for all disks and network interfaces to ensure high performance.",
-      dependencies: ["Active Image", "Defined Network"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/",
-      icon: Monitor,
       resourceLinks: []
     },
-    "Configure a backup target": {
+    "Allocate a dedicated storage network": {
       steps: [
-        "Go to Settings -> Backup Target.",
-        "Choose 'S3' or 'NFS'.",
-        "For NFS: Provide the server IP and the exported path (e.g., 192.168.1.50:/backups).",
-        "For S3: Provide Endpoint, Bucket Name, and Access/Secret Keys.",
-        "Click Save and ensure the status is 'Ready'."
+        "Create a new ClusterNetwork for storage.",
+        "Create a NetworkConfig and bind it to dedicated storage NICs.",
+        "Configure the storage network in Longhorn settings to use this network."
       ],
-      tip: "NFS version 4 is recommended for better reliability and performance with Longhorn.",
-      dependencies: ["External NFS/S3 storage reachable by cluster nodes"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/storage/backup-target/",
-      icon: Save,
-      resourceLinks: []
-    },
-    "Configure a user-data cloud-config script": {
-      steps: [
-        "Go to Cloud Config Templates -> Create.",
-        "Enter the YAML content starting with '#cloud-config'.",
-        "Include directives like 'users', 'ssh_authorized_keys' and 'runcmd'.",
-        "Save the template to reuse it across multiple VMs.",
-        "Select the template during VM creation in the 'Advanced' tab."
-      ],
-      tip: "Always use 'NoCloud' data source in Harvester for most Linux cloud images.",
-      dependencies: ["YAML knowledge", "Cloud-Init compatible guest image"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#advanced",
-      icon: FileCode,
-      resourceLinks: [{ label: "Cloud-Init Official Docs", url: "https://cloudinit.readthedocs.io/" }]
-    },
-    "Create a backup of a VM": {
-      steps: [
-        "Ensure a Backup Target is configured and healthy.",
-        "Go to Virtual Machines. Find your VM and click '...'.",
-        "Select 'Take Backup'.",
-        "Enter a name for the backup or use the auto-generated one.",
-        "Monitor progress in the 'Backups' menu until state is 'Ready'."
-      ],
-      tip: "Taking a backup is different from a snapshot. Backups are stored externally on the Backup Target, while snapshots remain local.",
-      dependencies: ["Backup Target configured", "VM Volume consistency"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/#taking-a-backup",
+      tip: "Isolating storage traffic improves performance and cluster stability.",
+      dependencies: ["Dedicated Storage NICs"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/#storage-network",
       icon: Database,
       resourceLinks: []
     },
-    "Restore a VM from a backup": {
+    "Create a VLAN network for the VM": {
       steps: [
-        "Go to the 'Backups' menu and select a healthy backup.",
-        "Click '...' and select 'Restore to a new VM'.",
-        "Define the new VM name and resource specifications if needed.",
-        "Wait for the restore process to complete and the new VM to start.",
-        "Verify data integrity within the guest OS."
+        "Create a ClusterNetwork for VLANs.",
+        "Create a NetworkConfig binding physical NICs to the ClusterNetwork.",
+        "Create a new Network of type 'L2Vlan' with the desired VLAN ID."
       ],
-      tip: "You can also restore 'in-place' by clicking 'Restore' directly on an existing VM, which will revert its volumes to the backup state.",
-      dependencies: ["Healthy Backup", "Sufficient cluster resources"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/#restoring-from-a-backup",
-      icon: RefreshCw,
+      tip: "Ensure the physical switch ports are in Trunk mode.",
+      dependencies: ["VLAN ID", "Trunk Ports"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/#vlan-network",
+      icon: Globe,
+      imageSrc: "https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/networking/network-list.png",
       resourceLinks: []
     },
-    "Perform a live migration of a VM (requires multi-host)": {
+    "Verify VLAN configuration across nodes": {
       steps: [
-        "Ensure the VM is running and the cluster has at least 2 healthy nodes.",
-        "Go to Virtual Machines. Click the '...' menu on the VM and select 'Migrate'.",
-        "Optionally select a target node or let the system choose automatically.",
-        "Monitor the migration progress until the 'Running' state is restored."
+        "Deploy two VMs on different nodes using the same VLAN network.",
+        "Assign IPs in the same subnet to both VMs.",
+        "Perform a ping test between the VMs."
       ],
-      tip: "Live migration requires shared storage (Longhorn) and will fail if the VM has local passthrough hardware (USB/PCI).",
-      dependencies: ["Multi-node cluster", "Distributed Storage", "No hardware passthrough"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/live-migration/",
-      icon: RefreshCw,
+      tip: "If ping fails, check if the VLAN is allowed on the physical switch inter-connects.",
+      dependencies: ["VLAN Network", "2 VMs on different nodes"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/",
+      icon: Activity,
       resourceLinks: []
     },
-    "Use the serial/VNC console of a VM": {
+    "VM Resource Extensions (CPU, memory, disk)": {
       steps: [
-        "Open Virtual Machines dashboard.",
-        "Click on the VM name to open details.",
-        "Click 'Console' button on the top right.",
-        "Switch between 'VNC' (for GUI) and 'Serial' (for terminal) tabs.",
-        "Verify terminal responsiveness and OS login prompt."
+        "Shut down the VM.",
+        "Edit VM settings and increase CPU/RAM or Disk size.",
+        "Start the VM and verify the new resources in the guest OS."
       ],
-      tip: "Enable the serial console in your guest Linux kernel by adding 'console=ttyS0' to the boot params if it's not working.",
-      dependencies: ["Web browser access to VIP"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#access-vm-via-console",
-      icon: Terminal,
+      tip: "Harvester supports hot-plugging for some resources, but a restart is safer for OS recognition.",
+      dependencies: ["Running VM"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/",
+      icon: Cpu,
       resourceLinks: []
     },
-    "Import the SSH key and access a VM using the key (Linux only)": {
+    "VM Storage Extensions (Add/Remove/Enlarge)": {
       steps: [
-        "Import SSH Key: Settings -> SSH Keys -> Create.",
-        "Select this key during VM creation in the 'Basics' or 'Advanced' tab.",
-        "Wait for VM to reach 'Running' state.",
-        "From your workstation terminal: ssh [user]@[VM_IP].",
-        "Verify access without password prompts."
+        "Go to the VM's 'Disks' tab.",
+        "Click 'Add Volume' to attach a new disk.",
+        "To enlarge, go to 'Volumes', find the disk, and click 'Expand'."
       ],
-      tip: "If access fails, ensure the security group or firewall allows port 22 and that the image has cloud-init installed.",
-      dependencies: ["Public Key", "Network connectivity to VM"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#ssh-key",
-      icon: Key,
-      resourceLinks: []
-    },
-    "Multi-cluster management, multi-tenancy for VM management, multi-disk support": {
-      steps: [
-        "Multi-disk: During VM creation or Edit, go to 'Disks' -> 'Add Disk' to create secondary volumes.",
-        "Multi-tenancy: Use Projects/Namespaces to isolate workloads and users (integrated with Rancher).",
-        "Multi-cluster: Import Harvester into Rancher to manage multiple Harvester clusters from a single pane.",
-        "Verify that resources are allocated and billed (if applicable) correctly per project."
-      ],
-      tip: "Add secondary disks for heavy database workloads to separate log files from data files for better performance.",
-      dependencies: ["Rancher integration for multi-cluster", "Available SDS storage"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#disks",
+      tip: "Always back up your data before expanding a partition.",
+      dependencies: ["VM Volume"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/storage/storage-class/",
       icon: HardDrive,
       resourceLinks: []
     },
-    "Integration with Rancher. Provision a RKE2 Kubernetes cluster on top of a SUSE Virtualization cluster": {
+    "Testing FIO Longhorn disk performance": {
       steps: [
-        "Step 1: Enable Harvester in Rancher (Global Settings -> Feature Flags -> Harvester).",
-        "Step 2: Import Harvester (Virtualization Management -> Import).",
-        "Step 3: Create Cloud Credentials in Rancher for the Harvester cluster.",
-        "Step 4: Go to Cluster Management -> Create. Select 'Harvester' as the infrastructure.",
-        "Step 5: Define Node Pools (roles, CPU, RAM) and click Create.",
-        "Monitor the automated VM creation and RKE2 bootstrap in the Harvester UI."
+        "Install 'fio' in a Linux VM.",
+        "Run: fio --name=test --rw=randwrite --bs=4k --size=1G --numjobs=1 --iodepth=1 --runtime=60 --time_based.",
+        "Analyze the IOPS and latency results."
       ],
-      tip: "Ensure the Rancher CA certificate is trusted by Harvester if using private CAs, otherwise the agents won't connect.",
-      dependencies: ["Upstream Rancher v2.8+", "Working Harvester VIP", "Network routing between Rancher and Harvester"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/",
+      tip: "Aim for < 10ms latency for optimal etcd and VM performance.",
+      dependencies: ["Linux VM", "fio tool"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/troubleshooting/performance/",
+      icon: Activity,
+      resourceLinks: []
+    },
+    "VM Resource Quota (CPU Pinning)": {
+      steps: [
+        "Edit the VM YAML configuration.",
+        "Add 'dedicatedCpuPlacement: true' under spec.domain.cpu.",
+        "Restart the VM and check core usage."
+      ],
+      tip: "CPU pinning is useful for latency-sensitive workloads.",
+      dependencies: ["Advanced VM Config"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#advanced-settings",
+      icon: Target,
+      resourceLinks: []
+    },
+    "VM Live Migration": {
+      steps: [
+        "Select a running VM.",
+        "Click 'Migrate' and choose the target node.",
+        "Monitor the migration progress in the dashboard."
+      ],
+      tip: "Live migration requires shared storage (Longhorn) and compatible CPU models.",
+      dependencies: ["Multiple Nodes", "Running VM"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/live-migration/",
+      icon: Shuffle,
+      resourceLinks: []
+    },
+    "VM Backup to S3 Minio": {
+      steps: [
+        "Configure an S3 Backup Target in 'Settings'.",
+        "Go to 'Virtual Machines' -> 'Backup'.",
+        "Select 'Create Backup' and wait for completion."
+      ],
+      tip: "Minio is a great local S3-compatible option for POCs.",
+      dependencies: ["S3 Bucket", "Access Keys"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/",
+      icon: Database,
+      resourceLinks: []
+    },
+    "Restoring a VM from an S3 backup": {
+      steps: [
+        "Go to 'Virtual Machines' -> 'Backups'.",
+        "Select a backup and click 'Restore'.",
+        "Provide a new VM name or overwrite the existing one."
+      ],
+      tip: "Restoring to a new VM allows you to verify data without affecting production.",
+      dependencies: ["Existing Backup"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/#restore",
+      icon: RefreshCw,
+      resourceLinks: []
+    },
+    "Support Container workload": {
+      steps: [
+        "Harvester runs on Kubernetes; you can deploy pods directly if needed.",
+        "Use 'kubectl' to apply a deployment YAML to the Harvester cluster.",
+        "Verify the pods are running using 'kubectl get pods'."
+      ],
+      tip: "For production workloads, it is better to run RKE2 clusters on top of Harvester.",
+      dependencies: ["kubectl access"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/introduction/",
+      icon: Layers,
+      resourceLinks: []
+    },
+    "Deploy Rancher Manager": {
+      steps: [
+        "Create a VM with at least 4 vCPU and 8GB RAM.",
+        "Install Docker or RKE2 on the VM.",
+        "Deploy Rancher using the official Helm chart or Docker command."
+      ],
+      tip: "Rancher v2.8+ is recommended for the best Harvester integration experience.",
+      dependencies: ["VM", "Docker/K8s"],
+      docsUrl: "https://ranchermanager.docs.rancher.com/v2.8/pages-for-subheaders/install-upgrade-rancher",
       icon: Cloud,
-      resourceLinks: [{ label: "Rancher Harvester Driver Docs", url: "https://rancher.com/docs/rancher/v2.8/en/cluster-provisioning/hosted-kubernetes-clusters/harvester/" }]
+      imageSrc: "https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/rancher-provision-rke2.png",
+      resourceLinks: []
+    },
+    "Account Passwords and Lockout Policy": {
+      steps: [
+        "Go to 'Settings' -> 'Authentication'.",
+        "Configure password complexity and lockout thresholds.",
+        "Test by attempting failed logins."
+      ],
+      tip: "Integrate with LDAP/AD for centralized user management.",
+      dependencies: ["Admin Access"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/rancher/authentication/",
+      icon: Lock,
+      resourceLinks: []
+    },
+    "Managing Harvester clusters with Rancher": {
+      steps: [
+        "In Rancher, go to 'Virtualization Management'.",
+        "Click 'Import Cluster' and follow the instructions.",
+        "Provide the Harvester VIP and credentials."
+      ],
+      tip: "Rancher provides a single pane of glass for multi-cluster management.",
+      dependencies: ["Rancher Server", "Harvester Cluster"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/",
+      icon: Monitor,
+      resourceLinks: []
+    },
+    "Define VM behavior during node maintenance": {
+      steps: [
+        "Go to 'Nodes' and select a node.",
+        "Click 'Maintenance Mode' -> 'Enable'.",
+        "Observe VMs being automatically migrated to other nodes."
+      ],
+      tip: "Maintenance mode ensures zero downtime for workloads during hardware updates.",
+      dependencies: ["Multiple Nodes", "Running VMs"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/host/maintenance-mode/",
+      icon: Settings,
+      resourceLinks: []
+    },
+    "Perform network addition, removal, and failover": {
+      steps: [
+        "Configure a bond with two NICs.",
+        "Disconnect one physical cable.",
+        "Verify that network traffic continues without interruption."
+      ],
+      tip: "Use 'Active-Backup' mode for simple failover without switch configuration.",
+      dependencies: ["Bonded Network"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/",
+      icon: Wifi,
+      resourceLinks: []
+    },
+    "Shut down the node to trigger VM failover": {
+      steps: [
+        "Identify a node running HA-enabled VMs.",
+        "Forcefully power off the node.",
+        "Verify that VMs are restarted on other nodes by the HA controller."
+      ],
+      tip: "HA requires at least 3 nodes to maintain a quorum.",
+      dependencies: ["3-Node Cluster", "HA VMs"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/high-availability/",
+      icon: Zap,
+      resourceLinks: []
+    },
+    "Power on the Harvester node and monitor rebuild": {
+      steps: [
+        "Power on the previously failed node.",
+        "Wait for it to join the cluster and show 'Ready'.",
+        "Check Longhorn dashboard to monitor data synchronization."
+      ],
+      tip: "Longhorn will automatically rebuild replicas to ensure data redundancy.",
+      dependencies: ["Recovered Node"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/storage/storage-class/",
+      icon: RefreshCw,
+      resourceLinks: []
+    },
+    "Execute node failover with failback": {
+      steps: [
+        "Trigger a failover by putting a node in maintenance.",
+        "After maintenance, disable maintenance mode.",
+        "Optionally migrate VMs back to the original node."
+      ],
+      tip: "Failback can be manual or automatic depending on your scheduling policies.",
+      dependencies: ["Maintenance Mode"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/host/maintenance-mode/",
+      icon: Shuffle,
+      resourceLinks: []
+    },
+    "Perform network packet and session analysis": {
+      steps: [
+        "Access the Harvester node via SSH.",
+        "Use 'tcpdump -i [interface]' to capture traffic.",
+        "Analyze the output to troubleshoot connectivity issues."
+      ],
+      tip: "Use '-w' to save the capture to a file for analysis in Wireshark.",
+      dependencies: ["SSH Access", "tcpdump"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/troubleshooting/network/",
+      icon: Search,
+      resourceLinks: []
+    },
+    "Test VM failover during network failure": {
+      steps: [
+        "Simulate a total network failure on one node (e.g., disconnect all NICs).",
+        "Verify that the cluster detects the node as 'Unreachable'.",
+        "Confirm that VMs are rescheduled to healthy nodes."
+      ],
+      tip: "Network fencing is critical to prevent split-brain scenarios.",
+      dependencies: ["3-Node Cluster"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/high-availability/",
+      icon: ShieldAlert,
+      resourceLinks: []
     }
   },
   pt: {
-    "Provisionar hosts através do instalador ISO": {
+    "Instalando Harvester via ISO": {
       steps: [
-        "Prepare um pendrive bootável com a ISO do Harvester v1.7.",
-        "Boot via UEFI. Selecione 'Create a new Harvester cluster' no Nó 1.",
-        "Configure Hostname, IP Estático, Gateway e o VIP do Cluster.",
-        "Defina o 'Cluster Token' (usado para admissão de novos nós).",
-        "Aguarde o reboot e o prompt final com a URL do Dashboard."
+        "Baixe a ISO oficial do Harvester v1.7.0.",
+        "Prepare um pendrive bootável (mínimo 8GB) usando Rufus (Modo DD) ou Etcher.",
+        "Insira a mídia no servidor físico, ative a Virtualização (VT-x/AMD-V) na BIOS.",
+        "Dê boot pelo USB e selecione 'Create a new Harvester cluster'.",
+        "Configure a NIC de Gerência, Hostname e IP Estático.",
+        "Defina o Cluster VIP e o Cluster Token compartilhado.",
+        "Finalize a instalação e aguarde a URL de Gerência no console."
       ],
-      tip: "Se o instalador travar em 'Loading initrd', verifique se o UEFI está habilitado e o Secure Boot desabilitado.",
-      dependencies: ["VT-x/AMD-V ativo", "Pendrive 8GB", "Conexão cabeada"],
+      tip: "Certifique-se de que o Secure Boot esteja desativado na BIOS para evitar travamentos no boot.",
+      dependencies: ["Servidor Físico", "USB de 8GB", "IP Estático"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/install/iso-install/",
       icon: Play,
-      resourceLinks: [{ label: "Download Harvester ISO", url: "https://harvesterhci.io/releases" }]
+      imageSrc: "https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/install/iso/install-harvester-1.png",
+      resourceLinks: [{ label: "Download ISO", url: "https://harvesterhci.io/releases" }]
     },
-    "Opcional. Provisionar hosts através do boot PXE": {
+    "Adicionando Nós Adicionais": {
       steps: [
-        "Configure um servidor iPXE ou HTTP acessível pelos nós.",
-        "Prepare o arquivo de configuração (formato YAML) com as definições de rede.",
-        "Configure os nós para boot via PXE no BIOS/UEFI.",
-        "Disponibilize kernel, initrd e rootfs via servidor PXE.",
-        "Monitore o progresso da instalação automatizada."
+        "Dê boot no segundo/terceiro nó a partir da ISO do Harvester.",
+        "Selecione 'Join an existing Harvester cluster'.",
+        "Insira o Cluster VIP e o Cluster Token criados no primeiro nó.",
+        "Configure a rede local do nó e o hostname.",
+        "Aguarde o nó aparecer como 'Ready' no dashboard."
       ],
-      tip: "Use a integração 'Matchbox' se precisar de uma forma escalável de gerenciar múltiplas configurações via PXE.",
-      dependencies: ["Servidor HTTP/TFTP", "Opção DHCP 67 configurada", "config.yaml do Harvester"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/install/pxe-boot-install/",
-      icon: Network,
+      tip: "Para um cluster de alta disponibilidade, você precisa de pelo menos 3 nós.",
+      dependencies: ["Cluster Harvester Ativo", "Cluster Token"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/install/iso-install/#join-an-existing-cluster",
+      icon: Plus,
       resourceLinks: []
     },
-    "Registrar uma imagem para uso em VMs": {
+    "Configurando Proxy HTTP": {
       steps: [
-        "Login no Dashboard -> Images -> Create.",
-        "Opção 1: 'Download from URL'. Use uma URL raw/qcow2.",
-        "Opção 2: 'Upload' da sua estação local.",
-        "Aguarde o status mudar para 'Active'."
+        "Vá em 'Settings' -> 'Advanced Settings'.",
+        "Encontre 'http-proxy' e clique em 'Edit Setting'.",
+        "Insira as URLs de proxy HTTP e HTTPS.",
+        "Adicione domínios internos ao 'no-proxy' para evitar rotear tráfego local pelo proxy."
       ],
-      tip: "Imagens Cloud-optimized são preferíveis para injeção automática de credenciais via Cloud-Init.",
-      dependencies: ["Acesso internet para download", "Suporte qcow2/img/iso"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#images",
-      icon: ImageIcon,
+      tip: "Configurações de proxy são essenciais para ambientes air-gapped com acesso limitado à internet.",
+      dependencies: ["Detalhes do Servidor Proxy"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/install/settings/#http-proxy",
+      icon: Shuffle,
       resourceLinks: []
     },
-    "Criar uma Storage Class e Volume": {
+    "Vinculação de interface de rede para gerência": {
       steps: [
-        "O Harvester provê a StorageClass 'longhorn' por padrão.",
-        "Para criar nova: Settings -> StorageClass -> Create.",
-        "Defina 'Number of Replicas' como 3 (Obrigatório para HA).",
-        "Criar Volume: Volumes -> Create. Selecione o tamanho e a StorageClass.",
-        "Anexe o volume a uma VM na aba 'Disks'."
+        "Vá em 'Settings' -> 'Management Network'.",
+        "Selecione o modo de bond (ex: Active-Backup ou LACP).",
+        "Selecione as NICs físicas para incluir no bond de gerência.",
+        "Salve e aguarde a reconfiguração da rede (pode causar desconexão breve)."
       ],
-      tip: "Evite reduzir o número de réplicas para 1 em produção, pois falhas de nó causarão perda permanente de dados.",
-      dependencies: ["Nós SDS saudáveis", "Espaço em disco disponível"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/storage/storage-class/",
-      icon: Database,
-      resourceLinks: []
-    },
-    "Criar uma rede VLAN no SUSE Virtualization": {
-      steps: [
-        "Passo 1: Criar ClusterNetwork (Settings -> ClusterNetwork).",
-        "Passo 2: Criar NetworkConfig e vincular às NICs físicas.",
-        "Passo 3: Criar rede VM (Networks -> Create) tipo 'L2Vlan' com o ID desejado.",
-        "Atribua esta rede à VM durante a criação."
-      ],
-      tip: "A porta do switch físico DEVE estar configurada como TRUNK se usar VLAN IDs diferentes de 0.",
-      dependencies: ["Switch com suporte 802.1Q", "Disponibilidade de NIC física"],
+      tip: "LACP requer configuração no lado do switch físico também.",
+      dependencies: ["Múltiplas NICs", "Configuração de Switch"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/",
       icon: Network,
       resourceLinks: []
     },
-    "Criar uma VM": {
+    "Alocar uma rede de armazenamento dedicada": {
       steps: [
-        "Virtual Machines -> Create.",
-        "Básico: Nome, Cores de CPU e Memória.",
-        "Volumes: Selecione a imagem para o disco raiz.",
-        "Redes: Escolha Management Network ou a VLAN criada.",
-        "Avançado: Cole sua chave SSH pública."
+        "Crie uma nova ClusterNetwork para armazenamento.",
+        "Crie um NetworkConfig e vincule-o a NICs de armazenamento dedicadas.",
+        "Configure a rede de armazenamento nas configurações do Longhorn para usar esta rede."
       ],
-      tip: "Use drivers 'VirtIO' para melhor performance de disco e rede.",
-      dependencies: ["Imagem ativa", "Rede definida"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/",
-      icon: Monitor,
-      resourceLinks: []
-    },
-    "Configurar um destino de backup": {
-      steps: [
-        "Settings -> Backup Target.",
-        "Escolha 'S3' ou 'NFS'.",
-        "NFS: Informe o IP e o caminho exportado.",
-        "S3: Informe Endpoint, Bucket e chaves de acesso.",
-        "Salve e verifique se o status é 'Ready'."
-      ],
-      tip: "NFS v4 é recomendado para melhor confiabilidade com Longhorn.",
-      dependencies: ["Storage externo NFS/S3 acessível"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/storage/backup-target/",
-      icon: Save,
-      resourceLinks: []
-    },
-    "Configurar um script cloud-config de dados do usuário": {
-      steps: [
-        "Cloud Config Templates -> Create.",
-        "Insira o YAML iniciando com '#cloud-config'.",
-        "Inclua 'users', 'ssh_authorized_keys' e 'runcmd'.",
-        "Selecione o template na aba 'Advanced' da VM."
-      ],
-      tip: "Sempre use 'NoCloud' como fonte de dados no Harvester para a maioria das imagens cloud Linux.",
-      dependencies: ["Conhecimento YAML", "Imagem compatível com Cloud-Init"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#advanced",
-      icon: FileCode,
-      resourceLinks: []
-    },
-    "Criar um backup de uma VM": {
-      steps: [
-        "Garanta que o Backup Target esteja saudável.",
-        "Virtual Machines -> Menu da VM -> Take Backup.",
-        "Monitore no menu 'Backups' até o status 'Ready'."
-      ],
-      tip: "Backups são armazenados externamente, snapshots permanecem locais.",
-      dependencies: ["Backup Target configurado"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/#taking-a-backup",
+      tip: "Isolar o tráfego de armazenamento melhora a performance e a estabilidade do cluster.",
+      dependencies: ["NICs de Armazenamento Dedicadas"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/#storage-network",
       icon: Database,
       resourceLinks: []
     },
-    "Restaurar uma VM de um backup": {
+    "Criar uma rede VLAN para a VM": {
       steps: [
-        "Menu Backups -> Selecione um backup saudável.",
-        "Restore to a new VM.",
-        "Defina o novo nome e aguarde o processo.",
-        "Verifique a integridade dos dados."
+        "Crie uma ClusterNetwork para VLANs.",
+        "Crie um NetworkConfig vinculando NICs físicas à ClusterNetwork.",
+        "Crie uma nova Rede do tipo 'L2Vlan' com o ID da VLAN desejado."
       ],
-      tip: "Você também pode restaurar 'in-place' para reverter uma VM existente.",
-      dependencies: ["Backup saudável"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/#restoring-from-a-backup",
-      icon: RefreshCw,
+      tip: "Certifique-se de que as portas do switch físico estejam em modo Trunk.",
+      dependencies: ["ID da VLAN", "Portas Trunk"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/#vlan-network",
+      icon: Globe,
       resourceLinks: []
     },
-    "Realizar migração ao vivo de uma VM (requer multi-host)": {
+    "Verificar configuração de VLAN entre nós": {
       steps: [
-        "Certifique-se de ter pelo menos 2 nós saudáveis.",
-        "Virtual Machines -> Menu da VM -> Migrate.",
-        "Monitore até que o estado 'Running' seja restaurado."
+        "Implante duas VMs em nós diferentes usando a mesma rede VLAN.",
+        "Atribua IPs na mesma sub-rede para ambas as VMs.",
+        "Realize um teste de ping entre as VMs."
       ],
-      tip: "A migração falhará se a VM tiver hardware pass-through local (USB/PCI).",
-      dependencies: ["Cluster multi-nó", "Storage Distribuído"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/live-migration/",
-      icon: RefreshCw,
+      tip: "Se o ping falhar, verifique se a VLAN é permitida nos inter-connects do switch físico.",
+      dependencies: ["Rede VLAN", "2 VMs em nós diferentes"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/",
+      icon: Activity,
       resourceLinks: []
     },
-    "Usar o console serial/VNC de uma VM": {
+    "Extensões de recursos de VM (CPU, memória, disco)": {
       steps: [
-        "Dashboard Virtual Machines -> Selecione a VM.",
-        "Clique no botão 'Console' no canto superior direito.",
-        "Alterne entre abas 'VNC' e 'Serial'."
+        "Desligue a VM.",
+        "Edite as configurações da VM e aumente o CPU/RAM ou o tamanho do disco.",
+        "Inicie a VM e verifique os novos recursos no SO convidado."
       ],
-      tip: "Habilite o console serial no kernel Linux convidado (console=ttyS0) se não funcionar.",
-      dependencies: ["Acesso via browser ao VIP"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#access-vm-via-console",
-      icon: Terminal,
+      tip: "O Harvester suporta hot-plug para alguns recursos, mas um reinício é mais seguro para o reconhecimento pelo SO.",
+      dependencies: ["VM em Execução"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/",
+      icon: Cpu,
       resourceLinks: []
     },
-    "Importar a chave SSH e acessar uma VM usando a chave (apenas Linux)": {
+    "Extensões de armazenamento de VM (Adicionar/Remover/Ampliar)": {
       steps: [
-        "Settings -> SSH Keys -> Create.",
-        "Selecione a chave durante a criação da VM.",
-        "Acesse via terminal: ssh [user]@[VM_IP]."
+        "Vá na aba 'Disks' da VM.",
+        "Clique em 'Add Volume' para anexar um novo disco.",
+        "Para ampliar, vá em 'Volumes', encontre o disco e clique em 'Expand'."
       ],
-      tip: "Verifique se a imagem possui cloud-init instalado.",
-      dependencies: ["Chave Pública", "Conetividade de rede com a VM"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#ssh-key",
-      icon: Key,
-      resourceLinks: []
-    },
-    "Gerenciamento multi-cluster, multi-tenancy e suporte multi-disco": {
-      steps: [
-        "Multi-disk: Adicione volumes secundários em 'Disks'.",
-        "Multi-tenancy: Use Namespaces para isolar workloads.",
-        "Multi-cluster: Importe o Harvester no Rancher."
-      ],
-      tip: "Separe arquivos de log em discos secundários para melhor performance.",
-      dependencies: ["Integração Rancher", "Espaço SDS"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#disks",
+      tip: "Sempre faça backup dos seus dados antes de expandir uma partição.",
+      dependencies: ["Volume da VM"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/storage/storage-class/",
       icon: HardDrive,
       resourceLinks: []
     },
-    "Integração com Rancher. Provisionar um cluster RKE2 Kubernetes sobre o SUSE Virtualization": {
+    "Testando performance de disco FIO Longhorn": {
       steps: [
-        "Ative o Harvester no Rancher (Feature Flags).",
-        "Importe o Harvester no menu Virtualization Management.",
-        "Crie Cloud Credentials no Rancher.",
-        "Cluster Management -> Create -> Harvester.",
-        "Defina Node Pools e crie o cluster."
+        "Instale o 'fio' em uma VM Linux.",
+        "Execute: fio --name=test --rw=randwrite --bs=4k --size=1G --numjobs=1 --iodepth=1 --runtime=60 --time_based.",
+        "Analise os resultados de IOPS e latência."
       ],
-      tip: "Garanta que o certificado do Rancher seja confiado pelo Harvester.",
-      dependencies: ["Rancher v2.8+", "VIP do Harvester funcional"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/",
+      tip: "Busque latência < 10ms para performance ideal do etcd e das VMs.",
+      dependencies: ["VM Linux", "ferramenta fio"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/troubleshooting/performance/",
+      icon: Activity,
+      resourceLinks: []
+    },
+    "Cota de recursos de VM (CPU Pinning)": {
+      steps: [
+        "Edite a configuração YAML da VM.",
+        "Adicione 'dedicatedCpuPlacement: true' sob spec.domain.cpu.",
+        "Reinicie a VM e verifique o uso dos cores."
+      ],
+      tip: "O CPU pinning é útil para cargas de trabalho sensíveis à latência.",
+      dependencies: ["Configuração Avançada de VM"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#advanced-settings",
+      icon: Target,
+      resourceLinks: []
+    },
+    "Migração ao vivo de VM": {
+      steps: [
+        "Selecione uma VM em execução.",
+        "Clique em 'Migrate' e escolha o nó de destino.",
+        "Monitore o progresso da migração no dashboard."
+      ],
+      tip: "A migração ao vivo requer armazenamento compartilhado (Longhorn) e modelos de CPU compatíveis.",
+      dependencies: ["Múltiplos Nós", "VM em Execução"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/live-migration/",
+      icon: Shuffle,
+      resourceLinks: []
+    },
+    "Backup de VM para S3 Minio": {
+      steps: [
+        "Configure um S3 Backup Target em 'Settings'.",
+        "Vá em 'Virtual Machines' -> 'Backup'.",
+        "Selecione 'Create Backup' e aguarde a conclusão."
+      ],
+      tip: "O Minio é uma ótima opção local compatível com S3 para POCs.",
+      dependencies: ["Bucket S3", "Chaves de Acesso"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/",
+      icon: Database,
+      imageSrc: "https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/vm/backup-target.png",
+      resourceLinks: []
+    },
+    "Restaurando uma VM de um backup S3": {
+      steps: [
+        "Vá em 'Virtual Machines' -> 'Backups'.",
+        "Selecione um backup e clique em 'Restore'.",
+        "Forneça um novo nome para a VM ou sobrescreva a existente."
+      ],
+      tip: "Restaurar para uma nova VM permite verificar os dados sem afetar a produção.",
+      dependencies: ["Backup Existente"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/#restore",
+      icon: RefreshCw,
+      resourceLinks: []
+    },
+    "Suporte a carga de trabalho de contêiner": {
+      steps: [
+        "O Harvester roda sobre Kubernetes; você pode implantar pods diretamente se necessário.",
+        "Use o 'kubectl' para aplicar um YAML de deployment no cluster Harvester.",
+        "Verifique se os pods estão rodando usando 'kubectl get pods'."
+      ],
+      tip: "Para cargas de trabalho de produção, é melhor rodar clusters RKE2 sobre o Harvester.",
+      dependencies: ["acesso kubectl"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/introduction/",
+      icon: Layers,
+      resourceLinks: []
+    },
+    "Implantar Rancher Manager": {
+      steps: [
+        "Crie uma VM com pelo menos 4 vCPU e 8GB de RAM.",
+        "Instale Docker ou RKE2 na VM.",
+        "Implante o Rancher usando o Helm chart oficial ou comando Docker."
+      ],
+      tip: "O Rancher v2.8+ é recomendado para a melhor experiência de integração com o Harvester.",
+      dependencies: ["VM", "Docker/K8s"],
+      docsUrl: "https://ranchermanager.docs.rancher.com/v2.8/pages-for-subheaders/install-upgrade-rancher",
       icon: Cloud,
+      resourceLinks: []
+    },
+    "Senhas de conta e política de bloqueio": {
+      steps: [
+        "Vá em 'Settings' -> 'Authentication'.",
+        "Configure a complexidade de senha e limites de bloqueio.",
+        "Teste tentando logins com falha."
+      ],
+      tip: "Integre com LDAP/AD para gerenciamento centralizado de usuários.",
+      dependencies: ["Acesso Admin"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/rancher/authentication/",
+      icon: Lock,
+      resourceLinks: []
+    },
+    "Gerenciando clusters Harvester com Rancher": {
+      steps: [
+        "No Rancher, vá em 'Virtualization Management'.",
+        "Clique em 'Import Cluster' e siga as instruções.",
+        "Forneça o VIP do Harvester e as credenciais."
+      ],
+      tip: "O Rancher fornece uma visão única para gerenciamento de múltiplos clusters.",
+      dependencies: ["Servidor Rancher", "Cluster Harvester"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/",
+      icon: Monitor,
+      resourceLinks: []
+    },
+    "Definir comportamento da VM durante manutenção do nó": {
+      steps: [
+        "Vá em 'Nodes' e selecione um nó.",
+        "Clique em 'Maintenance Mode' -> 'Enable'.",
+        "Observe as VMs sendo migradas automaticamente para outros nós."
+      ],
+      tip: "O modo de manutenção garante tempo de inatividade zero para as cargas de trabalho durante atualizações de hardware.",
+      dependencies: ["Múltiplos Nós", "VMs em Execução"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/host/maintenance-mode/",
+      icon: Settings,
+      resourceLinks: []
+    },
+    "Realizar adição, remoção e failover de rede": {
+      steps: [
+        "Configure um bond com duas NICs.",
+        "Desconecte um cabo físico.",
+        "Verifique se o tráfego de rede continua sem interrupção."
+      ],
+      tip: "Use o modo 'Active-Backup' para failover simples sem configuração de switch.",
+      dependencies: ["Rede em Bond"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/",
+      icon: Wifi,
+      resourceLinks: []
+    },
+    "Desligar o nó para disparar failover da VM": {
+      steps: [
+        "Identifique um nó rodando VMs com HA habilitado.",
+        "Desligue o nó forçadamente.",
+        "Verifique se as VMs são reiniciadas em outros nós pelo controlador de HA."
+      ],
+      tip: "O HA requer pelo menos 3 nós para manter o quorum.",
+      dependencies: ["Cluster de 3 Nós", "VMs com HA"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/high-availability/",
+      icon: Zap,
+      resourceLinks: []
+    },
+    "Ligar o nó Harvester e monitorar reconstrução": {
+      steps: [
+        "Ligue o nó que falhou anteriormente.",
+        "Aguarde ele se juntar ao cluster e mostrar 'Ready'.",
+        "Verifique o dashboard do Longhorn para monitorar a sincronização de dados."
+      ],
+      tip: "O Longhorn reconstruirá automaticamente as réplicas para garantir a redundância dos dados.",
+      dependencies: ["Nó Recuperado"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/storage/storage-class/",
+      icon: RefreshCw,
+      resourceLinks: []
+    },
+    "Executar failover de nó com failback": {
+      steps: [
+        "Dispare um failover colocando um nó em manutenção.",
+        "Após a manutenção, desative o modo de manutenção.",
+        "Opcionalmente, migre as VMs de volta para o nó original."
+      ],
+      tip: "O failback pode ser manual ou automático dependendo das suas políticas de agendamento.",
+      dependencies: ["Modo de Manutenção"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/host/maintenance-mode/",
+      icon: Shuffle,
+      resourceLinks: []
+    },
+    "Realizar análise de pacotes e sessão de rede": {
+      steps: [
+        "Acesse o nó Harvester via SSH.",
+        "Use 'tcpdump -i [interface]' para capturar o tráfego.",
+        "Analise a saída para diagnosticar problemas de conectividade."
+      ],
+      tip: "Use '-w' para salvar a captura em um arquivo para análise no Wireshark.",
+      dependencies: ["Acesso SSH", "tcpdump"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/troubleshooting/network/",
+      icon: Search,
+      resourceLinks: []
+    },
+    "Testar failover de VM durante falha de rede": {
+      steps: [
+        "Simule uma falha total de rede em um nó (ex: desconecte todas as NICs).",
+        "Verifique se o cluster detecta o nó como 'Unreachable'.",
+        "Confirme se as VMs são reagendadas para nós saudáveis."
+      ],
+      tip: "O isolamento de rede (fencing) é crítico para evitar cenários de split-brain.",
+      dependencies: ["Cluster de 3 Nós"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/high-availability/",
+      icon: ShieldAlert,
       resourceLinks: []
     }
   },
   es: {
-    "Provisionar hosts mediante el instalador ISO": {
+    "Instalación de Harvester desde ISO": {
       steps: [
-        "Prepare una unidad USB con la ISO de Harvester v1.7.",
-        "Arranque desde UEFI. Seleccione 'Create a new Harvester cluster' para el Nodo 1.",
-        "Configure Hostname, IP estática, Gateway y la VIP del clúster.",
-        "Defina el 'Cluster Token'.",
-        "Espere al reinicio y al prompt de la URL del Dashboard."
+        "Descargue la ISO oficial de Harvester v1.7.0.",
+        "Prepare una unidad USB de arranque (mínimo 8GB) usando Rufus (Modo DD) o Etcher.",
+        "Inserte el medio en el servidor físico, habilite la Virtualización (VT-x/AMD-V) en la BIOS.",
+        "Arranque desde el USB y seleccione 'Create a new Harvester cluster'.",
+        "Configure la NIC de administración, el nombre de host y la IP estática.",
+        "Defina la VIP del clúster y el token del clúster compartido.",
+        "Complete la instalación y espere a la URL de administración en la consola."
       ],
-      tip: "Si el instalador se detiene en 'Loading initrd', verifique que UEFI esté habilitado.",
-      dependencies: ["VT-x/AMD-V activo", "Unidad USB de 8GB"],
+      tip: "Asegúrese de que el Secure Boot esté desactivado en la BIOS para evitar bloqueos en el arranque.",
+      dependencies: ["Servidor físico", "USB de 8GB", "IP estática"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/install/iso-install/",
       icon: Play,
-      resourceLinks: [{ label: "Descargar Harvester ISO", url: "https://harvesterhci.io/releases" }]
+      imageSrc: "https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/install/iso/install-harvester-1.png",
+      resourceLinks: [{ label: "Descargar ISO", url: "https://harvesterhci.io/releases" }]
     },
-    "Opcional. Provisionar hosts mediante arranque PXE": {
+    "Agregar nodos adicionales": {
       steps: [
-        "Configure un servidor iPXE o HTTP.",
-        "Prepare el archivo config.yaml con los ajustes de red.",
-        "Configure el arranque PXE en la BIOS/UEFI.",
-        "Monitoree la instalación automatizada."
+        "Arranque el segundo/tercer nodo desde la ISO de Harvester.",
+        "Seleccione 'Join an existing Harvester cluster'.",
+        "Ingrese la VIP del clúster y el token del clúster creados en el primer nodo.",
+        "Configure la red del nodo local y el nombre de host.",
+        "Espere a que el nodo aparezca como 'Ready' en el tablero."
       ],
-      tip: "Use la integración con 'Matchbox' para despliegues a gran escala.",
-      dependencies: ["Servidor HTTP/TFTP", "DHCP configurado"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/install/pxe-boot-install/",
-      icon: Network,
+      tip: "Para un clúster de alta disponibilidad, necesita al menos 3 nodos.",
+      dependencies: ["Clúster Harvester activo", "Token del clúster"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/install/iso-install/#join-an-existing-cluster",
+      icon: Plus,
       resourceLinks: []
     },
-    "Registrar una imagen para usar en máquinas virtuales": {
+    "Configuración de proxy HTTP": {
       steps: [
-        "Dashboard -> Images -> Create.",
-        "Opción: Descarga desde URL o carga local.",
-        "Espere a que el estado sea 'Active'."
+        "Vaya a 'Settings' -> 'Advanced Settings'.",
+        "Busque 'http-proxy' y haga clic en 'Edit Setting'.",
+        "Ingrese las URL de proxy HTTP y HTTPS.",
+        "Agregue dominios internos a 'no-proxy' para evitar enrutar el tráfico local a través del proxy."
       ],
-      tip: "Se prefieren imágenes optimizadas para la nube (Cloud-Init).",
-      dependencies: ["Acceso a internet para descargas"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#images",
-      icon: ImageIcon,
+      tip: "La configuración del proxy es esencial for entornos con acceso limitado a Internet.",
+      dependencies: ["Detalles del servidor proxy"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/install/settings/#http-proxy",
+      icon: Shuffle,
       resourceLinks: []
     },
-    "Crear una Storage Class y un volumen": {
+    "Vinculación de interfaz de red para administración": {
       steps: [
-        "Use la StorageClass 'longhorn' por defecto o cree una nueva.",
-        "Establezca réplicas en 3 para HA.",
-        "Cree un volumen y asígnelo a una VM."
+        "Vaya a 'Settings' -> 'Management Network'.",
+        "Seleccione el modo de enlace (por ejemplo, Active-Backup o LACP).",
+        "Seleccione las NIC físicas para incluir en el enlace de administración.",
+        "Guarde y espere a que la red se reconfigure (puede causar una breve desconexión)."
       ],
-      tip: "No reduzca las réplicas a 1 en entornos de producción.",
-      dependencies: ["Nodos SDS saludables"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/storage/storage-class/",
-      icon: Database,
-      resourceLinks: []
-    },
-    "Crear una red VLAN en SUSE Virtualization": {
-      steps: [
-        "Cree la ClusterNetwork en Settings.",
-        "Configure el NetworkConfig vinculado a las NICs físicas.",
-        "Cree la red VM de tipo 'L2Vlan' con el ID correspondiente."
-      ],
-      tip: "El puerto del switch debe ser TRUNK para VLAN IDs distintos de 0.",
-      dependencies: ["Soporte de switch 802.1Q"],
+      tip: "LACP también requiere configuración en el lado del switch físico.",
+      dependencies: ["Múltiples NIC", "Configuración del switch"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/",
       icon: Network,
       resourceLinks: []
     },
-    "Crear una VM": {
+    "Asignar una red de almacenamiento dedicada": {
       steps: [
-        "Virtual Machines -> Create.",
-        "Defina CPU, Memoria e Imagen de disco.",
-        "Seleccione la red (Management o VLAN).",
-        "Pegue su clave pública SSH."
+        "Cree una nueva ClusterNetwork para el almacenamiento.",
+        "Cree un NetworkConfig y vincúlelo a NIC de almacenamiento dedicadas.",
+        "Configure la red de almacenamiento en los ajustes de Longhorn para usar esta red."
       ],
-      tip: "Use drivers VirtIO para máximo rendimiento.",
-      dependencies: ["Imagen activa", "Red definida"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/",
-      icon: Monitor,
-      resourceLinks: []
-    },
-    "Configurar un destino de respaldo": {
-      steps: [
-        "Settings -> Backup Target.",
-        "Configure NFS o S3.",
-        "Verifique que el estado sea 'Ready'."
-      ],
-      tip: "NFS v4 es la versión recomendada.",
-      dependencies: ["Almacenamiento externo NFS/S3"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/storage/backup-target/",
-      icon: Save,
-      resourceLinks: []
-    },
-    "Configurar un script cloud-config de datos de usuario": {
-      steps: [
-        "Cree un Cloud Config Template.",
-        "Use el formato YAML #cloud-config.",
-        "Asigne el template al crear la VM."
-      ],
-      tip: "Use 'NoCloud' como fuente de datos en la mayoría de imágenes Linux.",
-      dependencies: ["Conocimiento de YAML"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#advanced",
-      icon: FileCode,
-      resourceLinks: []
-    },
-    "Crear un respaldo de una VM": {
-      steps: [
-        "Asegure que the Backup Target esté activo.",
-        "VM Menu -> Take Backup.",
-        "Verifique en el menú 'Backups'."
-      ],
-      tip: "Los respaldos son externos; los snapshots son locales.",
-      dependencies: ["Backup Target configurado"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/#taking-a-backup",
+      tip: "Aislar el tráfico de almacenamiento mejora el rendimiento y la estabilidad del clúster.",
+      dependencies: ["NIC de almacenamiento dedicadas"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/#storage-network",
       icon: Database,
       resourceLinks: []
     },
-    "Restaurar una VM desde un respaldo": {
+    "Crear una red VLAN para la VM": {
       steps: [
-        "Seleccione un respaldo saludable.",
-        "Restore to a new VM.",
-        "Verifique el inicio de la nueva VM."
+        "Cree una ClusterNetwork para VLAN.",
+        "Cree un NetworkConfig vinculando NIC físicas a la ClusterNetwork.",
+        "Cree una nueva red de tipo 'L2Vlan' con el ID de VLAN deseado."
       ],
-      tip: "Puede restaurar sobre una VM existente para revertir cambios.",
-      dependencies: ["Respaldo saludable"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/#restoring-from-a-backup",
-      icon: RefreshCw,
+      tip: "Asegúrese de que los puertos del switch físico estén en modo Trunk.",
+      dependencies: ["ID de VLAN", "Puertos Trunk"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/#vlan-network",
+      icon: Globe,
       resourceLinks: []
     },
-    "Realizar una migración en vivo de una VM (requiere multi-host)": {
+    "Verificar la configuración de VLAN entre nodos": {
       steps: [
-        "Requiere al menos 2 nodos saludables.",
-        "VM Menu -> Migrate.",
-        "Monitoree hasta que el estado sea 'Running'."
+        "Implemente dos VM en diferentes nodos usando la misma red VLAN.",
+        "Asigne IP en la misma subred a ambas VM.",
+        "Realice una prueba de ping entre las VM."
       ],
-      tip: "La migración requiere almacenamiento compartido (Longhorn).",
-      dependencies: ["Clúster multi-nodo"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/live-migration/",
-      icon: RefreshCw,
+      tip: "Si el ping falla, verifique si la VLAN está permitida en las interconexiones del switch físico.",
+      dependencies: ["Red VLAN", "2 VM en diferentes nodos"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/",
+      icon: Activity,
       resourceLinks: []
     },
-    "Usar la consola serial/VNC de una VM": {
+    "Extensiones de recursos de VM (CPU, memoria, disco)": {
       steps: [
-        "Abra el dashboard de VMs.",
-        "Haga clic en 'Console' y elija VNC o Serial."
+        "Apague la VM.",
+        "Edite la configuración de la VM y aumente la CPU/RAM o el tamaño del disco.",
+        "Inicie la VM y verifique los nuevos recursos en el SO invitado."
       ],
-      tip: "Habilite la consola serial en el kernel invitado si es necesario.",
-      dependencies: ["Acceso al VIP vía navegador"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#access-vm-via-console",
-      icon: Terminal,
+      tip: "Harvester admite la conexión en caliente para algunos recursos, pero un reinicio es más seguro para el reconocimiento del SO.",
+      dependencies: ["VM en ejecución"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/",
+      icon: Cpu,
       resourceLinks: []
     },
-    "Importar la clave SSH e acceder a una VM usando la clave (solo Linux)": {
+    "Extensiones de almacenamiento de VM (Agregar/Eliminar/Ampliar)": {
       steps: [
-        "Settings -> SSH Keys -> Create.",
-        "Asigne la clave al crear la VM.",
-        "Acceda vía SSH: ssh [user]@[VM_IP]."
+        "Vaya a la pestaña 'Disks' de la VM.",
+        "Haga clic en 'Add Volume' para adjuntar un nuevo disco.",
+        "Para ampliar, vaya a 'Volumes', busque el disco y haga clic en 'Expand'."
       ],
-      tip: "Asegúrese de que la imagen tenga cloud-init.",
-      dependencies: ["Clave pública SSH"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#ssh-key",
-      icon: Key,
-      resourceLinks: []
-    },
-    "Gestión multi-cluster, multi-tenancy y soporte multi-disco": {
-      steps: [
-        "Añada discos secundarios en la pestaña 'Disks'.",
-        "Use Namespaces para aislamiento.",
-        "Importe en Rancher para gestión centralizada."
-      ],
-      tip: "Use discos separados para bases de datos pesadas.",
-      dependencies: ["Integración con Rancher"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#disks",
+      tip: "Siempre haga una copia de seguridad de sus datos antes de ampliar una partición.",
+      dependencies: ["Volumen de la VM"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/storage/storage-class/",
       icon: HardDrive,
       resourceLinks: []
     },
-    "Integración con Rancher. Provisionar un clúster RKE2 Kubernetes sobre SUSE Virtualization": {
+    "Prueba de rendimiento de disco FIO Longhorn": {
       steps: [
-        "Habilite el flag 'harvester' en Rancher.",
-        "Importe el clúster en Virtualization Management.",
-        "Cree Cloud Credentials y provisione el clúster RKE2."
+        "Instale 'fio' en una VM Linux.",
+        "Ejecute: fio --name=test --rw=randwrite --bs=4k --size=1G --numjobs=1 --iodepth=1 --runtime=60 --time_based.",
+        "Analice los resultados de IOPS y latencia."
       ],
-      tip: "Verifique la confianza de certificados entre Rancher e Harvester.",
-      dependencies: ["Rancher v2.8+", "VIP de Harvester funcional"],
-      docsUrl: "https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/",
+      tip: "Busque una latencia < 10ms para un rendimiento óptimo de etcd y las VM.",
+      dependencies: ["VM Linux", "herramienta fio"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/troubleshooting/performance/",
+      icon: Activity,
+      resourceLinks: []
+    },
+    "Cuota de recursos de VM (CPU Pinning)": {
+      steps: [
+        "Edite la configuración YAML de la VM.",
+        "Agregue 'dedicatedCpuPlacement: true' bajo spec.domain.cpu.",
+        "Reinicie la VM y verifique el uso de los núcleos."
+      ],
+      tip: "El anclaje de CPU es útil para cargas de trabajo sensibles a la latencia.",
+      dependencies: ["Configuración avanzada de VM"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/create-vm/#advanced-settings",
+      icon: Target,
+      resourceLinks: []
+    },
+    "Migración en vivo de VM": {
+      steps: [
+        "Seleccione una VM en ejecución.",
+        "Haga clic en 'Migrate' y elija el nodo de destino.",
+        "Monitoree el progreso de la migración en el tablero."
+      ],
+      tip: "La migración en vivo requiere almacenamiento compartido (Longhorn) y modelos de CPU compatibles.",
+      dependencies: ["Múltiples nodos", "VM en ejecución"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/live-migration/",
+      icon: Shuffle,
+      resourceLinks: []
+    },
+    "Respaldo de VM a S3 Minio": {
+      steps: [
+        "Configure un destino de respaldo S3 en 'Settings'.",
+        "Vaya a 'Virtual Machines' -> 'Backup'.",
+        "Seleccione 'Create Backup' y espere a que finalice."
+      ],
+      tip: "Minio es una excelente opción local compatible con S3 para POC.",
+      dependencies: ["Bucket S3", "Claves de acceso"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/",
+      icon: Database,
+      imageSrc: "https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/vm/backup-target.png",
+      resourceLinks: []
+    },
+    "Restaurar una VM desde un respaldo S3": {
+      steps: [
+        "Vaya a 'Virtual Machines' -> 'Backups'.",
+        "Seleccione un respaldo y haga clic en 'Restore'.",
+        "Proporcione un nuevo nombre de VM o sobrescriba la existente."
+      ],
+      tip: "Restaurar a una nueva VM le permite verificar los datos sin afectar la producción.",
+      dependencies: ["Respaldo existente"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/#restore",
+      icon: RefreshCw,
+      resourceLinks: []
+    },
+    "Soporte para carga de trabajo de contenedores": {
+      steps: [
+        "Harvester se ejecuta sobre Kubernetes; puede implementar pods directamente si es necesario.",
+        "Use 'kubectl' para aplicar un YAML de implementación al clúster Harvester.",
+        "Verifique que los pods se estén ejecutando con 'kubectl get pods'."
+      ],
+      tip: "Para cargas de trabajo de producción, es mejor ejecutar clústeres RKE2 sobre Harvester.",
+      dependencies: ["acceso a kubectl"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/introduction/",
+      icon: Layers,
+      resourceLinks: []
+    },
+    "Implementar Rancher Manager": {
+      steps: [
+        "Cree una VM con al menos 4 vCPU y 8GB de RAM.",
+        "Instale Docker o RKE2 en la VM.",
+        "Implemente Rancher usando el Helm chart oficial o el comando Docker."
+      ],
+      tip: "Se recomienda Rancher v2.8+ para la mejor experiencia de integración con Harvester.",
+      dependencies: ["VM", "Docker/K8s"],
+      docsUrl: "https://ranchermanager.docs.rancher.com/v2.8/pages-for-subheaders/install-upgrade-rancher",
       icon: Cloud,
+      resourceLinks: []
+    },
+    "Contraseñas de cuenta y política de bloqueo": {
+      steps: [
+        "Vaya a 'Settings' -> 'Authentication'.",
+        "Configure la complejidad de la contraseña y los umbrales de bloqueo.",
+        "Pruebe intentando inicios de sesión fallidos."
+      ],
+      tip: "Integre con LDAP/AD para una gestión de usuarios centralizada.",
+      dependencies: ["Acceso de administrador"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/rancher/authentication/",
+      icon: Lock,
+      resourceLinks: []
+    },
+    "Gestión de clústeres Harvester con Rancher": {
+      steps: [
+        "En Rancher, vaya a 'Virtualization Management'.",
+        "Haga clic en 'Import Cluster' y siga las instrucciones.",
+        "Proporcione la VIP de Harvester y las credenciales."
+      ],
+      tip: "Rancher proporciona un panel único para la gestión de múltiples clústeres.",
+      dependencies: ["Servidor Rancher", "Clúster Harvester"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/rancher/rancher-integration/",
+      icon: Monitor,
+      resourceLinks: []
+    },
+    "Definir el comportamiento de la VM durante el mantenimiento del nodo": {
+      steps: [
+        "Vaya a 'Nodes' y seleccione un nodo.",
+        "Haga clic en 'Maintenance Mode' -> 'Enable'.",
+        "Observe cómo las VM se migran automáticamente a otros nodos."
+      ],
+      tip: "El modo de mantenimiento garantiza un tiempo de inactividad cero para las cargas de trabajo durante las actualizaciones de hardware.",
+      dependencies: ["Múltiples nodos", "VM en ejecución"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/host/maintenance-mode/",
+      icon: Settings,
+      resourceLinks: []
+    },
+    "Realizar adición, eliminación y failover de red": {
+      steps: [
+        "Configure un enlace con dos NIC.",
+        "Desconecte un cable físico.",
+        "Verifique que el tráfico de red continúe sin interrupciones."
+      ],
+      tip: "Use el modo 'Active-Backup' para un failover simple sin configuración del switch.",
+      dependencies: ["Red enlazada"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/",
+      icon: Wifi,
+      resourceLinks: []
+    },
+    "Apagar el nodo para activar el failover de la VM": {
+      steps: [
+        "Identifique un nodo que ejecute VM con HA habilitado.",
+        "Apague el nodo por la fuerza.",
+        "Verifique que las VM se reinicien en otros nodos mediante el controlador de HA."
+      ],
+      tip: "HA requiere al menos 3 nodos para mantener el quórum.",
+      dependencies: ["Clúster de 3 nodos", "VM con HA"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/high-availability/",
+      icon: Zap,
+      resourceLinks: []
+    },
+    "Encender el nodo Harvester y monitorear la reconstrucción": {
+      steps: [
+        "Encienda el nodo que falló anteriormente.",
+        "Espere a que se una al clúster y se muestre como 'Ready'.",
+        "Consulte el tablero de Longhorn para monitorear la sincronización de datos."
+      ],
+      tip: "Longhorn reconstruirá automáticamente las réplicas para garantizar la redundancia de los datos.",
+      dependencies: ["Nodo recuperado"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/storage/storage-class/",
+      icon: RefreshCw,
+      resourceLinks: []
+    },
+    "Ejecutar failover de nodo con failback": {
+      steps: [
+        "Active un failover poniendo un nodo en mantenimiento.",
+        "Después del mantenimiento, desactive el modo de mantenimiento.",
+        "Opcionalmente, migre las VM de regreso al nodo original."
+      ],
+      tip: "El failback puede ser manual o automático según sus políticas de programación.",
+      dependencies: ["Modo de mantenimiento"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/host/maintenance-mode/",
+      icon: Shuffle,
+      resourceLinks: []
+    },
+    "Realizar análisis de paquetes y sesiones de red": {
+      steps: [
+        "Acceda al nodo Harvester a través de SSH.",
+        "Use 'tcpdump -i [interfaz]' para capturar el tráfico.",
+        "Analice la salida para diagnosticar problemas de conectividad."
+      ],
+      tip: "Use '-w' para guardar la captura en un archivo para analizarlo en Wireshark.",
+      dependencies: ["Acceso SSH", "tcpdump"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/troubleshooting/network/",
+      icon: Search,
+      resourceLinks: []
+    },
+    "Probar el failover de la VM durante una falla de red": {
+      steps: [
+        "Simule una falla de red total en un nodo (por ejemplo, desconecte todas las NIC).",
+        "Verifique que el clúster detecte el nodo como 'Unreachable'.",
+        "Confirme que las VM se reprogramen en nodos sanos."
+      ],
+      tip: "El aislamiento de red (fencing) es fundamental para evitar escenarios de cerebro dividido.",
+      dependencies: ["Clúster de 3 nodos"],
+      docsUrl: "https://docs.harvesterhci.io/v1.7/vm/high-availability/",
+      icon: ShieldAlert,
       resourceLinks: []
     }
   }

@@ -48,6 +48,18 @@ export const NetworkValidation: React.FC<Props> = ({ lang, specs, updateSpecs, o
   const inputClasses = "w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-suse-base outline-none";
   const labelClasses = "block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5";
 
+  const PORT_REQUIREMENTS = [
+    { port: '2379-2382', service: 'Etcd', desc: 'Etcd client/peer/metrics' },
+    { port: '6443', service: 'K8s API', desc: 'Kubernetes API Server' },
+    { port: '9345', service: 'RKE2 API', desc: 'RKE2 Supervisor API' },
+    { port: '10250', service: 'Kubelet', desc: 'Kubelet API' },
+    { port: '2112', service: 'Kube-vip', desc: 'Kube-vip metrics' },
+    { port: '8472', service: 'Canal', desc: 'VxLAN Overlay' },
+    { port: '443', service: 'Rancher', desc: 'Rancher Integration' },
+    { port: '22', service: 'SSH', desc: 'Secure Shell' },
+    { port: '3260', service: 'iSCSI', desc: 'Longhorn Storage' },
+  ];
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
@@ -110,6 +122,22 @@ export const NetworkValidation: React.FC<Props> = ({ lang, specs, updateSpecs, o
                   <label className={labelClasses}>{t.network.labels.gateway}</label>
                   <input value={specs.gatewayIp} onChange={(e) => updateSpecs({ gatewayIp: e.target.value })} className={inputClasses} placeholder="192.168.1.1" />
               </div>
+              {specs.hasProxy && (
+                <div className="md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-gray-100">
+                  <div>
+                    <label className={labelClasses}>HTTP Proxy</label>
+                    <input value={specs.httpProxy} onChange={(e) => updateSpecs({ httpProxy: e.target.value })} className={inputClasses} placeholder="http://proxy:3128" />
+                  </div>
+                  <div>
+                    <label className={labelClasses}>HTTPS Proxy</label>
+                    <input value={specs.httpsProxy} onChange={(e) => updateSpecs({ httpsProxy: e.target.value })} className={inputClasses} placeholder="http://proxy:3128" />
+                  </div>
+                  <div>
+                    <label className={labelClasses}>No Proxy</label>
+                    <input value={specs.noProxy} onChange={(e) => updateSpecs({ noProxy: e.target.value })} className={inputClasses} placeholder="localhost,127.0.0.1" />
+                  </div>
+                </div>
+              )}
           </div>
         )}
 
@@ -150,7 +178,7 @@ export const NetworkValidation: React.FC<Props> = ({ lang, specs, updateSpecs, o
                   <div key={i} className="bg-slate-50 p-5 rounded-2xl border border-gray-100 space-y-3 transition-all hover:border-suse-base/30">
                       <div className="flex justify-between items-center">
                         <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Node #{i+1}</div>
-                        {i === 0 && <span className="text-[9px] font-bold bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full uppercase">Seed / Master</span>}
+                        {i < 3 && <span className="text-[9px] font-bold bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full uppercase">Management (HA)</span>}
                       </div>
                       <label className="text-[9px] font-bold text-gray-400 uppercase">{t.network.labels.staticIp}</label>
                       <input 
@@ -179,6 +207,21 @@ export const NetworkValidation: React.FC<Props> = ({ lang, specs, updateSpecs, o
                   <button onClick={() => setIsRunningTests(true)} className="px-6 py-2 bg-suse-dark text-white rounded-xl font-bold text-xs">
                     {isRunningTests ? t.network.diagnostic.testing : t.network.diagnostic.run}
                   </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {PORT_REQUIREMENTS.map((req, idx) => (
+                  <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-gray-100 flex items-center justify-between">
+                    <div>
+                      <div className="text-[10px] font-black text-suse-base uppercase tracking-tighter">{req.service}</div>
+                      <div className="text-sm font-bold text-gray-800">Port {req.port}</div>
+                      <div className="text-[10px] text-gray-500">{req.desc}</div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                      <Activity className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                ))}
               </div>
            </div>
         )}

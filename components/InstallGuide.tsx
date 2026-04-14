@@ -129,8 +129,13 @@ export const InstallGuide: React.FC<Props> = ({ lang, netSpecs, goals = [] }) =>
                           <div className="w-12 h-12 rounded-2xl bg-suse-base text-white flex items-center justify-center font-black text-xl shrink-0 shadow-lg shadow-suse-base/20">1</div>
                           <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex-1">
                               <h4 className="font-bold text-lg mb-3">Cluster Genesis (Seed Node)</h4>
-                              <p className="text-sm text-gray-600 leading-relaxed">{t.installGuide.install.node1}</p>
-                              <div className="mt-4 p-4 bg-blue-50 text-blue-700 rounded-2xl text-[10px] font-bold flex items-start gap-3 border border-blue-100">
+                              <p className="text-sm text-gray-600 leading-relaxed mb-6">{t.installGuide.install.node1}</p>
+                              <UISnapshot 
+                                type="console" 
+                                title="Harvester ISO Installer - First Node" 
+                                imageSrc="https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/install/iso/install-harvester-1.png" 
+                              />
+                              <div className="mt-6 p-4 bg-blue-50 text-blue-700 rounded-2xl text-[10px] font-bold flex items-start gap-3 border border-blue-100">
                                  <AlertCircle className="w-4 h-4 shrink-0" /> 
                                  <div>
                                     <span className="block mb-1 text-blue-900 uppercase tracking-widest">VIP Warning</span>
@@ -191,6 +196,11 @@ export const InstallGuide: React.FC<Props> = ({ lang, netSpecs, goals = [] }) =>
                           <StepBox icon={Plus} title="Online Expansion" desc={t.installGuide.storage.expansion} />
                       </div>
                       <div className="flex flex-col gap-6">
+                          <UISnapshot 
+                            type="dashboard" 
+                            title="Longhorn Storage Dashboard" 
+                            imageSrc="https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/storage/storage-class-list.png" 
+                          />
                           <div className="p-8 bg-red-50 border border-red-100 rounded-[2.5rem] shadow-sm space-y-4">
                               <h4 className="font-bold text-red-800 text-lg flex items-center gap-3"><ShieldAlert className="w-6 h-6" /> etcd Stability Check</h4>
                               <p className="text-xs text-red-700 leading-relaxed font-medium">{t.installGuide.storage.bench}</p>
@@ -257,6 +267,19 @@ export const InstallGuide: React.FC<Props> = ({ lang, netSpecs, goals = [] }) =>
                                 ))}
                                 </ul>
                             </div>
+
+                            {data.imageSrc && (
+                                <div className="mt-10">
+                                    <div className="flex items-center gap-3 text-gray-900 font-black text-[10px] uppercase tracking-widest mb-4">
+                                        <Eye className="w-4 h-4 text-suse-base" /> {lang === 'en' ? "Visual Reference" : "Referência Visual"}
+                                    </div>
+                                    <UISnapshot 
+                                        type="dashboard" 
+                                        title={goal} 
+                                        imageSrc={data.imageSrc} 
+                                    />
+                                </div>
+                            )}
                             
                             {data.tip && (
                                 <div className="p-6 bg-amber-50/50 border-l-8 border-amber-400 rounded-2xl flex gap-5 items-start shadow-sm">

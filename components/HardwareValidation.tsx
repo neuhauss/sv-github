@@ -52,27 +52,42 @@ export const HardwareValidation: React.FC<Props> = ({ lang, specs, updateSpecs, 
   const [validation, setValidation] = useState<ValidationStatus>({ isValid: false, messages: [] });
 
   const REQ = {
-    CPU_CORES: 8,
-    RAM_GB: 32,
-    DISK_GB: 250,
-    NETWORK_GB: 1,
+    TESTING: {
+      CPU_CORES: 8,
+      RAM_GB: 32,
+      DISK_GB: 250,
+      NETWORK_GB: 1,
+    },
+    PRODUCTION: {
+      CPU_CORES: 16,
+      RAM_GB: 64,
+      DISK_GB: 500,
+      NETWORK_GB: 10,
+    }
   };
 
   useEffect(() => {
     const messages: string[] = [];
     let isValid = true;
+    const currentReq = specs.isProduction ? REQ.PRODUCTION : REQ.TESTING;
 
     if (specs.nodeCount < 3) {
-      messages.push(lang === 'pt' ? "Mínimo de 3 nós recomendado." : lang === 'es' ? "Mínimo de 3 nodos recomendado." : "Min 3 nodes recommended.");
-    }
-
-    if (specs.cpuCores < REQ.CPU_CORES) {
-      messages.push(`${t.common.required}: ${REQ.CPU_CORES} Cores.`);
+      messages.push(lang === 'pt' ? "Mínimo de 3 nós necessário para HA." : lang === 'es' ? "Mínimo de 3 nodos necesario para HA." : "Min 3 nodes required for HA.");
       isValid = false;
     }
 
-    if (specs.ramGb < REQ.RAM_GB) {
-      messages.push(`${t.common.required}: ${REQ.RAM_GB} GB RAM.`);
+    if (specs.cpuCores < currentReq.CPU_CORES) {
+      messages.push(`${t.common.required}: ${currentReq.CPU_CORES} Cores.`);
+      isValid = false;
+    }
+
+    if (specs.ramGb < currentReq.RAM_GB) {
+      messages.push(`${t.common.required}: ${currentReq.RAM_GB} GB RAM.`);
+      isValid = false;
+    }
+
+    if (specs.diskGb < currentReq.DISK_GB) {
+      messages.push(`${t.common.required}: ${currentReq.DISK_GB} GB Disk.`);
       isValid = false;
     }
 
@@ -87,13 +102,22 @@ export const HardwareValidation: React.FC<Props> = ({ lang, specs, updateSpecs, 
             <h2 className="text-2xl font-bold text-suse-dark flex items-center gap-2">
                 <Server className="w-6 h-6 text-suse-base" /> {t.hardware.title}
             </h2>
-            <span className="text-[10px] font-bold bg-suse-base/10 text-suse-base px-2 py-1 rounded">{t.hardware.profile}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-gray-500">{lang === 'pt' ? 'Ambiente:' : 'Environment:'}</span>
+              <button 
+                onClick={() => updateSpecs({ isProduction: !specs.isProduction })}
+                className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all ${specs.isProduction ? 'bg-suse-accent text-white' : 'bg-suse-base text-white'}`}
+              >
+                {specs.isProduction ? (lang === 'pt' ? 'PRODUÇÃO' : 'PRODUCTION') : (lang === 'pt' ? 'TESTE' : 'TESTING')}
+              </button>
+            </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
            <ValidatedInput label={t.hardware.nodes} value={specs.nodeCount} onChange={(e: any) => updateSpecs({ nodeCount: parseInt(e.target.value) || 0 })} isValid={specs.nodeCount >= 3} min={3} />
-           <ValidatedInput label={t.hardware.cores} icon={Cpu} value={specs.cpuCores} onChange={(e: any) => updateSpecs({ cpuCores: parseInt(e.target.value) || 0 })} isValid={specs.cpuCores >= REQ.CPU_CORES} min={REQ.CPU_CORES} />
-           <ValidatedInput label={t.hardware.ram} value={specs.ramGb} onChange={(e: any) => updateSpecs({ ramGb: parseInt(e.target.value) || 0 })} isValid={specs.ramGb >= REQ.RAM_GB} min={REQ.RAM_GB} />
+           <ValidatedInput label={t.hardware.cores} icon={Cpu} value={specs.cpuCores} onChange={(e: any) => updateSpecs({ cpuCores: parseInt(e.target.value) || 0 })} isValid={specs.cpuCores >= (specs.isProduction ? REQ.PRODUCTION.CPU_CORES : REQ.TESTING.CPU_CORES)} min={specs.isProduction ? REQ.PRODUCTION.CPU_CORES : REQ.TESTING.CPU_CORES} />
+           <ValidatedInput label={t.hardware.ram} value={specs.ramGb} onChange={(e: any) => updateSpecs({ ramGb: parseInt(e.target.value) || 0 })} isValid={specs.ramGb >= (specs.isProduction ? REQ.PRODUCTION.RAM_GB : REQ.TESTING.RAM_GB)} min={specs.isProduction ? REQ.PRODUCTION.RAM_GB : REQ.TESTING.RAM_GB} />
+           <ValidatedInput label={lang === 'pt' ? 'Capacidade Disco (GB)' : 'Disk Capacity (GB)'} icon={HardDrive} value={specs.diskGb} onChange={(e: any) => updateSpecs({ diskGb: parseInt(e.target.value) || 0 })} isValid={specs.diskGb >= (specs.isProduction ? REQ.PRODUCTION.DISK_GB : REQ.TESTING.DISK_GB)} min={specs.isProduction ? REQ.PRODUCTION.DISK_GB : REQ.TESTING.DISK_GB} />
            
            <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
              <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">

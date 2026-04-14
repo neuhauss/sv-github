@@ -109,6 +109,15 @@ export interface HardwareSpecs {
   nodeCount: number;
   hasGpu: boolean;
   gpuType?: string;
+  isProduction?: boolean;
+}
+
+export interface VerificationItem {
+  id: number;
+  category: string;
+  testCase: string;
+  status: 'pass' | 'fail' | 'pending';
+  notes?: string;
 }
 
 export interface NodeNetworkConfig {
