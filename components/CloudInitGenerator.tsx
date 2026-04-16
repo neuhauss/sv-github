@@ -1,5 +1,6 @@
 
 import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { CloudInitConfig, MountPoint, NetworkInterface, HardwareSpecs, NetworkSpecs } from '../types';
 import { FileCode, Plus, Trash2, Save, Copy, Network, Info, Settings, Check, Upload, Layers, Box, Database, Image as ImageIcon, HelpCircle, HardDrive, Package, Terminal } from 'lucide-react';
 
@@ -24,7 +25,7 @@ const YamlPreview: React.FC<{ code: string }> = ({ code }) => {
       const keyPart = line.substring(0, colonIndex + 1);
       const valuePart = line.substring(colonIndex + 1);
 
-      const isPrimaryDirective = /^(apiVersion|kind|metadata|spec|status|hostname|users|network|packages|timezone|locale|mounts|runcmd|bootcmd):/.test(trimmed);
+      const isPrimaryDirective = /^(apiVersion|kind|metadata|spec|status|hostname|users|network|packages|timezone|locale|mounts|runcmd|bootcmd|write_files|ssh_pwauth|chpasswd):/.test(trimmed);
       const keyColor = isPrimaryDirective ? 'text-amber-400' : 'text-sky-400';
 
       const isBool = /^\s*(true|false)\s*$/.test(valuePart);
@@ -77,12 +78,13 @@ const Tooltip: React.FC<{ title: string; children: React.ReactNode }> = ({ title
 
 export const CloudInitGenerator: React.FC<Props> = ({ config, updateConfig, onComplete, hwSpecs, netSpecs }) => {
   const [activeMainTab, setActiveMainTab] = useState<'cloud-init' | 'harvester-crd'>('cloud-init');
-  const [activeTab, setActiveTab] = useState<'users' | 'system' | 'network' | 'storage' | 'packages' | 'commands'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'system' | 'network' | 'storage' | 'packages' | 'commands' | 'files'>('users');
   const [activeCrdType, setActiveCrdType] = useState<'vm' | 'network' | 'image'>('vm');
   const [newSshKey, setNewSshKey] = useState('');
   const [newPackage, setNewPackage] = useState('');
   const [newBootCmd, setNewBootCmd] = useState('');
   const [newRunCmd, setNewRunCmd] = useState('');
+  const [newFile, setNewFile] = useState({ path: '', content: '', permissions: '0644' });
   const [newMount, setNewMount] = useState<MountPoint>({ device: '', mountPath: '', fsType: 'ext4' });
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -122,15 +124,22 @@ export const CloudInitGenerator: React.FC<Props> = ({ config, updateConfig, onCo
     yaml += `locale: ${config.locale}\n`;
     
     yaml += `users:\n`;
-    yaml += `  - name: ${config.user}\n`;
+    yaml += `  - name: ${config.user || 'opensuse'}\n`;
+    if (config.password) {
+      yaml += `    passwd: ${config.password}\n`;
+      yaml += `    lock_passwd: false\n`;
+    }
     yaml += `    sudo: ALL=(ALL) NOPASSWD:ALL\n`;
     yaml += `    shell: /bin/bash\n`;
-    if (config.sshKeys.length > 0) {
+    if (config.sshKeys && config.sshKeys.length > 0) {
       yaml += `    ssh_authorized_keys:\n`;
       config.sshKeys.forEach(k => {
         yaml += `      - ${k}\n`;
       });
     }
+
+    yaml += `ssh_pwauth: true\n`;
+    yaml += `chpasswd: { expire: False }\n`;
 
     if (config.bootCmds && config.bootCmds.length > 0) {
       yaml += `bootcmd:\n`;
@@ -139,7 +148,19 @@ export const CloudInitGenerator: React.FC<Props> = ({ config, updateConfig, onCo
       });
     }
 
-    if (config.mounts.length > 0) {
+    if (config.writeFiles && config.writeFiles.length > 0) {
+      yaml += `write_files:\n`;
+      config.writeFiles.forEach(f => {
+        yaml += `  - path: ${f.path}\n`;
+        yaml += `    permissions: '${f.permissions}'\n`;
+        yaml += `    content: |\n`;
+        f.content.split('\n').forEach(line => {
+          yaml += `      ${line}\n`;
+        });
+      });
+    }
+
+    if (config.mounts && config.mounts.length > 0) {
       yaml += `mounts:\n`;
       config.mounts.forEach(m => {
         yaml += `  - [ "${m.device}", "${m.mountPath}", "${m.fsType}", "defaults", "0", "2" ]\n`;
@@ -318,7 +339,8 @@ spec:
                         { id: 'network', label: 'Network' },
                         { id: 'storage', label: 'Storage' },
                         { id: 'packages', label: 'Packages' },
-                        { id: 'commands', label: 'Run Commands' }
+                        { id: 'commands', label: 'Commands' },
+                        { id: 'files', label: 'Files' }
                       ].map((tab) => (
                         <button 
                           key={tab.id} 
@@ -345,6 +367,22 @@ spec:
                                onChange={(e) => updateConfig({...config, user: e.target.value.replace(/\s/g, '').toLowerCase()})}
                                className={inputClasses}
                                placeholder="e.g. opensuse"
+                             />
+                           </div>
+
+                           <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                             <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">
+                               Password (Optional)
+                               <Tooltip title="Senha do Usuário">
+                                 Define a senha para o usuário principal. Se deixado em branco, o acesso será apenas via SSH.
+                               </Tooltip>
+                             </label>
+                             <input 
+                               type="password"
+                               value={config.password || ''} 
+                               onChange={(e) => updateConfig({...config, password: e.target.value})}
+                               className={inputClasses}
+                               placeholder="Leave blank for SSH only"
                              />
                            </div>
 
@@ -637,6 +675,57 @@ spec:
                            </div>
                         </div>
                       )}
+
+                      {activeTab === 'files' && (
+                        <div className="space-y-6 animate-fade-in">
+                           <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4">
+                              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                                <FileCode className="w-4 h-4 text-suse-base" /> Create Files
+                              </h4>
+                              <div className="space-y-3">
+                                 <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                       <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">Path</label>
+                                       <input value={newFile.path} onChange={(e) => setNewFile({...newFile, path: e.target.value})} className={inputClasses} placeholder="/etc/motd" />
+                                    </div>
+                                    <div>
+                                       <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">Permissions</label>
+                                       <input value={newFile.permissions} onChange={(e) => setNewFile({...newFile, permissions: e.target.value})} className={inputClasses} placeholder="0644" />
+                                    </div>
+                                 </div>
+                                 <div>
+                                    <label className="block text-[9px] font-bold text-slate-500 mb-1 uppercase">Content</label>
+                                    <textarea 
+                                       value={newFile.content} 
+                                       onChange={(e) => setNewFile({...newFile, content: e.target.value})} 
+                                       className={`${inputClasses} font-mono text-[10px] h-24 resize-none`}
+                                       placeholder="File content..."
+                                    />
+                                 </div>
+                                 <button 
+                                   onClick={() => { handleAddItem('writeFiles', newFile); setNewFile({ path: '', content: '', permissions: '0644' }); }} 
+                                   className="w-full py-2 bg-suse-dark text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-black transition-colors"
+                                 >
+                                   Add File
+                                 </button>
+                              </div>
+                           </div>
+
+                           <div className="space-y-2">
+                              {config.writeFiles?.map((f, idx) => (
+                                <div key={idx} className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
+                                   <div className="flex flex-col">
+                                      <div className="text-[10px] font-bold text-slate-700">{f.path}</div>
+                                      <div className="text-[9px] text-slate-400">Permissions: {f.permissions}</div>
+                                   </div>
+                                   <button onClick={() => handleRemoveItem('writeFiles', idx)} className="text-gray-400 hover:text-red-500 transition-colors">
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                   </button>
+                                </div>
+                              ))}
+                           </div>
+                        </div>
+                      )}
                    </div>
                  </>
                ) : (
@@ -696,14 +785,27 @@ spec:
                   </div>
                   <button 
                     onClick={handleCopy}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded text-[10px] font-bold transition-all ${copied ? 'bg-green-50 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'}`}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded text-[10px] font-bold transition-all shadow-sm ${copied ? 'bg-suse-base text-white scale-105' : 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white'}`}
                   >
-                    {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                     {copied ? 'Copiado!' : 'Copiar YAML'}
                   </button>
                </div>
-               <div className="flex-1 overflow-auto bg-[#0d1117] p-4 custom-scrollbar">
+               <div className="flex-1 overflow-auto bg-[#0d1117] p-4 custom-scrollbar relative">
                   <YamlPreview code={activeMainTab === 'cloud-init' ? generateCloudInitYaml() : generateCrdYaml()} />
+                  <AnimatePresence>
+                    {copied && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20, x: '-50%' }}
+                        animate={{ opacity: 1, y: 0, x: '-50%' }}
+                        exit={{ opacity: 0, y: 20, x: '-50%' }}
+                        className="absolute bottom-6 left-1/2 bg-suse-base text-white px-4 py-2 rounded-full text-[10px] font-bold shadow-2xl flex items-center gap-2 z-50 pointer-events-none"
+                      >
+                        <Check className="w-3 h-3" />
+                        YAML Copiado!
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                </div>
                <div className="bg-slate-800 px-4 py-2 border-t border-slate-700">
                   <p className="text-[9px] text-slate-500 italic">Manifestos prontos para importação via Dashboard ou CLI.</p>

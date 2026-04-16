@@ -18,6 +18,15 @@ export const NetworkValidation: React.FC<Props> = ({ lang, specs, updateSpecs, o
   const t = translations[lang];
   const [activeTab, setActiveTab] = useState<'topology' | 'addressing' | 'nodes' | 'connectivity'>('topology');
   const [isRunningTests, setIsRunningTests] = useState(false);
+  const [errors, setErrors] = useState<Record<string, boolean>>({});
+
+  const IPV4_REGEX = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  const IPV6_REGEX = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
+  const CIDR_REGEX = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/(?:3[0-2]|[12]?[0-9])$/;
+
+  const isValidIp = (ip: string) => !ip || IPV4_REGEX.test(ip) || IPV6_REGEX.test(ip);
+  const isValidCidr = (cidr: string) => !cidr || CIDR_REGEX.test(cidr);
+  const isValidIpList = (list: string) => !list || list.split(',').every(ip => isValidIp(ip.trim()));
 
   useEffect(() => {
     if (specs.nodes.length !== nodeCount) {
@@ -30,8 +39,51 @@ export const NetworkValidation: React.FC<Props> = ({ lang, specs, updateSpecs, o
 
   useEffect(() => {
     const messages: string[] = [];
+    const newErrors: Record<string, boolean> = {};
     let isValid = true;
-    if (!specs.clusterVip) { messages.push("VIP Required"); isValid = false; }
+
+    if (!specs.clusterVip) { 
+      messages.push("VIP Required"); 
+      isValid = false; 
+    } else if (!isValidIp(specs.clusterVip)) {
+      messages.push("Invalid VIP Format");
+      newErrors.clusterVip = true;
+      isValid = false;
+    }
+
+    if (specs.managementCidr && !isValidCidr(specs.managementCidr)) {
+      messages.push("Invalid Management CIDR Format");
+      newErrors.managementCidr = true;
+      isValid = false;
+    }
+
+    if (specs.gatewayIp && !isValidIp(specs.gatewayIp)) {
+      messages.push("Invalid Gateway IP Format");
+      newErrors.gatewayIp = true;
+      isValid = false;
+    }
+
+    if (specs.dnsServers && !isValidIpList(specs.dnsServers)) {
+      messages.push("Invalid DNS Server Format");
+      newErrors.dnsServers = true;
+      isValid = false;
+    }
+
+    if (specs.ntpServers && !isValidIpList(specs.ntpServers)) {
+      messages.push("Invalid NTP Server Format");
+      newErrors.ntpServers = true;
+      isValid = false;
+    }
+
+    specs.nodes.forEach((node, i) => {
+      if (node.ip && !isValidIp(node.ip)) {
+        messages.push(`Invalid IP Format for Node #${i + 1}`);
+        newErrors[`node-${i}`] = true;
+        isValid = false;
+      }
+    });
+
+    setErrors(newErrors);
     onValidationChange({ isValid, messages });
   }, [specs]);
 
@@ -45,7 +97,7 @@ export const NetworkValidation: React.FC<Props> = ({ lang, specs, updateSpecs, o
     }
   };
 
-  const inputClasses = "w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-suse-base outline-none";
+  const inputClasses = (hasError?: boolean) => `w-full px-3 py-2.5 bg-white border ${hasError ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-200'} rounded-xl text-sm focus:ring-2 focus:ring-suse-base outline-none transition-all`;
   const labelClasses = "block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5";
 
   const PORT_REQUIREMENTS = [
@@ -112,15 +164,27 @@ export const NetworkValidation: React.FC<Props> = ({ lang, specs, updateSpecs, o
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
               <div>
                   <label className={labelClasses}>{t.network.labels.vip}</label>
-                  <input value={specs.clusterVip} onChange={(e) => updateSpecs({ clusterVip: e.target.value })} className={inputClasses} placeholder="192.168.1.10" />
+                  <input value={specs.clusterVip} onChange={(e) => updateSpecs({ clusterVip: e.target.value })} className={inputClasses(errors.clusterVip)} placeholder="192.168.1.10" />
               </div>
               <div>
                   <label className={labelClasses}>{t.network.labels.cidr}</label>
-                  <input value={specs.managementCidr} onChange={(e) => updateSpecs({ managementCidr: e.target.value })} className={inputClasses} placeholder="192.168.1.0/24" />
+                  <input value={specs.managementCidr} onChange={(e) => updateSpecs({ managementCidr: e.target.value })} className={inputClasses(errors.managementCidr)} placeholder="192.168.1.0/24" />
               </div>
               <div>
                   <label className={labelClasses}>{t.network.labels.gateway}</label>
-                  <input value={specs.gatewayIp} onChange={(e) => updateSpecs({ gatewayIp: e.target.value })} className={inputClasses} placeholder="192.168.1.1" />
+                  <input value={specs.gatewayIp} onChange={(e) => updateSpecs({ gatewayIp: e.target.value })} className={inputClasses(errors.gatewayIp)} placeholder="192.168.1.1" />
+              </div>
+              <div>
+                  <label className={labelClasses}>{t.network.labels.dns}</label>
+                  <input value={specs.dnsServers} onChange={(e) => updateSpecs({ dnsServers: e.target.value })} className={inputClasses(errors.dnsServers)} placeholder="8.8.8.8, 1.1.1.1" />
+              </div>
+              <div>
+                  <label className={labelClasses}>{t.network.labels.ntp}</label>
+                  <input value={specs.ntpServers} onChange={(e) => updateSpecs({ ntpServers: e.target.value })} className={inputClasses(errors.ntpServers)} placeholder="0.pool.ntp.org" />
+              </div>
+              <div>
+                  <label className={labelClasses}>{t.network.labels.vlan}</label>
+                  <input value={specs.vlanId} onChange={(e) => updateSpecs({ vlanId: e.target.value })} className={inputClasses()} placeholder="100" />
               </div>
               {specs.hasProxy && (
                 <div className="md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-gray-100">
@@ -188,7 +252,7 @@ export const NetworkValidation: React.FC<Props> = ({ lang, specs, updateSpecs, o
                               newNodes[i].ip = e.target.value;
                               updateSpecs({ nodes: newNodes });
                           }}
-                          className={inputClasses}
+                          className={inputClasses(errors[`node-${i}`])}
                           placeholder={`192.168.1.1${i+1}`}
                       />
                   </div>

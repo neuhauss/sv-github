@@ -75,7 +75,8 @@ export const translations = {
       automation: "Automation",
       validation: "Validation",
       tests: "Tests",
-      report: "Report"
+      report: "Report",
+      guide: "Guide"
     },
     pocDetails: {
       title: "Project & POC Goals",
@@ -266,6 +267,7 @@ export const translations = {
         storage: "Storage",
         pocGoals: "POC Procedures",
         rancher: "Rancher Integration",
+        advanced: "Advanced Ops",
         troubleshooting: "Troubleshooting"
       },
       overview: {
@@ -291,7 +293,11 @@ export const translations = {
         node1: "1st Node (Seed): Select 'Create a new Harvester cluster'. Define a persistent Cluster VIP.",
         node2: "Subsequent Nodes: Select 'Join an existing Harvester cluster'. You will need the VIP and Token.",
         reboot: "After the installer finishes, remove the media and reboot.",
-        tip: "Wait for the login prompt on the physical console. Use the VIP to access the Web UI."
+        tip: "Wait for the login prompt on the physical console. Use the VIP to access the Web UI.",
+        consoleTitle: "Console Output Example",
+        consoleDesc: "What you see on the physical monitor after successful boot.",
+        tuiTitle: "TUI Configuration Reference",
+        tuiDesc: "Key parameters to configure during the ISO wizard."
       },
       config: {
         title: "Access & Initial Setup",
@@ -325,6 +331,16 @@ export const translations = {
         step4: "Provisioning RKE2",
         step4Desc: "Provision RKE2 clusters directly on top of Harvester nodes via Rancher UI.",
         trouble: "Verify DNS resolution and port 443 connectivity between Rancher and Harvester VIP."
+      },
+      advanced: {
+        title: "Advanced Operations & Air-Gap",
+        subtitle: "Enterprise features for restricted environments and multi-user governance.",
+        airgap: "Air-Gapped Setup",
+        airgapDesc: "Harvester ISO is self-contained. Configure HTTP Proxy in 'Advanced Settings' for external image/backup access.",
+        tenancy: "Multi-Tenancy",
+        tenancyDesc: "Define 'Project Owner' and 'Read-Only' roles in Rancher to delegate VM management per department.",
+        rke2: "RKE2 Provisioning",
+        rke2Desc: "Use Harvester Cloud Credentials to deploy downstream Kubernetes clusters with native CSI/CCM support."
       }
     },
     shell: {
@@ -410,7 +426,8 @@ export const translations = {
       automation: "Automação",
       validation: "Validação",
       tests: "Testes",
-      report: "Relatório"
+      report: "Relatório",
+      guide: "Guia"
     },
     pocDetails: {
       title: "Projeto & Objetivos da POC",
@@ -601,6 +618,7 @@ export const translations = {
         storage: "Armazenamento",
         pocGoals: "Procedimentos POC",
         rancher: "Integração Rancher",
+        advanced: "Operações Avançadas",
         troubleshooting: "Solução de Problemas"
       },
       overview: {
@@ -626,7 +644,11 @@ export const translations = {
         node1: "1º Nó (Seed): Escolha 'Create a new Harvester cluster'. Defina um VIP de Cluster persistente.",
         node2: "Nós seguintes: Escolha 'Join an existing cluster'. Você precisará do VIP e do Token.",
         reboot: "Após o término do instalador, remova a mídia e reinicie.",
-        tip: "Aguarde o prompt de login no console físico. Use o VIP para acessar a interface Web."
+        tip: "Aguarde o prompt de login no console físico. Use o VIP para acessar a interface Web.",
+        consoleTitle: "Exemplo de Saída do Console",
+        consoleDesc: "O que você vê no monitor físico após o boot bem-sucedido.",
+        tuiTitle: "Referência de Configuração TUI",
+        tuiDesc: "Parâmetros principais para configurar durante o assistente ISO."
       },
       config: {
         title: "Acesso e Configuração Inicial",
@@ -660,6 +682,16 @@ export const translations = {
         step4: "Provisionamento RKE2",
         step4Desc: "Provisione clusters RKE2 diretamente sobre os nós Harvester via UI do Rancher.",
         trouble: "Verifique resolução DNS e conectividade na porta 443 entre Rancher e VIP do Harvester."
+      },
+      advanced: {
+        title: "Operações Avançadas & Air-Gap",
+        subtitle: "Recursos corporativos para ambientes restritos e governança multi-usuário.",
+        airgap: "Configuração Air-Gap",
+        airgapDesc: "A ISO do Harvester é auto-contida. Configure o Proxy HTTP em 'Advanced Settings' para acesso a imagens/backups externos.",
+        tenancy: "Multi-Tenancy",
+        tenancyDesc: "Defina papéis de 'Project Owner' e 'Read-Only' no Rancher para delegar gestão de VMs por departamento.",
+        rke2: "Provisionamento RKE2",
+        rke2Desc: "Use Credenciais de Nuvem Harvester para implantar clusters Kubernetes downstream com suporte nativo a CSI/CCM."
       }
     },
     shell: {
@@ -745,7 +777,8 @@ export const translations = {
       automation: "Automatización",
       validation: "Validación",
       tests: "Pruebas",
-      report: "Informe"
+      report: "Informe",
+      guide: "Guía"
     },
     pocDetails: {
       title: "Detalles de la POC",
@@ -936,6 +969,7 @@ export const translations = {
         storage: "Almacenamiento",
         pocGoals: "Procedimientos POC",
         rancher: "Integración con Rancher",
+        advanced: "Operaciones Avanzadas",
         troubleshooting: "Resolución de Problemas"
       },
       overview: {
@@ -961,7 +995,11 @@ export const translations = {
         node1: "1er Nodo (Seed): Elija 'Crear nuevo clúster'. Defina la VIP del clúster.",
         node2: "Nodos Siguientes: Elija 'Unirse a clúster existente'. Necesitará VIP y Token.",
         reboot: "Tras finalizar la instalación, retire el medio y reinicie.",
-        tip: "Espere al prompt en consola. Use la VIP para acceder a la Web UI."
+        tip: "Espere al prompt en consola. Use la VIP para acceder a la Web UI.",
+        consoleTitle: "Ejemplo de Salida de Consola",
+        consoleDesc: "Lo que se ve en el monitor físico tras un arranque correcto.",
+        tuiTitle: "Referencia de Configuración TUI",
+        tuiDesc: "Parámetros clave a configurar durante el asistente ISO."
       },
       config: {
         title: "Access & Initial Setup",
@@ -995,6 +1033,16 @@ export const translations = {
         step4: "RKE2",
         step4Desc: "Provisione clústeres RKE2 sobre Harvester vía Rancher UI.",
         trouble: "Verifique DNS y puerto 443 entre Rancher e VIP de Harvester."
+      },
+      advanced: {
+        title: "Operaciones Avanzadas y Air-Gap",
+        subtitle: "Funciones empresariales para entornos restringidos y gobernanza multiusuario.",
+        airgap: "Configuración Air-Gap",
+        airgapDesc: "La ISO de Harvester es autónoma. Configure el Proxy HTTP en 'Advanced Settings' para el acceso a imágenes/respaldos externos.",
+        tenancy: "Multitenencia",
+        tenancyDesc: "Defina roles de 'Project Owner' y 'Read-Only' en Rancher para delegar la gestión de VM por departamento.",
+        rke2: "Provisión de RKE2",
+        rke2Desc: "Utilice las credenciales de nube de Harvester para desplegar clústeres de Kubernetes con soporte nativo de CSI/CCM."
       }
     },
     shell: {
@@ -1246,7 +1294,7 @@ export const GOAL_PROCEDURES_LOCALIZED: Record<Language, Record<string, any>> = 
       dependencies: ["Physical Server", "8GB USB", "Static IP"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/install/iso-install/",
       icon: Play,
-      imageSrc: "https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/install/iso/install-harvester-1.png",
+      imageSrc: "https://picsum.photos/seed/harvester-iso/800/600",
       resourceLinks: [{ label: "Download ISO", url: "https://harvesterhci.io/releases" }]
     },
     "Adding additional Nodes": {
@@ -1311,7 +1359,7 @@ export const GOAL_PROCEDURES_LOCALIZED: Record<Language, Record<string, any>> = 
       dependencies: ["VLAN ID", "Trunk Ports"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/networking/harvester-network/#vlan-network",
       icon: Globe,
-      imageSrc: "https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/networking/network-list.png",
+      imageSrc: "https://picsum.photos/seed/harvester-vlan/800/600",
       resourceLinks: []
     },
     "Verify VLAN configuration across nodes": {
@@ -1432,7 +1480,7 @@ export const GOAL_PROCEDURES_LOCALIZED: Record<Language, Record<string, any>> = 
       dependencies: ["VM", "Docker/K8s"],
       docsUrl: "https://ranchermanager.docs.rancher.com/v2.8/pages-for-subheaders/install-upgrade-rancher",
       icon: Cloud,
-      imageSrc: "https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/rancher-provision-rke2.png",
+      imageSrc: "https://picsum.photos/seed/rancher-rke2/800/600",
       resourceLinks: []
     },
     "Account Passwords and Lockout Policy": {
@@ -1559,7 +1607,7 @@ export const GOAL_PROCEDURES_LOCALIZED: Record<Language, Record<string, any>> = 
       dependencies: ["Servidor Físico", "USB de 8GB", "IP Estático"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/install/iso-install/",
       icon: Play,
-      imageSrc: "https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/install/iso/install-harvester-1.png",
+      imageSrc: "https://picsum.photos/seed/harvester-iso/800/600",
       resourceLinks: [{ label: "Download ISO", url: "https://harvesterhci.io/releases" }]
     },
     "Adicionando Nós Adicionais": {
@@ -1708,7 +1756,7 @@ export const GOAL_PROCEDURES_LOCALIZED: Record<Language, Record<string, any>> = 
       dependencies: ["Bucket S3", "Chaves de Acesso"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/",
       icon: Database,
-      imageSrc: "https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/vm/backup-target.png",
+      imageSrc: "https://picsum.photos/seed/harvester-backup/800/600",
       resourceLinks: []
     },
     "Restaurando uma VM de um backup S3": {
@@ -1871,7 +1919,7 @@ export const GOAL_PROCEDURES_LOCALIZED: Record<Language, Record<string, any>> = 
       dependencies: ["Servidor físico", "USB de 8GB", "IP estática"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/install/iso-install/",
       icon: Play,
-      imageSrc: "https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/install/iso/install-harvester-1.png",
+      imageSrc: "https://picsum.photos/seed/harvester-iso/800/600",
       resourceLinks: [{ label: "Descargar ISO", url: "https://harvesterhci.io/releases" }]
     },
     "Agregar nodos adicionales": {
@@ -2020,7 +2068,7 @@ export const GOAL_PROCEDURES_LOCALIZED: Record<Language, Record<string, any>> = 
       dependencies: ["Bucket S3", "Claves de acceso"],
       docsUrl: "https://docs.harvesterhci.io/v1.7/vm/backup-restore/",
       icon: Database,
-      imageSrc: "https://raw.githubusercontent.com/rancher/harvester/master/docs/static/img/vm/backup-target.png",
+      imageSrc: "https://picsum.photos/seed/harvester-backup/800/600",
       resourceLinks: []
     },
     "Restaurar una VM desde un respaldo S3": {
